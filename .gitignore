@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# The superseded first build, kept for reference. Nothing imports it.
+# Listed here so Tailwind v4's source scan skips it — it was scanning
+# _old's JSX and emitting 40KB of CSS for classes no live component uses.
+/_old
+
+# Superseded and unused source images. They stay on disk but out of git —
+# 100 files, 54MB, which is 88% of what the repo would otherwise weigh, and
+# anything committed here could only be removed by rewriting shared history.
+/public/img/unused images/

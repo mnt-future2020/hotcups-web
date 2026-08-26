@@ -1,0 +1,441 @@
+"use client";
+
+import type { CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
+import LiquidSurface, {
+  type FlaskMouth,
+  type LiquidHandle,
+} from "./LiquidSurface";
+import SteamCanvas from "./SteamCanvas";
+import PourWord from "./PourWord";
+import { currentCups, subscribeCups } from "@/lib/cups";
+
+/**
+ * Hero slide 1 — "Inside the cup".
+ *
+ * This was the whole hero until the carousel landed. It is unchanged except
+ * that it no longer owns the <section>: it fills one, and it takes an `active`
+ * flag so its shader and its steam stop costing anything while one of the two
+ * cream slides is showing.
+ *
+ * One WebGL scene: the liquid surface with the flask composited into it as a
+ * texture. The copy is real DOM on top, held legible by a scrim that sits
+ * between the canvas and the text.
+ *
+ * THE HEADLINE ARRIVES, IT IS NOT POURED
+ * A previous version ran a stream of chai out of the flask's spout and filled
+ * each headline line from it. Removed: the arc read as a stray line rather
+ * than as liquid, and filling a WRAPPED two-line block from a single rising
+ * mask left the two visual lines at different densities, which looked like a
+ * rendering fault. The lines clip-reveal instead, and only "Twice a day."
+ * fills — one line, no wrap, which is the case the mask actually handles.
+ *
+ * THE SCRIM IS NOT OPTIONAL
+ * The noise has frames far brighter than its average. Sitting text on an
+ * animated surface without a guaranteed floor means the headline is legible
+ * most of the time, which is another way of saying illegible.
+ *
+ * NOT BUILT: the feDisplacementMap wobble on the headline. The brief marks it
+ * optional and says to drop it if it janks — it forces a filter repaint of
+ * live text on every frame in Firefox and Safari, and the whole point of the
+ * headline is that it stays readable.
+ */
+
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+/* Four explicit lines. The copy is unchanged, but they have to be real
+   elements rather than natural wrapping — a line cannot clip-reveal on its
+   own if the browser decides where it starts. It also puts "Twice a day." on
+   its own line, which the entrance requires. */
+/* These three lines plus the accent are the shape, and they hold it.
+   "Hot tea and filter coffee," is 12.04 em of raw advances, which is past the
+   11.29 em a 48vw column allows against 4.25vw type — but the h1 carries
+   tracking-[-0.035em], and CSS letter-spacing applies after every character.
+   Twenty-six characters give back 0.91 em, so the real line is 11.13 em and
+   it fits with 1.4% to spare. Measure tracking with the line or the number is
+   meaningless. */
+const LINES = [
+  "Hot tea and filter coffee,",
+  "delivered to your office",
+  "in flasks.",
+];
+/** expo out - no overshoot */
+const EXPO = [0.16, 1, 0.3, 1] as const;
+/** each line 90ms behind the one above it */
+const LINE_GAP = 0.09;
+const LINE_DUR = 0.5;
+/** "Twice a day." fills once its line has landed */
+const T_LAST = LINES.length * LINE_GAP + LINE_DUR + 0.15;
+/* The flask's rise runs 1.1s -> 1.75s. The steam used to fire at 0.7s, so on
+   every load the plume arrived over an empty scene and only then did the cup
+   come up underneath it. It now waits for the texture to decode AND for the
+   rise to have landed. */
+/** after the subject is up */
+const T_STEAM_AFTER_SUBJECT = 1.6;
+/** and a hard ceiling, so a texture that never loads cannot leave the hero
+    with no steam at all — which is exactly what happened the last time this
+    depended on a callback firing */
+const T_STEAM_FALLBACK = 4;
+const TRUST = [
+  "2 deliveries / day",
+  "500+ organizations",
+  "Brewed the Madurai way",
+];
+
+/** an eased tween on a uniform, driven off rAF */
+function tween(
+  set: (v: number) => void,
+  from: number,
+  to: number,
+  ms: number,
+  delay = 0,
+) {
+  let raf = 0;
+  const begin = setTimeout(() => {
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / ms);
+      const e = 1 - Math.pow(1 - t, 4);
+      set(from + (to - from) * e);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }, delay);
+  return () => {
+    clearTimeout(begin);
+    cancelAnimationFrame(raf);
+  };
+}
+
+export default function SlideFlask({ active }: { active: boolean }) {
+  const reduced = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const liquid = useRef<LiquidHandle | null>(null);
+
+  const [cups, setCups] = useState(currentCups);
+  const [rollTo, setRollTo] = useState(reduced ? currentCups() : 0);
+  const [rush, setRush] = useState(1);
+  const [steam, setSteam] = useState(reduced ? 1 : 0);
+  /* the steam must leave the flask’s MOUTH, so the shader reports where
+     that is rather than the hero guessing at it */
+  const [mouth, setMouth] = useState<FlaskMouth>([0.79, 0.12]);
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const copyY = useTransform(scrollYProgress, [0, 0.4], ["0%", "-22%"]);
+  const copyFade = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
+
+  const onReady = useCallback((h: LiquidHandle) => {
+    liquid.current = h;
+  }, []);
+
+  const onMouth = useCallback((m: FlaskMouth) => setMouth(m), []);
+
+  /* the steam is held back until the thing it leaves is actually on screen */
+  const [subjectUp, setSubjectUp] = useState(false);
+  const onSubject = useCallback(() => setSubjectUp(true), []);
+
+  useEffect(() => {
+    if (reduced) return;
+    const t = window.setTimeout(
+      () => setSteam(1),
+      (subjectUp ? T_STEAM_AFTER_SUBJECT : T_STEAM_FALLBACK) * 1000,
+    );
+    return () => window.clearTimeout(t);
+  }, [subjectUp, reduced]);
+
+  /* ---------------- the entrance ---------------- */
+  useEffect(() => {
+    if (reduced) {
+      liquid.current?.set("uWake", 1);
+      liquid.current?.set("uRim", 0.8);
+      liquid.current?.set("uFlaskRise", 1);
+      liquid.current?.set("uReflect", 1);
+      return;
+    }
+    const kill: Array<() => void> = [];
+    const u = (name: string) => (v: number) => liquid.current?.set(name, v);
+
+    kill.push(tween(u("uWake"), 0, 1, 800, 100)); // the surface wakes
+    kill.push(tween(u("uRim"), 0.42, 0.8, 900, 550)); // the rim pulls back
+    kill.push(tween(u("uFlaskRise"), 0, 1, 650, 1100));
+    kill.push(tween(u("uReflect"), 0, 1, 700, 1600));
+
+    /* The ring, and the counter. The steam is NOT here: it is gated on the
+       subject texture actually being on screen — see the effect above. */
+    const t2 = setTimeout(() => {
+      const [bx, by] = liquid.current?.base() ?? [0.78, 0.4];
+      liquid.current?.ripple(bx, by, 1.6);
+    }, 1150);
+    const t3 = setTimeout(() => setRollTo(currentCups()), 1300);
+    kill.push(() => {
+      clearTimeout(t2);
+      clearTimeout(t3);
+    });
+    return () => kill.forEach((f) => f());
+  }, [reduced]);
+
+  /* the counter keeps ticking for as long as the page is open */
+  useEffect(() => subscribeCups(setCups), []);
+
+  /* the badge counts up once, then tracks the live value */
+  const [shown, setShown] = useState(reduced ? currentCups() : 0);
+  useEffect(() => {
+    if (rollTo === 0) return;
+    if (reduced) {
+      setShown(rollTo);
+      return;
+    }
+    return tween((v) => setShown(Math.round(v)), 0, rollTo, 900);
+  }, [rollTo, reduced]);
+  useEffect(() => {
+    if (shown > 0) setShown(cups);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cups]);
+
+  /* ---------------- the scroll ---------------- */
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    const h = liquid.current;
+    if (!h || reduced) return;
+    h.set("uScroll", p);
+    /* 0.2 -> 0.8 the rim expands: the cup wall moves outward and away */
+    const rim = 0.8 + Math.min(Math.max((p - 0.2) / 0.6, 0), 1) * 0.85;
+    h.set("uRim", rim);
+    /* 0.4 -> 0.9 the flask sinks back under */
+    const sink = 1 - Math.min(Math.max((p - 0.4) / 0.5, 0), 1);
+    h.set("uFlaskRise", sink);
+    h.set("uReflect", sink);
+    /* steam accelerates past the camera as the content leaves */
+    setRush(1 + Math.min(p / 0.4, 1) * 3.2);
+  });
+
+  const rise = (delay: number) =>
+    reduced
+      ? {}
+      : {
+          initial: { opacity: 0, y: 18 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.7, delay, ease: EASE },
+        };
+
+  /* The pour's resting brown was tuned for cream and goes muddy on the
+     liquid. Only the two that need it are overridden, and both resolve to
+     existing tokens — the meniscus keeps --color-pour-edge as authored. */
+  const pourOnDark = {
+    "--color-pour-rest": "rgba(255, 247, 240, 0.42)",
+    "--color-pour-fill": "var(--color-orange)",
+  } as CSSProperties;
+
+
+  return (
+    <div
+      ref={ref}
+      className="absolute inset-0 overflow-hidden bg-espresso-deep"
+    >
+      {/* ---------------- the scene ---------------- */}
+      <LiquidSurface
+        className="absolute inset-0 h-full w-full"
+        active={active}
+        onReady={onReady}
+        onMouth={onMouth}
+        onSubject={onSubject}
+      />
+
+      {/* Steam is its own canvas at half resolution — see SteamCanvas. It is
+          unmounted rather than dimmed while another slide is up: it has its
+          own rAF loop, and a plume nobody can see is pure battery. The
+          crossfade covers the remount when this slide comes back. */}
+      {active && (
+        <div className="pointer-events-none absolute inset-0">
+          <SteamCanvas origin={mouth} intensity={steam} rush={rush} />
+        </div>
+      )}
+
+      {/* ---------------- the scrim ----------------
+          Between the canvas and the copy, guaranteeing contrast whatever the
+          noise does on a given frame. Heavy where the words are, gone by the
+          time it reaches the flask. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(76% 120% at 12% 50%, rgba(18,5,2,0.95) 0%, rgba(18,5,2,0.92) 45%, rgba(18,5,2,0.74) 62%, rgba(18,5,2,0.26) 80%, rgba(18,5,2,0) 100%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-60"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(18,5,2,0.9), rgba(18,5,2,0))",
+        }}
+      />
+
+      {/* ---------------- the copy ---------------- */}
+      <div className="relative z-10 flex min-h-svh flex-col justify-center pb-[clamp(6rem,13vh,9rem)] pt-[calc(var(--header-h)+2rem)]">
+        <motion.div
+          className="shell-wide"
+          style={reduced ? undefined : { y: copyY, opacity: copyFade }}
+        >
+          {/* Capped in vw as well as rem: at 1440 a fixed 43rem column runs
+                into the chai glass, because the shell's gutter shrinks faster
+                than the copy does.
+
+                THE 48vw CAP IS A DESKTOP RULE AND NOW SAYS SO
+                It used to apply at every width, which on a 375px phone left a
+                180px column holding 37px type — every headline line overflowed
+                sideways. Below md the flask is a background the copy sits on
+                top of (that is what the radial scrim above is for), so there
+                is nothing to stay clear of and the text takes the width.
+                LiquidSurface duplicates this rule and skips its collision
+                floor below md for the same reason. */}
+            <div className="max-w-[min(34rem,90vw)] md:max-w-[min(58rem,48vw)]" style={pourOnDark}>
+            <motion.p
+              {...rise(0.05)}
+              className="eyebrow"
+              style={{ color: "rgba(255,247,240,0.6)" }}
+            >
+              Workplace beverage service
+            </motion.p>
+
+            {/* Real DOM text at every stage — the masks and the highlight
+                are decoration over it. Selectable, and complete in
+                view-source. */}
+            {/* Sized against the column, not chosen by eye. The column cap
+                went 43rem -> 52rem when the hero moved onto .shell-wide, and
+                the type followed it: the longest line ("Hot tea and filter
+                coffee,") measures 484px at 1024, 681px at 1440 and 890px from
+                1882 up, against a column of 491 / 691 / 914. The vw leg is
+                what binds below 1756, the rem cap above it.
+
+                The 48vw half of the cap is DELIBERATELY unchanged: it is what
+                keeps the copy clear of the flask, and LiquidSurface duplicates
+                min(928, w*0.48) for exactly that reason. Both move together or
+                neither does.
+
+                THE FONT FLOOR IS 2.05rem, NOT 2.3
+                Only the leg below 772px changes, and it changes because the
+                floor was fighting the column: at 768 the column is 369px and a
+                36.8px floor put the longest line at 410px, so it wrapped. At
+                32.8px it is 365px and holds. Desktop is untouched — 4.25vw
+                overtakes the floor at 772. */}
+            <h1 className="mt-5 font-display text-[clamp(2.05rem,4.25vw,5rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream">
+              {LINES.map((line, i) => (
+                <span
+                  key={line}
+                  className="block overflow-hidden pb-[0.14em] -mb-[0.14em]"
+                >
+                  <motion.span
+                    className={`block ${reduced ? "" : "hl-shimmer"}`}
+                    initial={reduced ? false : { y: "112%" }}
+                    animate={{ y: "0%" }}
+                    transition={{
+                      duration: LINE_DUR,
+                      delay: i * LINE_GAP,
+                      ease: EXPO,
+                    }}
+                  >
+                    {line}
+                  </motion.span>
+                </span>
+              ))}
+
+              {/* line four arrives as an orange outline, then fills */}
+              <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                <motion.span
+                  className="block"
+                  initial={reduced ? false : { y: "112%" }}
+                  animate={{ y: "0%" }}
+                  transition={{
+                    duration: LINE_DUR,
+                    delay: LINES.length * LINE_GAP,
+                    ease: EXPO,
+                  }}
+                >
+                  <PourWord outline delay={T_LAST} duration={0.55}>
+                    Twice a day.
+                  </PourWord>
+                </motion.span>
+              </span>
+            </h1>
+
+            <motion.p
+              {...rise(1.0)}
+              className="mt-6 max-w-[44ch] font-sans text-base leading-relaxed text-cream/75 md:text-lg"
+            >
+              No machine to buy. No pantry staff. We deliver at your timings and
+              collect the empties.
+            </motion.p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <motion.a
+                {...rise(1.08)}
+                href="#pricing"
+                className="hero-btn group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-7 py-4 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)]"
+              >
+                <span className="relative z-10">Get pricing</span>
+                <span
+                  aria-hidden="true"
+                  className="relative z-10 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
+                >
+                  &rarr;
+                </span>
+              </motion.a>
+
+              <motion.a
+                {...rise(1.16)}
+                href="#savings"
+                className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-cream/25 px-6 py-4 font-sans text-sm font-semibold text-cream backdrop-blur-sm transition-colors duration-300 hover:border-cream/60"
+              >
+                <span className="relative z-10">Calculate savings</span>
+              </motion.a>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+              {TRUST.map((t, i) => (
+                <motion.span
+                  key={t}
+                  {...rise(1.26 + i * 0.06)}
+                  className="flex items-center gap-3 font-sans text-[0.82rem] text-cream/55"
+                >
+                  {i > 0 && (
+                    <span aria-hidden="true" className="text-cream/25">
+                      ·
+                    </span>
+                  )}
+                  {t}
+                </motion.span>
+              ))}
+            </div>
+
+            <motion.p
+              {...rise(1.34)}
+              className="mt-7 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-2 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm"
+            >
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-orange" />
+              </span>
+              <span className="tabular-nums">
+                <strong className="font-semibold text-cream">
+                  {shown.toLocaleString("en-IN")}+
+                </strong>{" "}
+                cups served this month
+              </span>
+            </motion.p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

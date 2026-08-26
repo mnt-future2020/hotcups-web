@@ -1,26 +1,689 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------
+   Tokens — the Hotcups palette, read off the logo:
+   "HOT" espresso, "CUPS" orange.
+   --------------------------------------------------------------- */
+
+@theme {
+  --color-ink: #17110e;
+  --color-ink-soft: #4b403a;
+  --color-mute: #8b7a6f;
+  --color-orange: #f26522;
+  --color-orange-dark: #d9500f;
+  --color-orange-soft: #ffe9dc;
+  --color-cream: #fff7f0;
+  --color-cream-deep: #fdefe3;
+  --color-espresso: #3a140e;
+  --color-espresso-deep: #240a06;
+  --color-line: #f0e2d6;
+  --color-steel: #2b2f33;
+  --color-steel-pale: #e4e7ea;
+  --color-steel-mid: #c9ced3;
+
+  /* the pour: weak chai -> vivid brew */
+  --color-pour-rest: #a37a58;
+  --color-pour-fill: #d9500f;
+  --color-pour-edge: #ffb066;
+
+  /* One family in both roles — see app/layout.tsx. The tokens stay separate
+     so a second face can be reintroduced here alone; the fallback stack is
+     the same for both, because they ARE the same. */
+  --font-display: var(--font-manrope), "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-manrope), "Segoe UI", system-ui, sans-serif;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --page-bg: #ffffff;
+  --accent: var(--color-orange);
+
+  --radius-card: 1.15rem;
+  --radius-media: 1.35rem;
+  --radius-panel: 2rem;
+  --shadow-1: 0 1px 2px rgba(58, 20, 14, 0.04), 0 16px 34px -30px rgba(58, 20, 14, 0.32);
+  --shadow-2: 0 2px 4px rgba(58, 20, 14, 0.05), 0 34px 70px -46px rgba(58, 20, 14, 0.55);
+  --shadow-3: 0 40px 90px -58px rgba(58, 20, 14, 0.7);
+
+  --header-h: 78px;
+
+  /* the distance from the shell's content edge to the edge of the window,
+     so a panel can be told to bleed off the page. Derived from the shell's
+     own max-width and padding — change either there and this follows. */
+  --bleed: calc(max(0px, (100vw - 1240px) / 2) + clamp(1.25rem, 5vw, 3.5rem));
+  /* the same distance for .shell-wide, so the hero's photographs can be
+     placed against the WINDOW while its copy stays in the container */
+  --bleed-wide: calc(max(0px, (100vw - 1720px) / 2) + clamp(1.25rem, 4vw, 4rem));
+
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-orange-soft);
+  color: var(--color-espresso);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------
+   Layout rhythm
+   --------------------------------------------------------------- */
+
+.shell {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3.5rem);
+}
+
+.section-y {
+  padding-block: clamp(4.5rem, 8vw, 7.5rem);
+}
+
+/* The header and the hero only. Everything else keeps .shell's 1240 measure,
+   which is right for reading; these two are furniture and a photograph, and
+   at 1834px a 1240 shell left ~300px of dead margin on each side of both. */
+.shell-wide {
+  width: 100%;
+  max-width: 1720px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+/* ---------------------------------------------------------------
+   The pour — liquid filling the letterforms
+
+   Three stacked copies of the same word:
+     1. the resting word, in flow, weak chai — legible from frame one
+     2. the fill, vivid brew, revealed by a rising wave mask
+     3. the meniscus, a bright band riding the same wave
+
+   --wy 0%   -> wave at the bottom edge   (empty)
+   --wy 100% -> wave above the cap height (full)
+   --wx      -> drifts the wave sideways, so the surface moves
+   --------------------------------------------------------------- */
+
+@property --wx {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --wy {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+.pour {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--color-pour-rest);
+}
+
+.pour-layer {
+  position: absolute;
+  inset: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  mask-repeat: repeat-x;
+  -webkit-mask-repeat: repeat-x;
+  mask-size: 200% 200%;
+  -webkit-mask-size: 200% 200%;
+  mask-position: var(--wx) var(--wy);
+  -webkit-mask-position: var(--wx) var(--wy);
+  animation: pour-drift 6s linear infinite;
+}
+
+/* the hero's last line arrives empty: an orange stroke with no fill, so the
+   amber that rises through it reads as liquid entering a glass rather than
+   one colour crossfading into another */
+/* a headline line, not a word: it takes the full width and may wrap. The
+   mask still rises through the whole box, so a two-line wrap fills as one
+   level rather than as two independent puddles. */
+.pour-block,
+.pour-block .pour-layer {
+  display: block;
+  white-space: normal;
+}
+
+.pour-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-orange);
+}
+
+.pour-outline .pour-layer {
+  -webkit-text-stroke: 0;
+}
+
+.pour-fill {
+  color: var(--color-pour-fill);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100 Q25 62 50 100 T100 100 T150 100 T200 100 L200 200 L0 200 Z' fill='%23fff'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100 Q25 62 50 100 T100 100 T150 100 T200 100 L200 200 L0 200 Z' fill='%23fff'/%3E%3C/svg%3E");
+}
+
+.pour-edge {
+  color: var(--color-pour-edge);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100 Q25 62 50 100 T100 100 T150 100 T200 100 L200 120 L0 120 Z' fill='%23fff'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100 Q25 62 50 100 T100 100 T150 100 T200 100 L200 120 L0 120 Z' fill='%23fff'/%3E%3C/svg%3E");
+}
+
+@keyframes pour-drift {
+  to {
+    --wx: 100%;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Steam — four layers on coprime cycles (19 / 23 / 29 / 31s), so the
+   combined drift repeats only every ~4.7 hours.
+   --------------------------------------------------------------- */
+
+.steam {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+@keyframes steam-a {
+  0%, 100% { transform: translate3d(-3%, 5%, 0) scale(1);     opacity: 0.5; }
+  50%      { transform: translate3d(4%, -6%, 0) scale(1.2);   opacity: 0.82; }
+}
+
+@keyframes steam-b {
+  0%, 100% { transform: translate3d(3%, 4%, 0) scale(1.1);    opacity: 0.72; }
+  50%      { transform: translate3d(-5%, -7%, 0) scale(0.92); opacity: 0.4; }
+}
+
+@keyframes steam-c {
+  0%, 100% { transform: translate3d(2%, -3%, 0) scale(0.95);  opacity: 0.38; }
+  50%      { transform: translate3d(-3%, 6%, 0) scale(1.25);  opacity: 0.7; }
+}
+
+@keyframes steam-d {
+  0%, 100% { transform: translate3d(-2%, -5%, 0) scale(1.15); opacity: 0.6; }
+  50%      { transform: translate3d(5%, 4%, 0) scale(0.98);   opacity: 0.32; }
+}
+
+
+/* ---------------------------------------------------------------
+   Ticker — the hero never goes fully static after the pour lands.
+   Track holds two identical runs, so -50% is a seamless loop.
+   --------------------------------------------------------------- */
+
+.ticker-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 38s linear infinite;
+}
+
+.ticker-mask:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes ticker {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+
+/* ---------------------------------------------------------------
+   Route highlight — the one ambient element in The Service.
+   Something moving through the delivery route, slow and low, so you
+   never quite catch it starting.
+   --------------------------------------------------------------- */
+
+/* He is a raster image, so the wheels cannot spin. Suspension bob plus
+   the speed lines already baked into the artwork carry the motion. */
+.rider-bob {
+  animation: rider-bob 0.62s ease-in-out infinite;
+}
+
+@keyframes rider-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -2px, 0); }
+}
+
+
+/* ---------------------------------------------------------------
+   Steam off each drink.
+
+   Real steam does not travel in a straight line and it does not keep
+   its size. Each wisp curls through three waypoints (--x1/--x2/--x3,
+   alternating sign) while growing from 0.55 to 1.8, so it wavers and
+   spreads on the way up instead of sliding.
+
+   Brightest just off the liquid, gone by the top — which is why the
+   opacity peaks early and decays, rather than fading in and out evenly.
+   --------------------------------------------------------------- */
+
+.wisp {
+  animation: wisp var(--dur, 9s) linear infinite;
+  animation-delay: var(--lag, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes wisp {
+  0% {
+    transform: translate3d(0, 14%, 0) scale(0.55);
+    opacity: 0;
+  }
+  16% {
+    opacity: var(--peak, 0.6);
+  }
+  35% {
+    transform: translate3d(var(--x1, 0), -20%, 0) scale(0.9);
+  }
+  60% {
+    transform: translate3d(var(--x2, 0), -46%, 0) scale(1.28);
+    opacity: calc(var(--peak, 0.6) * 0.7);
+  }
+  100% {
+    transform: translate3d(var(--x3, 0), -76%, 0) scale(1.75);
+    opacity: 0;
+  }
+}
+
+/* the glow sitting on the liquid itself — this is what ties the steam to
+   the cup. Without it the wisps read as fog that happens to be nearby. */
+.steam-base {
+  animation: steam-base 5.5s ease-in-out infinite;
+}
+
+@keyframes steam-base {
+  0%, 100% { opacity: 0.34; transform: scale(0.92); }
+  50%      { opacity: 0.58; transform: scale(1.08); }
+}
+
+
+/* ---------------------------------------------------------------
+   Hero ambient.
+
+   The entrance is over by ~2.3s and, apart from the ticker, the hero then
+   stops dead. These keep it breathing: the two photographs drift on coprime
+   periods so they never come back into step, and the proof chip floats free
+   of both. Nothing here is fast enough to notice directly — you only notice
+   its absence.
+   --------------------------------------------------------------- */
+
+.hero-float   { animation: hero-float  7s ease-in-out 2.8s infinite alternate; }
+
+@keyframes hero-float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-7px); }
+}
+
+/* ---------------------------------------------------------------
+   The hero photograph never settles.
+
+   A slow, continuous push — it never lands on a resting frame, so the hero
+   is alive from the first paint rather than animating once and stopping.
+   Twenty-six seconds each way is below the rate anyone notices directly.
+
+   It is its own layer: the entrance fade and the scroll parallax are driven
+   from React on the wrappers around it, and two animators on one transform
+   fight.
+   --------------------------------------------------------------- */
+
+.hero-ken {
+  animation: hero-ken 26s ease-in-out infinite alternate;
+}
+
+@keyframes hero-ken {
+  from { transform: scale(1.02); }
+  to   { transform: scale(1.1); }
+}
+
+/* ---------------------------------------------------------------
+   The size slider.
+
+   A native range input, styled — not a div with pointer handlers. Dragging,
+   arrow keys, Home/End, touch and screen readers all come free and correct,
+   and none of them would have come free from a rebuild.
+
+   --fill carries the played portion, set from React, so the track is orange
+   behind the handle and cream ahead of it.
+   --------------------------------------------------------------- */
+
+.calc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: grab;
+}
+
+.calc-range:active { cursor: grabbing; }
+
+.calc-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-orange) 0 var(--fill, 0%),
+    rgba(255, 247, 240, 0.18) var(--fill, 0%) 100%
+  );
+}
+
+.calc-range::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-orange) 0 var(--fill, 0%),
+    rgba(255, 247, 240, 0.18) var(--fill, 0%) 100%
+  );
+}
+
+.calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -10.5px;
+  border-radius: 50%;
+  background: var(--color-orange);
+  box-shadow:
+    0 0 0 6px rgba(242, 101, 34, 0.16),
+    0 8px 20px -8px rgba(0, 0, 0, 0.8);
+}
+
+.calc-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-orange);
+  box-shadow:
+    0 0 0 6px rgba(242, 101, 34, 0.16),
+    0 8px 20px -8px rgba(0, 0, 0, 0.8);
+}
+
+.calc-range:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 4px rgba(255, 247, 240, 0.75),
+    0 8px 20px -8px rgba(0, 0, 0, 0.8);
+}
+
+.calc-range:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 4px rgba(255, 247, 240, 0.75),
+    0 8px 20px -8px rgba(0, 0, 0, 0.8);
+}
+
+/* ---------------------------------------------------------------
+   The equipment section's ground.
+
+   Flat steel reads as an unfinished background rather than a decision. This
+   is a faint engineering grid, masked so it fades out before it reaches any
+   edge — the one section about hardware gets a drawing-board floor, and it
+   is the clearest signal that the page has left beverages behind.
+   --------------------------------------------------------------- */
+
+.rig-grid {
+  background-image:
+    linear-gradient(rgba(255, 247, 240, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 247, 240, 0.032) 1px, transparent 1px);
+  background-size: 76px 76px;
+  mask-image: radial-gradient(115% 85% at 50% 42%, #000 22%, transparent 78%);
+  -webkit-mask-image: radial-gradient(115% 85% at 50% 42%, #000 22%, transparent 78%);
+}
+
+/* ---------------------------------------------------------------
+   The hero headline's sheen.
+
+   Nine seconds, the same period as the shader's specular sweep, both started
+   at mount — so the light crossing the letterforms is the light crossing the
+   liquid. A different period would read as two unrelated animations.
+
+   The amber half of the headline is a PourWord and keeps its own colour;
+   this rides only the cream half, because background-clip:text claims every
+   glyph inside the element it is set on.
+   --------------------------------------------------------------- */
+
+.hero-sheen {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-cream) 0%,
+    var(--color-cream) 40%,
+    #ffe9dc 47%,
+    var(--color-cream) 55%,
+    var(--color-cream) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hero-sheen 9s linear infinite;
+}
+
+@keyframes hero-sheen {
+  from { background-position: 150% 0; }
+  to   { background-position: -50% 0; }
+}
+
+/* the no-WebGL ground: the same poster, drifting slowly, so the fallback is
+   not a dead photograph */
+.hero-poster {
+  animation: hero-poster 42s ease-in-out infinite alternate;
+}
+
+@keyframes hero-poster {
+  from { background-position: 46% 50%; background-size: 108% auto; }
+  to   { background-position: 54% 52%; background-size: 116% auto; }
+}
+
+/* Amber fills from the bottom on hover, matching the pour. Started life on
+   the hero's two buttons; every button on the page uses it now.
+
+   A SOLID amber button cannot fill with amber — the wipe would be invisible —
+   so those take .hero-btn-dark and fill with the darker amber instead.
+   Section 07's "Get a quote" has always done exactly this by hand; this is
+   that effect, named.
+
+   The ::after sits at z-index 0, so anything that must stay on top of the
+   fill needs `relative z-10`. That is why every label using these classes is
+   wrapped in a span rather than being a bare text node. */
+.hero-btn::after,
+.hero-btn-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-orange);
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+.hero-btn-dark::after {
+  background: var(--color-orange-dark);
+}
+
+.hero-btn:hover::after,
+.hero-btn:focus-visible::after,
+.hero-btn-dark:hover::after,
+.hero-btn-dark:focus-visible::after {
+  transform: scaleY(1);
+}
+
+/* ---------------------------------------------------------------
+   Section 05 moves like machinery, not like liquid.
+
+   The flask sections pour, ripple and drift. This one draws, snaps and
+   lights up — hard easing, exact stagger, and no overshoot anywhere,
+   because machines do not bounce. After a hero where nothing ever stops,
+   a still and solid row reads as engineering confidence.
+   --------------------------------------------------------------- */
+
+/* the one ambient thing: each screen takes its turn, 8s for the set of three */
+.rig-screen {
+  animation: rig-screen 24s linear infinite;
+}
+.rig-screen-1 { animation-delay: 0s; }
+.rig-screen-2 { animation-delay: -16s; }
+.rig-screen-3 { animation-delay: -8s; }
+
+@keyframes rig-screen {
+  0%, 26%  { opacity: 0.18; }
+  8%, 18%  { opacity: 1; }
+  34%, 100% { opacity: 0.18; }
+}
+
+/* the blueprint draws itself in the order a real drawing is made:
+   outline, then internal detail, then the dimension arrows */
+.bp path,
+.bp line,
+.bp rect,
+.bp circle {
+  stroke-dasharray: var(--len, 1200);
+  stroke-dashoffset: var(--len, 1200);
+}
+
+.bp.on path,
+.bp.on line,
+.bp.on rect,
+.bp.on circle {
+  animation: bp-draw 0.9s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation-delay: var(--at, 0s);
+}
+
+@keyframes bp-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ---------------------------------------------------------------
+   The headline never fully rests.
+
+   One warm band crossing the three cream lines, left to right, every eight
+   seconds. background-clip:text means it rides the letterforms themselves
+   rather than passing over a box behind them — so it reads as light on the
+   type, not a rectangle sliding by.
+
+   The amber line is deliberately excluded: it stays solid once filled.
+   --------------------------------------------------------------- */
+
+.hl-shimmer {
+  background-image: linear-gradient(
+    98deg,
+    var(--color-cream) 0%,
+    var(--color-cream) 40%,
+    var(--color-orange-soft) 48%,
+    var(--color-cream) 56%,
+    var(--color-cream) 100%
+  );
+  background-size: 280% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hl-shimmer 8s linear infinite;
+}
+
+@keyframes hl-shimmer {
+  from { background-position: 160% 0; }
+  to   { background-position: -60% 0; }
+}
+
+/* ---------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------
+   The footer CTA's rotating badge.
+
+   Only the RING turns. The orange disc and its arrow stay put, so the
+   arrow keeps pointing up-right instead of tumbling — a rotating arrow
+   reads as a loading spinner, which is the opposite of the invitation
+   this badge is making.
+   --------------------------------------------------------------- */
+
+.fcta-spin {
+  transform-origin: 50% 50%;
+  animation: fcta-spin 20s linear infinite;
+}
+
+.fcta-badge:hover .fcta-spin {
+  animation-duration: 9s;
+}
+
+.fcta-arrow {
+  transition: transform 320ms var(--ease-expo);
+}
+
+.fcta-badge:hover .fcta-arrow {
+  transform: translate(2px, -2px);
+}
+
+@keyframes fcta-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .pour-layer { animation: none; --wx: 0%; }
+  /* the word is poured, it just never pours: the wave rests near the top
+     of the letterforms so the line reads as full from the first frame */
+  .pour-fill { --wy: 92%; }
+  .pour-edge { display: none; }
+  .steam { animation: none !important; }
+  .ticker-track { animation: none; }
+  .rider-bob { animation: none; }
+  .wisp { animation: none; opacity: 0; }
+  .hero-float { animation: none; }
+  .hero-sheen { animation: none; background-image: none; color: var(--color-cream); }
+  .hl-shimmer { animation: none; background-image: none; color: var(--color-cream); }
+  .hero-poster { animation: none; }
+  .hero-btn::after { transition: none; }
+  .rig-screen { animation: none; opacity: 0.7; }
+  .bp.on path, .bp.on line, .bp.on rect, .bp.on circle {
+    animation: none; stroke-dashoffset: 0;
+  }
+  .hero-ken { animation: none; }
+  .fcta-spin { animation: none; }
+  .fcta-arrow { transition: none; }
+  .steam-base { animation: none; opacity: 0; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
