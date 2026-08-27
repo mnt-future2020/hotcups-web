@@ -481,12 +481,19 @@ function Stepper({
 function Sum({
   label,
   best,
+  cross,
   image,
   lines,
   total,
 }: {
   label: string;
   best: boolean;
+  /** how many times the answer has changed sides. 0 = it never has, so the
+      one-shot crossover animations below must not fire on first paint. Every
+      later increment restarts them, which is why they are KEYED on it: motion
+      will not re-run a keyframe whose values it has already played, and the
+      values are identical every crossing. Remounting is the restart. */
+  cross: number;
   image: React.ReactNode;
   lines: [string, string][];
   total: number;
@@ -499,8 +506,17 @@ function Sum({
     /* THE WINNER LIFTS. It used to be a border colour and nothing else, which
        is a change you can only notice by comparing the two cards deliberately
        — and the whole point of this section is that the answer changes as you
-       type. Eight pixels of rise, an amber ring and a faint amber ground make
-       the swap something you catch out of the corner of your eye.
+       type. Fourteen pixels of rise on an underdamped spring, so it
+       overshoots and settles; an amber ring and a faint amber ground do the
+       rest. The overshoot is the part you catch peripherally.
+
+       IT LIFTS BUT IT DOES NOT SCALE, and that is deliberate on two counts,
+       both of which cost more than the extra emphasis was worth. The working
+       is 14px type, and a 2% scale spring rasterises small type soft for the
+       length of the spring. And the Cheaper badge is a layoutId child in
+       flight between the two cards — an ancestor mid-scale is the exact case
+       that makes a shared-layout flight wobble. The flare further down
+       carries the emphasis instead, and it touches no text at all.
 
        The loser is NOT dimmed. Fading it would have been the obvious move and
        it takes its type down with it: the working is set in cream/70, which
@@ -508,8 +524,8 @@ function Sum({
        losing card keeps every value at full strength and simply stops being
        the one that is raised. */
     <motion.div
-      animate={reduced ? undefined : { y: best ? -10 : 0 }}
-      transition={{ type: "spring", stiffness: 320, damping: 30 }}
+      animate={reduced ? undefined : { y: best ? -14 : 0 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
       className="relative isolate rounded-[var(--radius-card)] border border-cream/30 p-[clamp(0.9rem,2vh,1.35rem)]"
     >
       {/* THE ANSWER IS ONE PANEL, AND IT SLIDES.
@@ -535,6 +551,34 @@ function Sum({
               : { type: "spring", stiffness: 260, damping: 30 }
           }
           className="absolute -inset-px -z-10 rounded-[var(--radius-card)] border border-orange bg-orange/[0.07] shadow-[0_0_0_1px_rgba(242,101,34,0.35),0_18px_44px_-22px_rgba(242,101,34,0.8)]"
+        />
+      )}
+
+      {/* THE CROSSING IS AN EVENT, NOT JUST A NEW STATE.
+          Everything else here is CONTINUOUS — the panel slides, the badge
+          flies, the winner rises. All of it is smooth, and smooth is exactly
+          why the moment could be missed: drag through 40 and the highlight
+          simply glides over, with nothing marking that a line was crossed.
+          This is the marker. A ring leaves the card's edge and fades, so the
+          card the answer just ARRIVED at visibly reacts.
+
+          It sits OUTSIDE the border box and behind the content on purpose.
+          Anything washing across the card would sit behind the working, and
+          the working is cream/70 on a two-layer gradient — the file's whole
+          contrast budget is built on that number holding. A ring expanding
+          into empty space costs it nothing. */}
+      {best && !reduced && cross > 0 && (
+        <motion.span
+          key={`flare-${cross}`}
+          aria-hidden="true"
+          initial={{ opacity: 1, scale: 1 }}
+          animate={{ opacity: 0, scale: 1.055 }}
+          transition={{ duration: 0.75, ease: EASE }}
+          className="pointer-events-none absolute -inset-px -z-10 rounded-[var(--radius-card)]"
+          style={{
+            boxShadow:
+              "0 0 0 2px rgba(242,101,34,0.9), 0 0 46px 8px rgba(242,101,34,0.5)",
+          }}
         />
       )}
       <div className="flex min-h-[1.9rem] items-start justify-between gap-3">
@@ -567,6 +611,30 @@ function Sum({
 
       <div className="relative mt-2 h-[clamp(80px,10.5vh,126px)] w-full">
         {image}
+        {/* and a highlight travels across the thing itself. Confined to the
+            IMAGE box, which is the one region of the card where a cream wash
+            has no text under it to darken — the clip is on this layer alone
+            rather than on the box, because the machine's halo deliberately
+            overflows it and the card must not clip either (the badge flies
+            across the gutter between the two). */}
+        {best && !reduced && cross > 0 && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+          >
+            <motion.span
+              key={`shine-${cross}`}
+              initial={{ x: "-160%", skewX: -12 }}
+              animate={{ x: "160%", skewX: -12 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute inset-y-0 left-0 block w-1/2"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(255,247,240,0) 0%, rgba(255,247,240,0.3) 50%, rgba(255,247,240,0) 100%)",
+              }}
+            />
+          </span>
+        )}
       </div>
 
       {/* the working. Two columns so the operator and the amount line up down
@@ -615,6 +683,22 @@ export default function Machines() {
   useEffect(() => setOffice(people, cups), [people, cups]);
 
   const machineWins = cups > THRESHOLD_CUPS;
+
+  /* HOW MANY TIMES THE ANSWER HAS CHANGED SIDES.
+     The crossover animations are one-shots and they must fire on the CHANGE,
+     not on the state — otherwise every card that happens to be winning would
+     flare on arrival in the viewport, and the section would announce a
+     crossing that never happened. The ref is seeded with the value it has at
+     mount, so the first effect run finds them equal and nothing fires until
+     the visitor actually pushes the number over the line themselves. */
+  const [cross, setCross] = useState(0);
+  const wasWinning = useRef(machineWins);
+  useEffect(() => {
+    if (wasWinning.current !== machineWins) {
+      wasWinning.current = machineWins;
+      setCross((n) => n + 1);
+    }
+  }, [machineWins]);
 
   /* THE TRACK'S TWO ENDS, IN CUPS. Both move with the rate, because both are
      the steppers' own bounds seen through it — ten people is 10, 20 or 30
@@ -853,8 +937,17 @@ export default function Machines() {
             cups a day
           </p>
 
-          {/* the rule, restated against the visitor's own number */}
-          <span
+          {/* the rule, restated against the visitor's own number — and it
+              POPS when the answer changes sides. It used to cross-fade its
+              colours over half a second, which is a change slow enough to
+              miss while your eye is on the handle you are dragging. The
+              spring is deliberately underdamped so it overshoots: the
+              overshoot is the part you catch peripherally. */}
+          <motion.span
+            key={`pill-${cross}`}
+            initial={cross === 0 || reduced ? false : { scale: 0.78 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 560, damping: 14 }}
             className={`rounded-full px-3 py-1.5 font-sans text-[0.7rem] font-bold uppercase tracking-[0.12em] transition-colors duration-500 ${
               machineWins
                 ? "bg-orange text-espresso-deep"
@@ -862,7 +955,7 @@ export default function Machines() {
             }`}
           >
             {machineWins ? "Above" : "Under"} the {THRESHOLD_CUPS}-cup line
-          </span>
+          </motion.span>
         </motion.div>
 
         {/* ---------------- the line, and you can drag it ----------------
@@ -937,11 +1030,35 @@ export default function Machines() {
             />
             {/* the line itself, over the track and out of the way of the
                 pointer so it can never swallow a drag */}
-            <span
+            <motion.span
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 h-4 w-px -translate-x-1/2 -translate-y-1/2 rounded-full bg-cream/60"
-              style={{ left: along(LINE_AT) }}
+              animate={
+                reduced ? undefined : { scaleY: machineWins ? 1.55 : 1 }
+              }
+              transition={{ type: "spring", stiffness: 420, damping: 24 }}
+              initial={false}
+              className={`pointer-events-none absolute top-1/2 h-4 w-px rounded-full transition-colors duration-300 ${
+                machineWins ? "bg-orange" : "bg-cream/60"
+              }`}
+              style={{ left: along(LINE_AT), x: "-50%", y: "-50%" }}
             />
+            {/* THE PLACE WHERE IT HAPPENS SHOWS THAT IT HAPPENED.
+                The cards are 300-500px further down the page; while you are
+                dragging, your eye is on the handle. Without something here
+                the crossing is only ever reported somewhere you are not
+                looking. This ring opens out of the 40-cup mark under the
+                thumb, at the instant the thumb passes it. */}
+            {cross > 0 && !reduced && (
+              <motion.span
+                key={`tick-${cross}`}
+                aria-hidden="true"
+                initial={{ opacity: 0.95, scale: 0.3, x: "-50%", y: "-50%" }}
+                animate={{ opacity: 0, scale: 1, x: "-50%", y: "-50%" }}
+                transition={{ duration: 0.7, ease: EASE }}
+                className="pointer-events-none absolute top-1/2 h-11 w-11 rounded-full border-2 border-orange"
+                style={{ left: along(LINE_AT) }}
+              />
+            )}
           </div>
           {/* THREE LABELS, AND THE LEFT ONE IS THE ANSWER TO "what does this
               drag?". The row carried only the 40-cup mark and "drag to try
@@ -976,6 +1093,7 @@ export default function Machines() {
           <Sum
             label="Flasks"
             best={!machineWins}
+            cross={cross}
             total={flaskBill}
             image={
               <Image
@@ -1001,6 +1119,7 @@ export default function Machines() {
           <Sum
             label={`Machine · ${MACHINES[rig].name}`}
             best={machineWins}
+            cross={cross}
             total={machineBill}
             image={
               <>
