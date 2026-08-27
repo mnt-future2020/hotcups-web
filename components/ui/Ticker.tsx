@@ -37,6 +37,12 @@
  * preference is what actually satisfies it. A button is the fix if an audit
  * ever asks for one.
  *
+ * IT IS SET IN THE LOGO'S MAROON, NOT THE PAGE'S INK
+ * This band sits directly under the wordmark in the footer, close enough that
+ * two different dark browns read as a mistake. --color-maroon is sampled off
+ * the lockup itself. It is also the better number: 12.71:1 on this cream
+ * against ink-soft's 9.46.
+ *
  * NO BOTTOM BORDER, ON PURPOSE
  * The footer underneath carries its own border-t. Giving this one a border-y
  * stacked two 1px lines at the seam and read as a 2px rule that was thicker
@@ -76,7 +82,7 @@ export default function Ticker() {
                 aria-hidden={half === 0 && i >= RUN.length}
                 className="flex shrink-0 items-center gap-6 whitespace-nowrap px-6"
               >
-                <span className="font-display text-[clamp(1.25rem,2.4vw,1.875rem)] font-semibold tracking-tight text-ink-soft">
+                <span className="font-display text-[clamp(1.25rem,2.4vw,1.875rem)] font-semibold tracking-tight text-maroon">
                   {item}
                 </span>
                 <span

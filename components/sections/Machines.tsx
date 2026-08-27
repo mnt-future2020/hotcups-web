@@ -249,28 +249,46 @@ const FLASK_SRC = "/img/rig-flasks.webp";
    would if these were <button>s with aria-pressed.
    --------------------------------------------------------------- */
 /* ---------------------------------------------------------------
-   Both questions are steppers.
+   Both questions are a stepper AND a field. Not one or the other.
 
-   They were a typed number field and a row of three radio chips — two
-   different interactions for two questions that are the same shape, and the
-   chips in particular read as though cups-per-head had three approved
-   answers while people could be anything. One control, asked twice.
+   The history here is a loop: a typed box, then six preset chips, then the
+   box beside the chips, then chips only, then steppers only. Each pass fixed
+   the previous one's complaint and reintroduced the one before it. They were
+   never in competition, which is exactly why swapping kept failing:
 
-   NO TEXT ENTRY, SO THE STEP HAS TO SCALE
-   A field could take "240" in three keystrokes; a +1 button cannot, and the
-   ceiling here is 5000. So the step grows with the number: single people up
-   to fifty, then fives, then twenty-fives, then hundreds. Holding the button
-   also repeats and accelerates, from 400ms down to 40ms. Between the two, a
-   400-person office is a couple of seconds away rather than unreachable —
-   which is what removing the field would otherwise have cost.
+     a stepper is right for ADJUSTING — nudge to 55, watch the answer move,
+     nudge back. Typing 55 to do that is absurd.
+     a field is right for ARRIVING — an office of 240 should not press + for
+     twenty seconds, or hunt for a preset that happens to be near.
 
-   The step is taken from the CURRENT value, so 50 goes down to 45 and up to
-   55. Slightly asymmetric at each boundary, and much better than a control
-   that changes size depending on which way you are travelling.
+   So the pill is [ − ][ editable number ][ + ] and both drive one value. The
+   buttons still scale their step (single people up to fifty, then fives,
+   twenty-fives, hundreds) and still repeat when held; that is what makes
+   ADJUSTING at 3000 as quick as adjusting at 30.
 
-   <output>, not <span>: this is a value the page calculated in response to
-   the buttons beside it, which is exactly what that element is for, and it
-   is announced on change without an aria-live of our own.
+   TYPING COMMITS AS YOU GO, BUT ONLY WHEN IT IS IN RANGE.
+   The draft is a string of its own, separate from the number the rest of the
+   page reads. Every keystroke that parses INSIDE the bounds commits at once,
+   so the sum moves as you type. One that does not — the "2" on the way to
+   "240", which is under the floor of ten — is held in the field and not
+   published, because a section that flashed "stay on flasks" at every
+   half-typed number would be worse than one that waited a keystroke. Blur
+   clamps whatever is left and commits it, so the field can never be left
+   showing a number the rest of the section disagrees with.
+
+   Commas appear only when the field is NOT focused. "5,000" is right to read
+   and hostile to edit, so the raw digits are what you get while you are in it.
+
+   ARROWS GO THROUGH THE STEP, NOT THROUGH THE BROWSER.
+   Up and Down do nothing on a text field by default, and on a number field
+   they would move by one — which disagrees with the buttons an inch away at
+   every value above fifty. Both are intercepted and routed to onStep, so
+   there is exactly one idea of what "next" means.
+
+   type="text" with inputMode="numeric", not type="number": a number input
+   reports an empty string for anything it considers invalid mid-edit, which
+   makes a controlled draft unreliable, and its spinners would be a third
+   control sitting between the two we drew ourselves.
 
    The button outline is cream/50 rather than the /35 it started at. Inside
    the pill's own cream/6 fill that measured 2.53:1 against a 3.0 floor for
@@ -285,6 +303,7 @@ function Stepper({
   min,
   max,
   onStep,
+  onSet,
   hint,
 }: {
   legend: string;
@@ -293,10 +312,14 @@ function Stepper({
   min: number;
   max: number;
   onStep: (dir: number) => void;
+  /** a number typed straight in; the caller clamps it to its own bounds */
+  onSet: (n: number) => void;
   hint?: string;
 }) {
   const id = useId();
   const hold = useRef<number | null>(null);
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState("");
 
   const stop = useCallback(() => {
     if (hold.current !== null) {
@@ -344,11 +367,10 @@ function Stepper({
         dir === 1 ? "border-l border-cream/20" : "border-r border-cream/20"
       }`}
     >
-      {/* drawn, not typed. A text "+" and "−" are two different glyphs at
-          two different optical weights and neither sits on the pill's centre
-          line — the minus rides high and the plus reads lighter. Two strokes
-          of the same width, centred in the same box, are the same mark seen
-          twice. */}
+      {/* drawn, not typed. A text "+" and "−" are two different glyphs at two
+          different optical weights and neither sits on the pill's centre line
+          — the minus rides high and the plus reads lighter. Two strokes of
+          the same width, centred in the same box, are the same mark twice. */}
       <svg
         viewBox="0 0 24 24"
         aria-hidden="true"
@@ -364,6 +386,9 @@ function Stepper({
     </button>
   );
 
+  /* raw digits while editing, grouped when at rest — see the note above */
+  const shown = focused ? draft : int0(value);
+
   return (
     <div>
       <p
@@ -374,34 +399,72 @@ function Stepper({
       </p>
       <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {/* ONE SHAPE, THREE SEGMENTS. It was a pill with a circular button
-            sitting inside each end — the same box-inside-a-box the typed
-            field was pulled up for, and the round buttons were small targets
-            besides. The buttons are the ends of the pill now, divided by
-            hairlines: no nesting, a 52px hit area each, and the hover fill
-            reaches the rounded edge because the pill clips it.
+            sitting inside each end — a box inside a box, and the round
+            buttons were small targets besides. The buttons are the ends of
+            the pill now, divided by hairlines: no nesting, a 52px hit area
+            each, and the hover fill reaches the rounded edge because the pill
+            clips it.
 
-            THE FOCUS RING IS ON THE PILL, NOT THE BUTTON. overflow-hidden
+            THE FOCUS RING IS ON THE PILL, NOT THE PARTS. overflow-hidden
             would have clipped the global focus outline to a flat edge on
-            whichever side it fired. The button announces focus by filling
-            amber and the pill takes the ring, exactly as the number field
-            used to do. */}
+            whichever side it fired. Each part announces focus its own way —
+            the buttons fill amber, the field takes a caret — and the pill
+            carries the ring for all three. */}
         <span
           role="group"
           aria-labelledby={id}
           className="inline-flex items-stretch overflow-hidden rounded-full border border-cream/45 bg-cream/[0.06] transition-colors duration-200 focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/45"
         >
           {button(-1, value <= min, `Fewer ${unit}`)}
-          <output
-            htmlFor={id}
-            className="grid min-w-[8.5rem] place-items-center px-3 py-[0.7rem] text-center font-display text-[1.45rem] font-extrabold tabular-nums leading-none text-cream"
-          >
-            <span>
-              {int0(value)}
-              <span className="ml-1.5 font-sans text-[0.95rem] font-medium text-cream/70">
-                {unit}
-              </span>
+          <span className="flex min-w-[8.5rem] items-baseline justify-center gap-1.5 px-3 py-[0.7rem]">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              aria-labelledby={id}
+              value={shown}
+              /* sized to its own digits so the number and its unit read as
+                 one word rather than a figure adrift in a fixed box; the
+                 pill's min-width is what stops the control resizing as you
+                 type */
+              /* floor of 2, not 1: clearing the field leaves `shown` empty
+                 and a 1ch box is a caret with nothing to sit in */
+              style={{ width: `${Math.max(2, shown.length)}ch` }}
+              onFocus={(e) => {
+                const el = e.currentTarget;
+                setFocused(true);
+                setDraft(String(value));
+                /* after the value swaps to the raw draft, not before */
+                requestAnimationFrame(() => el.select());
+              }}
+              onChange={(e) => {
+                const d = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setDraft(d);
+                const n = Number(d);
+                if (d !== "" && n >= min && n <= max) onSet(n);
+              }}
+              onBlur={() => {
+                setFocused(false);
+                if (draft !== "") onSet(Number(draft));
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  onStep(1);
+                } else if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  onStep(-1);
+                }
+              }}
+              className="stepper-field bg-transparent text-center font-display text-[1.45rem] font-extrabold tabular-nums leading-none text-cream outline-none"
+            />
+            <span className="font-sans text-[0.95rem] font-medium text-cream/70">
+              {unit}
             </span>
-          </output>
+          </span>
           {button(1, value >= max, `More ${unit}`)}
         </span>
         {hint && (
@@ -760,7 +823,8 @@ export default function Machines() {
             min={MIN_PEOPLE}
             max={MAX_PEOPLE}
             onStep={stepPeople}
-            hint={`Minimum ${MIN_PEOPLE}. Hold to go faster.`}
+            onSet={(n) => setPeople(clampPeople(n))}
+            hint={`Minimum ${MIN_PEOPLE}. Type it, or hold to go faster.`}
           />
           <Stepper
             legend="How many cups does each drink a day?"
@@ -769,6 +833,9 @@ export default function Machines() {
             min={MIN_RATE}
             max={MAX_RATE}
             onStep={stepRate}
+            onSet={(n) =>
+              setRate(Math.min(MAX_RATE, Math.max(MIN_RATE, Math.round(n))))
+            }
           />
         </motion.div>
 

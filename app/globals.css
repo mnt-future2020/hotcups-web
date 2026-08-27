@@ -15,6 +15,12 @@
   --color-cream: #fff7f0;
   --color-cream-deep: #fdefe3;
   --color-espresso: #3a140e;
+  /* THE LOCKUP'S OWN MAROON, sampled rather than guessed: 13,484 of the
+     opaque pixels in logo-h.webp are #581818 — the cup mark and the word
+     HOT. `espresso` is close but not it (#3a140e is a darker, browner
+     thing), so anything that has to MATCH the logo takes this instead of
+     approximating it. 12.71:1 on cream, so it is safe for body sizes. */
+  --color-maroon: #581818;
   --color-espresso-deep: #240a06;
   --color-line: #f0e2d6;
   --color-steel: #2b2f33;
@@ -135,6 +141,111 @@ body {
   border-radius: 3px;
 }
 
+/* ...EXCEPT the number field inside a stepper, which would draw a second box.
+
+   That pill already announces focus as a whole: focus-within turns its border
+   amber and adds a ring, because the two buttons and the field are one
+   control and should light up as one. The rule above then fired a SECOND
+   outline around just the digits, inset three pixels inside the first — a
+   box inside a box, which is the exact thing the pill was redesigned to stop.
+
+   Tailwind's outline-none could not do this. Utilities live in @layer
+   utilities and the rule above is unlayered, so unlayered wins regardless of
+   specificity; it has to be turned off from the same level it was turned on.
+
+   Nothing is lost: focus is still unmistakable, it is just drawn once. */
+.stepper-field:focus-visible {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------
+   SECTION 03'S LEDGER NAMES, WHERE THE FIGURE IS BEHIND THEM.
+
+   The left figure overlaps the first ~128px of every name from 1366 up. That
+   was asked for and accepted, but it left three of the six barely readable,
+   and no text colour could rescue it — measured against what she is actually
+   made of, `mute` scores:
+
+     her brown polo   3.62   ok        her skin        1.37   fails
+     her dark jeans   3.35   ok        the steel flask 1.73   fails
+
+   Darkening the type fixes the skin and breaks the polo; lightening it does
+   the reverse. The failures are in opposite directions, so the answer cannot
+   be a colour.
+
+   A halo does not care what is behind: it gives every glyph its own local
+   ground. And because that ground is the section's own cream, it is INVISIBLE
+   everywhere the figure is not — which is most of every name, all six names
+   below 1366, and the whole section on a phone. It costs nothing where it is
+   not needed.
+
+   STROKE, NOT text-shadow. A blurred shadow was tried and read as a smudge
+   around the letters without actually lifting them off her face. A stroke
+   painted UNDER the fill is crisp, and at 7px it shows 3.5px of cream around
+   each glyph — enough to separate, not enough to look outlined.
+
+   paint-order is the load-bearing half. Without it the stroke paints OVER
+   the fill and eats the letterforms from the outside in, so the @supports
+   guard is not politeness — it is the difference between a halo and a ruined
+   glyph on a browser that lacks it.
+   --------------------------------------------------------------- */
+/* THE COLUMN STEPS RIGHT BY EXACTLY WHAT THE FIGURE TAKES.
+
+   The left figure's box is min(360px, (100vw - 1240px)/2 + 3.5rem + 8rem) and
+   the copy starts at (100vw - 1240px)/2 + 3.5rem, so the overlap is whatever
+   is left of the 8rem after the 360px cap bites:
+
+     1366-1536 -> 128px    1728 -> 60px
+     1600      -> 124px    1848+ -> none
+
+   924px - 50vw is that subtraction folded up (360 - (50vw - 564)), clamped to
+   [0, 8rem]. IT IS DERIVED FROM THE BOX FORMULA IN Industries.tsx — change the
+   8rem or the 360px cap there and this constant moves with it.
+
+   Padding the COLUMN rather than the names is what makes the rules shorten by
+   the same amount: they are w-full inside it, so one declaration walks the
+   text right and pulls the line in behind it. The button under them travels
+   too, which is correct — it was overlapped as well. */
+.ledger-inset {
+  padding-inline-start: var(--fig-overlap, 0px);
+}
+
+@media (min-width: 1366px) {
+  .ledger-inset {
+    --fig-overlap: max(0px, min(8rem, 924px - 50vw));
+  }
+}
+
+/* AND THE NAMES ARE CAPPED BY WHAT IS LEFT OF THE COLUMN.
+   The column is ~482px wide at any width above 1240, so stepping it right by
+   128px leaves ~354 — and "Showrooms & banks" is 9.55 em, which at the height
+   clamp's 39.6px (1440x900) wants 378 and would wrap. The third term is that
+   column divided by 9.55: the widest the longest name can be and still hold
+   one line. It only binds where the indent exists; at 1848 and above the
+   overlap is 0, the term reaches 49.8px and the 3rem cap takes over exactly
+   as before, so wide screens are untouched.
+
+   476, not 482, so the arithmetic has a few pixels of slack in it. */
+.ledger-name {
+  font-size: clamp(
+    1.6rem,
+    min(3.6vw, 4.4svh, calc((476px - var(--fig-overlap, 0px)) / 9.55)),
+    3rem
+  );
+}
+
+@media (min-width: 1366px) {
+  @supports (paint-order: stroke) {
+    /* kept even though the indent now clears her: the halo is invisible on
+       cream, so it costs nothing, and it is the only thing standing between a
+       future change to the box formula and unreadable names. */
+    .ledger-name {
+      paint-order: stroke fill;
+      -webkit-text-stroke: 7px var(--color-cream-deep);
+    }
+  }
+}
+
 /* ---------------------------------------------------------------
    Layout rhythm
    --------------------------------------------------------------- */
@@ -145,6 +256,7 @@ body {
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 5vw, 3.5rem);
 }
+
 
 .section-y {
   padding-block: clamp(4.5rem, 8vw, 7.5rem);

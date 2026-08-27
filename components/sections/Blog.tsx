@@ -98,7 +98,7 @@ export default function Blog() {
           than a texture, without putting the small type near the line. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-x-0 top-0"
         style={{
           backgroundImage: "url(/img/blog-bg-v3.webp)",
           /* 100% auto, NOT cover.
@@ -116,7 +116,26 @@ export default function Blog() {
              Where the section is taller than the photo, the bottom is masked
              out rather than left as a hard edge — and the bottom of this plate
              is road and motion blur, which is what the old comment said had
-             nothing to lose. */
+             nothing to lose.
+
+             AND THE LAYER HAS TO BE THE PHOTO'S HEIGHT, NOT THE SECTION'S.
+             That last sentence was only ever true on a desktop. Fitting to
+             width makes the image's height a function of the WIDTH, while the
+             section's height is a function of its CARDS — and on a phone those
+             do not agree by an order of magnitude: 219px of photo in a ~1500px
+             section, so it covered 14% of it and then stopped dead.
+
+             The mask could not save that either, because its stops are
+             percentages of the ELEMENT. At inset-0 the fade ran from 1094px to
+             1474px — hundreds of pixels below where the image had already
+             ended, so it faded nothing and the photo kept its hard edge.
+
+             min(100%, 56.25vw) is the photo's own height (100 / 1.777) capped
+             at the section's. The element ends where the image ends, so the
+             same mask fades the same last quarter at every width: a fading
+             header band on a phone, the full ambient ground on a desktop, and
+             no breakpoint deciding which. */
+          height: "min(100%, 56.25vw)",
           backgroundSize: "100% auto",
           backgroundPosition: "center top",
           backgroundRepeat: "no-repeat",

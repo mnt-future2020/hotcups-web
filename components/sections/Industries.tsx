@@ -65,31 +65,34 @@ const BACK = [0.34, 1.56, 0.64, 1] as const;
    min(360px, ...) caps the top so a 2560 window does not stand a 716px
    person in the corner.
 
-   THEY OVERLAP THE COPY COLUMN BY 3.4rem, AND THAT IS WHAT BUYS 1440 BACK.
-   Confined to the free margin they were 156px wide at 1440 — a thumbnail of
-   a person with ZERO clearance, touching the column she was flanking. The
-   floor went to 1600 for that reason and it took the two commonest laptop
-   widths with it. So the box now runs 54px PAST the container's padding and
-   the overlap is masked away instead of being avoided.
+   THE BOX RUNS 8rem PAST THE CONTAINER, AND THAT IS A CLIENT DECISION.
+   Held to the free margin the figures were 156px wide at 1440 — the width
+   the demo laptop will run at — and read as stickers. Three ways out were
+   built and shown:
 
-   THE MASK ENDS AT ZERO, NOT AT FAINT, AND THAT IS NOT A STYLE CHOICE.
-   The unlit ledger names are `mute`, which is 3.65:1 on clean cream-deep
-   against a 3.0 floor for text this size — 0.65 of headroom. Composite the
-   woman's brown polo behind them at even 15% and it lands at 2.79. At 21%,
-   2.50. There is no opacity at which a figure can sit behind those names, so
-   the gradient reaches fully transparent exactly where the text column
-   begins and the overlap costs the copy nothing measurable.
+     mask the overlap    the fade reads as a broken image, and above 1848px
+                         it erased a quarter of each figure for nothing
+     tighter crop        a bust cut at the chest, floating; worse than small
+     narrow the section  worked, but cost 15% of the photograph and left this
+                         section's measure 70px inside every other one
 
-   WHY THE RAMP IS 5.3rem -> 3.4rem AND NOT SOFTER.
-   Both plates carry the face between about 40% and 60% of their width. The
-   ramp has to finish AFTER that or it dissolves someone's cheek: at 1440 the
-   box is 210px, the fade starts at 126px (60%) and is gone by 156px, so it
-   crosses the shoulder and nothing else. Widen the overlap and the ramp
-   starts earlier as a fraction; that is the constraint, not the 54px.
+   The client chose the fourth: overlap the copy, full strength, and accept
+   the clash. That is recorded here because it is not the default a designer
+   would pick and the next person to read this file deserves to know it was
+   asked for rather than missed.
 
-   1440 IS THE FLOOR FOR THE SAME REASON. At 1366 the box would be 173px, the
-   fade would have to begin at 88px — 51% — and run straight through the face.
-   Below 1440 there is no arrangement, so there is no figure.
+   WHAT IT COSTS, MEASURED. The unlit ledger names are `mute`, 3.65:1 on
+   clean cream-deep against a 3.0 floor for text this size. Where a name
+   crosses the woman's brown polo the ratio falls to roughly 1.6:1. The first
+   ~128px of every name is in that zone at 1440. It is a real legibility
+   cost on the six names, and it buys this:
+
+     1366 -> 247x443    1600 -> 360x645    1920 -> 360x645
+     1440 -> 284x509    1728 -> 360x645    2560 -> 360x645
+
+   The overlap is a constant 128px until the 360px cap takes over at 1600,
+   and by 1848 the cap has pulled the box clear of the copy entirely — so
+   wide screens keep exactly the layout they had, untouched.
 
    object-contain, so a narrow margin SCALES the figure rather than slicing
    it down the middle. Anchored bottom-outer: they stand on the section's
@@ -105,17 +108,14 @@ const BACK = [0.34, 1.56, 0.64, 1] as const;
    growing at the wrong width — at 540 they capped at 301px, not 360. If the
    crop ever changes, re-measure and move this with it.
 
-   THE MASK IS BACK, AND THIS TIME IT IS LOAD-BEARING.
-   Two earlier drafts had one and both were wrong: dissolving the inner 48%
-   of the box, then feathering 20%, at a time when the figures did not
-   overlap anything and the only edge was the person's own silhouette. A fade
-   then bought nothing and ghosted a shoulder for free.
-
-   It earns its place now because the box deliberately crosses into the copy
-   column. Its job is not softness, it is reaching ZERO before the first
-   glyph — see the contrast note above. The stops are in rem rather than
-   percent so the ramp lands at the same distance from the text at every
-   width; as a percentage it would slide across the face as the box grew.
+   NO EDGE MASK. Three drafts had one — dissolving the inner 48%, then
+   feathering 20%, then a rem-based ramp to protect a deliberate overlap —
+   and all three were removed for the same reason each time: these are
+   cut-outs on transparent ground, so the only edge is the person's own
+   silhouette and object-contain never clips it. A gradient has nothing to
+   soften and everything to spoil. If they ever read too loud beside the
+   copy, the knob is opacity on this whole element, not a fade through
+   somebody's arm.
 
    NULL UNTIL THE ART LANDS — same guard the footer's doodle uses. One line
    each to switch on, and nothing renders in the meantime rather than two
@@ -135,9 +135,6 @@ function Figure({
   reduced: boolean | null;
 }) {
   const left = side === "left";
-  /* solid until 5.3rem from the inner edge, gone by 3.4rem — which is exactly
-     where the container's padding ends and the copy begins */
-  const fade = `linear-gradient(to ${left ? "right" : "left"}, #000 0px, #000 calc(100% - 5.3rem), rgba(0,0,0,0) calc(100% - 3.4rem))`;
   return (
     <motion.div
       initial={reduced ? false : { opacity: 0, x: left ? -26 : 26 }}
@@ -148,11 +145,7 @@ function Figure({
       }
       transition={{ duration: 1.1, delay: 0.5, ease: EASE }}
       className={`absolute bottom-0 h-[min(62svh,650px)] ${left ? "left-0" : "right-0"}`}
-      style={{
-        width: "min(360px, calc((100vw - 1240px) / 2 + 3.5rem + 3.4rem))",
-        maskImage: fade,
-        WebkitMaskImage: fade,
-      }}
+      style={{ width: "min(360px, calc((100vw - 1240px) / 2 + 3.5rem + 8rem))" }}
     >
       <Image
         src={src}
@@ -381,17 +374,39 @@ export default function Industries() {
         paddingBottom: "clamp(1.5rem, 4svh, 3.5rem)",
       }}
     >
-      {(FIGURE_L || FIGURE_R) && (
+      {/* THE TWO FIGURES SIT ON OPPOSITE SIDES OF THE COPY, AND THAT IS NOT
+          A TYPO. Once the boxes overlap the container they each run into
+          something different, and the right answer for one is wrong for the
+          other.
+
+          The LEFT figure meets TEXT. Behind it: the names stay on top and
+          stay readable-ish, which is the whole point of letting her overlap
+          at all.
+
+          The RIGHT figure meets the PHOTOGRAPH, which is opaque and
+          rectangular. Behind it he was sliced clean down its edge — 128px at
+          1440, taking his left arm and the cup with it, and reading as a
+          broken image rather than a layered one. In front, he stands at the
+          picture's corner and the overlap reads as depth. There is no
+          contrast cost either way, because what he covers is a photograph
+          and not type.
+
+          z-0 and z-20 straddle the copy's z-10. Both wrappers keep
+          pointer-events-none, so the one on top cannot swallow a click. */}
+      {FIGURE_L && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden min-[1440px]:block"
+          className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden min-[1366px]:block"
         >
-          {FIGURE_L && (
-            <Figure src={FIGURE_L} side="left" on={on} reduced={reduced} />
-          )}
-          {FIGURE_R && (
-            <Figure src={FIGURE_R} side="right" on={on} reduced={reduced} />
-          )}
+          <Figure src={FIGURE_L} side="left" on={on} reduced={reduced} />
+        </div>
+      )}
+      {FIGURE_R && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-20 hidden overflow-hidden min-[1366px]:block"
+        >
+          <Figure src={FIGURE_R} side="right" on={on} reduced={reduced} />
         </div>
       )}
 
@@ -657,7 +672,7 @@ export default function Industries() {
               riding its leading edge. It is the same idea at twenty times the
               size, and it does something the rail could not: you can see how
               long is left before the round moves on. */}
-          <div className="order-2 lg:order-1">
+          <div className="ledger-inset order-2 lg:order-1">
             <ul>
               {PLACES.map((pl, i) => {
                 const isPicked = picked === i;
@@ -735,7 +750,7 @@ export default function Industries() {
                             go chunky, which is what made the longer names
                             look crude. */}
                         <span
-                          className={`font-display text-[clamp(1.6rem,min(3.6vw,4.4svh),3rem)] leading-[1.12] tracking-[-0.02em] transition-[color,font-weight] duration-300 ${
+                          className={`ledger-name font-display leading-[1.12] tracking-[-0.02em] transition-[color,font-weight] duration-300 ${
                             solid
                               ? "font-extrabold text-ink"
                               : "font-medium text-mute group-hover:text-ink group-focus-visible:text-ink"

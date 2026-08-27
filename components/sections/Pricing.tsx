@@ -113,7 +113,7 @@ function SpinBadge() {
           style={{ fontFamily: "var(--font-sans)", textTransform: "uppercase" }}
         >
           <textPath href="#fcta-ring" startOffset="0" textLength={CIRC}>
-            HOTCUPS · TWICE A DAY ·
+            HOTCUPS · GET A QUOTE ·
           </textPath>
         </text>
       </svg>
