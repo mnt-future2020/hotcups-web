@@ -53,11 +53,20 @@ const LINE_DUR = 0.5;
     4.3vw, DOWN FROM 4.7, BECAUSE THE COPY GOT LONGER
     The column is 40vw and the type is a fraction of the same viewport, so in
     the vw regime a line can only ever be (40 / fontVw) em however wide the
-    window is — 9.30 em at 4.3vw. The longest line across both slides is
+    window is — 9.30 em at 4.3vw. The longest line across both slides was
     "Chai, filter coffee,": 8.93 em of raw advances, less 0.70 em given back
-    by tracking-[-0.035em] over twenty characters, so 8.23 em. That leaves 12%
+    by tracking-[-0.035em] over twenty characters, so 8.23 em. That left 12%
     of the column as slack. 4.7vw would also have held it (8.51 em limit), but
     the margin there is 3% and the slides read well at this size, so it stays.
+
+    THOSE FIGURES WERE MEASURED AGAINST "Chai", WHICH IS NOW "Tea".
+    The line is still the longest of the eight across the two slides — nothing
+    else reaches fourteen characters and this one is nineteen — so 4.3vw is
+    still sized against the right line. It is simply shorter than it was, by
+    one narrower character, which moves the slack the safe way. The em figures
+    above are left as they were measured rather than re-estimated: they are
+    now an upper bound, and an upper bound that holds is all this note needs
+    to establish.
 
     Verified against the longest line on both slides at eighteen window sizes
     from 375 to 3440. Slide 3 is the binding one and it is NOT bound by this

@@ -164,7 +164,7 @@ const DWELL = 3500;
 
 /** The menu, in the order the hero and section 02 say it. Named here rather
     than written inline so the two places cannot drift apart. */
-const MENU = ["Chai", "Filter coffee", "Badam milk", "Hot chocolate"];
+const MENU = ["Tea", "Filter coffee", "Badam milk", "Hot chocolate"];
 
 /* ===============================================================
    !!  FIVE OF THE SIX FACT LINES ARE INVENTED.               !!

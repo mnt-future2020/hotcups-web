@@ -113,7 +113,10 @@ const CATEGORIES = [
    name lights up when its glass is the one being poured, so the sentence
    and the row are one mechanism rather than a caption over a grid. */
 const NAMED = [
-  { label: "Chai", sep: ", " },
+  /* "Tea", not "Chai" — the client's word. It also matches the card directly
+     under it, which has always been labelled Tea, so the sentence and the row
+     no longer call the same glass two different things. */
+  { label: "Tea", sep: ", " },
   { label: "filter coffee", sep: ", " },
   { label: "badam milk", sep: ", " },
   { label: "hot chocolate", sep: " and " },

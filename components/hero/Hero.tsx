@@ -70,14 +70,14 @@ const LIGHT_SLIDES: LightSlide[] = [
        #efd2b4, where the orange-dark accent line drops to 2.85:1. */
     ground:
       "radial-gradient(125% 125% at 26% 12%, #fefaf5 0%, #faeadb 45%, #f5dec6 100%)",
-    lines: ["Chai, filter coffee,", "badam milk and", "hot chocolate."],
+    lines: ["Tea, filter coffee,", "badam milk and", "hot chocolate."],
     accent: ["Something for", "everyone."],
     sub: "Give your team more to choose from, with fresh hot beverages made for every taste and delivered straight to your workplace.",
     primary: { label: "See the menu", href: "#menu" },
     secondary: { label: "Get pricing", href: "#pricing" },
     image: {
       src: "/img/hero-slide-drinks.webp",
-      alt: "Chai, filter coffee, badam milk and hot chocolate with whole spices",
+      alt: "Tea, filter coffee, badam milk and hot chocolate with whole spices",
     },
   },
   {
