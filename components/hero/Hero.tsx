@@ -32,11 +32,25 @@ import { setHeroTone, type HeroTone } from "@/lib/heroTone";
  * midpoint both grounds are half-present, which is the one moment either set
  * of chrome is equally readable — so the swap happens where it shows least.
  *
- * WHAT AUTOPLAY OWES THE VISITOR
- * It stops on hover, on keyboard focus anywhere inside, and entirely under
- * prefers-reduced-motion — an auto-advancing hero that cannot be stopped is
- * a WCAG 2.2.2 failure, not a style choice. Every slide is also reachable
+ * IT RUNS, AND IT KEEPS RUNNING
+ * It used to stop on hover. That read as broken, because on a desktop the
+ * pointer rests over the hero most of the time — and hover was never a
+ * mechanism keyboard or touch users had anyway. There was briefly an explicit
+ * pause button beside the dots; it is gone at the client's request.
+ *
+ * WHAT IS LEFT, AND WHAT IS NOT
+ * It stops entirely under prefers-reduced-motion, which is how a visitor who
+ * needs motion stopped actually stops it, and every slide is reachable
  * without waiting: dots, arrow keys, and a swipe on touch.
+ *
+ * Note for whoever audits this: there is no longer an in-page control, so
+ * WCAG 2.2.2 is met only through the OS-level reduced-motion preference. That
+ * is a deliberate call, not an oversight — putting the button back is the fix
+ * if an audit asks for one.
+ *
+ * FOCUS STILL PAUSES, AND THAT IS A DIFFERENT THING.
+ * Advancing the slide under a keyboard user who has tabbed into a button
+ * moves the thing they were aiming at. That is not a courtesy, so it stays.
  *
  * OFF-SLIDE CONTENT IS INERT
  * Three slides stacked means three sets of links in the DOM. Without `inert`
@@ -95,6 +109,7 @@ const COUNT = TONES.length;
 export default function Hero() {
   const reduced = useReducedMotion();
   const [i, setI] = useState(0);
+  /** something inside has keyboard focus — see the note above */
   const [held, setHeld] = useState(false);
 
   useEffect(() => {
@@ -152,8 +167,6 @@ export default function Hero() {
       aria-roledescription="carousel"
       aria-label="Hotcups"
       className="relative min-h-svh overflow-hidden bg-espresso-deep"
-      onMouseEnter={() => setHeld(true)}
-      onMouseLeave={() => setHeld(false)}
       onFocusCapture={() => setHeld(true)}
       onBlurCapture={() => setHeld(false)}
       onTouchStart={onTouchStart}

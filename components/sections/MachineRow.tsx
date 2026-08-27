@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import RollUp from "@/components/ui/RollUp";
 import { currentOffice, subscribeOffice } from "@/lib/office";
 
 /**
@@ -139,8 +138,6 @@ export default function MachineRow() {
   useEffect(() => subscribeOffice((_, c) => setCups(c)), []);
 
   const fits = (cap: number) => cap >= cups * HEADROOM;
-  const fitCount = RIGS.filter((r) => fits(r.cap)).length;
-  const asWord = ["none", "one", "two", "all three"][fitCount];
 
   const reveal = (delay: number, y = 16) =>
     reduced
@@ -209,31 +206,51 @@ export default function MachineRow() {
               />
             </motion.div>
 
-            <h2 className="mt-3 font-display text-[clamp(1.8rem,3.5vw,2.85rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
+            {/* ONE SPAN, AND IT WRAPS ON ITS OWN.
+                The headline used to be split across two spans so each line
+                could clip-reveal separately. It was shortened to a single
+                sentence and the second span was left behind holding nothing —
+                an empty block that still took a full 51px line of headline
+                height under the title and still ran a reveal on no text. The
+                sentence is 17.50 em, which is 798px against a 638px column,
+                so it breaks to two lines by itself and reveals as one block.
+                That is the right behaviour for a sentence; it was only ever
+                two spans because it used to be two written lines.
+
+                THE SIZE
+                60px at the top, and the vw leg is 4.4 rather than the 3.5 it
+                was, so it actually REACHES 60 — .shell caps at 1240, which
+                caps this column at 638px, and 3.5vw would not have hit the
+                new ceiling until a 1714px window. 4.4vw gets there at 1366.
+                Checked at eleven widths from 768 to 2560: two lines
+                everywhere, and the longest word ("workplace.") is 307px
+                against 638, so nothing overflows the column at the cap. */}
+            <h2 className="mt-3 font-display text-[clamp(2rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink">
               <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                 <motion.span {...clipLine(T_HEAD)} className="block">
-                  Three machines. Or one
-                </motion.span>
-              </span>
-              <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-                <motion.span {...clipLine(T_HEAD + 0.09)} className="block">
-                  we build for you.
+                  The right machine for your workplace.
                 </motion.span>
               </span>
             </h2>
           </div>
 
+          {/* STATIC, AND ABOUT THE MACHINES.
+              This read "At N cups a day, all three of these fit your office",
+              driven live from section 04's calculator. Two problems. It made
+              the reader carry a number down from the section above before the
+              sentence meant anything, and at any realistic office size the
+              answer was "all three" — so the line spent its place in the
+              layout telling everyone the same thing in a way that looked
+              personalised.
+
+              What a reader actually wants here is what these machines ARE.
+              Both claims trace to copy already on the page: the sizes are the
+              cards' own captions, and "at the touch of a button" is the
+              client's wording from hero slide 3. */}
           <motion.div {...reveal(0.35)} className="lg:col-span-5 lg:pt-10">
-            <p className="max-w-[30ch] font-sans text-[clamp(1.02rem,1.12vw,1.15rem)] leading-[1.6] text-ink-soft">
-              At{" "}
-              <strong className="font-semibold tabular-nums text-ink">
-                {cups} cups a day
-              </strong>
-              ,{" "}
-              <RollUp play={on} delay={0.6}>
-                {asWord}
-              </RollUp>{" "}
-              of these {fitCount === 1 ? "fits" : "fit"} your office.
+            <p className="max-w-[30ch] font-sans text-[clamp(1.05rem,1.6vw,1.375rem)] leading-[1.55] text-ink-soft">
+              Three sizes, counter-top to half a desk — all at the touch of a
+              button.
             </p>
           </motion.div>
         </div>
@@ -529,12 +546,12 @@ function CustomBand() {
         </div>
 
         <div>
-          {/* text-balance because it is 22.12 em and the column it sits in
+          {/* text-balance because it is 24.78 em and the column it sits in
               swings either side of that as the drawing grows with the window
               — one line at 1366, two at 1920. When it does break, balance
               splits it evenly instead of leaving one word on line two. */}
           <h3 className="text-balance font-display text-[clamp(1.45rem,2.7vw,2.3rem)] font-extrabold leading-[1.14] tracking-[-0.02em] text-ink">
-            Nothing standard fits? We build to your pantry.
+            Custom machines designed around your workspace.
           </h3>
           <p className="mt-3.5 max-w-[54ch] font-sans text-[clamp(1.02rem,1.2vw,1.18rem)] leading-[1.6] text-ink-soft">
             Size, branding, drinks, payment, timings — tell us the constraint

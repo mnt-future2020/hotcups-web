@@ -197,7 +197,15 @@ export default function Service() {
       className="relative flex min-h-svh flex-col justify-center overflow-x-clip bg-white"
       style={
         {
-          paddingBlock: "clamp(2rem, 4.5vh, 4.5rem)",
+          /* SPLIT, BECAUSE THE HEADER WAS NEVER PAID FOR.
+             This was a symmetric clamp(2rem, 4.5vh, 4.5rem) — 40px at 900px
+             tall, against a 78px fixed header. Whenever a reader stopped with
+             this section's top at the window top, its first row was behind
+             the bar; snapping just makes that a resting position rather than
+             an accident. The section is min-h-svh, a MINIMUM, so the extra
+             top padding can only make it taller — nothing can be clipped. */
+          paddingTop: "calc(var(--header-h) + clamp(0.5rem, 1.5vh, 1.25rem))",
+          paddingBottom: "clamp(2rem, 4.5vh, 4.5rem)",
           /* the rider scales with viewport height, so his headroom shrinks
              on short screens instead of pushing the cards off the fold */
           "--rider-w": "clamp(92px, 10vh, 132px)",

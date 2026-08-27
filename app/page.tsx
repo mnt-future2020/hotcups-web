@@ -7,6 +7,7 @@ import MachineRow from "@/components/sections/MachineRow";
 import Cases from "@/components/sections/Cases";
 import Pricing from "@/components/sections/Pricing";
 import Blog from "@/components/sections/Blog";
+import Ticker from "@/components/ui/Ticker";
 
 export default function Home() {
   return (
@@ -20,6 +21,8 @@ export default function Home() {
       <Cases />
       <Pricing />
       <Blog />
+      {/* the sign-off band, between the last section and the footer */}
+      <Ticker />
     </>
   );
 }

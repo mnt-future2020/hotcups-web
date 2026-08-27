@@ -76,7 +76,7 @@ export default function Blog() {
       id="blog"
       ref={ref}
       className="relative overflow-x-clip bg-cream"
-      style={{ paddingBlock: "clamp(4.5rem, 9vw, 8rem)" }}
+      style={{ paddingBlock: "clamp(3.5rem, 7vw, 6.5rem)" }}
     >
       {/* The delivery round, behind the writing about it.
 
@@ -101,14 +101,29 @@ export default function Blog() {
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage: "url(/img/blog-bg-v3.webp)",
-          backgroundSize: "cover",
-          /* "top", not "center". The section is far wider than the photo's
-             16:9, so cover crops height — and centring split that crop evenly,
-             taking the temple's spire off the top. Anchored to the top, the
-             whole crop comes off the road at the bottom, which is motion blur
-             and has nothing to lose. */
+          /* 100% auto, NOT cover.
+             The two road signs — Madurai on the left, Trichy on the right —
+             sit at 7% and 97% across this plate, so they are the first thing
+             any horizontal crop takes. cover only crops height while the
+             section is wider than the photo's 1.777:1; the moment the section
+             grows past that it flips to scaling by HEIGHT and eats the sides
+             instead. Measured, it was already doing that below ~1600px, and
+             enlarging the heading and the cards would have taken another 8-10%
+             off each edge.
+
+             Fitting to width makes the crop unconditional: the full plate is
+             always shown end to end and the section's height stops mattering.
+             Where the section is taller than the photo, the bottom is masked
+             out rather than left as a hard edge — and the bottom of this plate
+             is road and motion blur, which is what the old comment said had
+             nothing to lose. */
+          backgroundSize: "100% auto",
           backgroundPosition: "center top",
           backgroundRepeat: "no-repeat",
+          maskImage:
+            "linear-gradient(to bottom, #000 0%, #000 72%, rgba(0,0,0,0) 97%)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, #000 0%, #000 72%, rgba(0,0,0,0) 97%)",
         }}
       />
       <div
@@ -130,7 +145,11 @@ export default function Blog() {
 
         <motion.h2
           {...fade(0.08)}
-          className="mt-3 max-w-[20ch] font-display text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink"
+          /* 60px at the top, matching sections 05, 06 and 07, and 4.4vw so it
+             reaches the cap at 1366. The measure went 20ch -> 21ch with it:
+             20ch scales WITH the type, so at the cap it was a 732px column
+             holding a 713px line — nineteen pixels, which is not a margin. */
+          className="mt-3 max-w-[21ch] font-display text-[clamp(1.7rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.02em] text-ink"
         >
           Written for whoever runs the pantry.
         </motion.h2>
@@ -144,7 +163,7 @@ export default function Blog() {
               >
                 {/* the frame is what clips the scale — the card itself must not
                     hide overflow or it would clip its own focus ring */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-cream-deep">
+                <div className="relative aspect-[5/4] overflow-hidden bg-cream-deep">
                   <Image
                     src={post.src}
                     alt={post.alt}
@@ -154,8 +173,8 @@ export default function Blog() {
                   />
                 </div>
 
-                <div className="p-6">
-                  <p className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.14em]">
+                <div className="p-7">
+                  <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.14em]">
                     {/* orange-dark, not orange: 4.11:1 on white against
                         orange's 3.15:1. Still reads as the brand colour. */}
                     <span className="text-orange-dark">{post.tag}</span>
@@ -167,7 +186,7 @@ export default function Blog() {
                     </span>
                   </p>
 
-                  <h3 className="mt-2.5 font-display text-[1.18rem] font-bold leading-[1.32] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
+                  <h3 className="mt-3 font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
                     {post.title}
                   </h3>
                 </div>
@@ -181,7 +200,7 @@ export default function Blog() {
             href={HREF}
             /* espresso text, so when the amber wipes up it reads 6.02:1 —
                the light-on-amber buttons elsewhere sit at 3.15 */
-            className="hero-btn group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-line px-6 py-3 font-sans text-[0.95rem] font-semibold text-espresso transition-colors duration-300 hover:border-orange"
+            className="hero-btn group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-line px-7 py-3.5 font-sans text-[1.02rem] font-semibold text-espresso transition-colors duration-300 hover:border-orange"
           >
             <span className="relative z-10">All posts</span>
             <span

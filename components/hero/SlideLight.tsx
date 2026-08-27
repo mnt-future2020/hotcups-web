@@ -63,9 +63,31 @@ const LINE_DUR = 0.5;
     from 375 to 3440. Slide 3 is the binding one and it is NOT bound by this
     column: its copy shares a centred row with the machine, which is shrink-0,
     so above 2200 the flex compresses the text to 672px. */
-const COPY_W = "max-w-[min(34rem,90vw)] md:max-w-[min(48rem,40vw)]";
+/* SIDE BY SIDE NEEDS WIDTH RELATIVE TO HEIGHT, NOT WIDTH ALONE.
+   The split layout was gated on `md` — 768px — and width alone cannot tell a
+   1366x768 laptop from a 1024x1305 iPad in portrait. Both are "≥ 768", and
+   the second one is the shape this layout is worst at: the copy and the plate
+   each get half of 1024px, so the plate is width-bound at ~470px and 700px
+   tall, sitting in a 1305px window. Everything is centred, so the leftover
+   ~300px lands as air above the headline and another ~300px under the
+   buttons — which is exactly what the screenshots show.
+
+   `md:landscape:` is the honest test. A portrait tablet falls back to the
+   stacked layout, where the plate gets the FULL width and takes flex-1 for
+   whatever height the copy did not use — so the same window that had 600px
+   of air now has a picture in it. Type sizes stay on plain `md:`, because a
+   1024px column wants the bigger ramp whichever way the device is held. */
+const COPY_W =
+  "max-w-[min(34rem,90vw)] md:landscape:max-w-[min(48rem,40vw)]";
+/* The mobile leg is slide 1's, and for the same reason: a rem floor does not
+   shrink with a 90vw column, so five headline lines at a fixed 32.8px plus a
+   three-line sub plus a button row measured 364px of copy inside a box that
+   is only 358px tall at 393x852 and 258px at 375x667. Centred, that overflow
+   comes off BOTH ends — the headline was running up under the header. The
+   ramp tops out at 2.04rem, which is what 4.3vw gives at 768, so there is no
+   step where the two legs meet. */
 const HEADLINE =
-  "font-display text-[clamp(2.05rem,4.3vw,5.15rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-ink";
+  "font-display text-[clamp(1.5rem,7.2vw,2.04rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-ink md:text-[clamp(2.05rem,4.3vw,5.15rem)]";
 
 export type LightSlide = {
   /** a warm or a cool cream, so the ground agrees with the photograph */
@@ -121,6 +143,19 @@ export default function SlideLight({
     transition: { duration: 1.1, ease: EASE },
   } as const;
 
+  /* MOBILE FIT DEPENDS ON THE PLATE'S OWN SHAPE, AND IT HAS TO.
+     object-contain fits BOTH axes, so a landscape plate in a phone-width band
+     is sized by its WIDTH and then leaves the rest of the band empty above
+     it — the drinks rendered 390x260 in a 368px band and the 108px left over
+     was the gap under the buttons. Cover fills the band instead: the same
+     plate comes out about 1.5x bigger, and the 81px it loses off each side
+     is the ginger at the left edge and the mug handle at the right. Every
+     drink survives, and on a phone that trade is not close.
+
+     The portrait plate is the opposite case. Cover would scale the machine to
+     the band's WIDTH and crop 217px off its top — it would be beheaded. It
+     stays contain, where height binds and a taller band simply makes the
+     machine bigger. Nothing is cropped and nothing is wasted either way. */
   const photo = (
     <Image
       src={slide.image.src}
@@ -128,7 +163,9 @@ export default function SlideLight({
       fill
       priority={active}
       sizes="(max-width: 767px) 100vw, 50vw"
-      className="object-contain object-bottom md:object-center"
+      className={`object-bottom md:landscape:object-contain md:landscape:object-center ${
+        flip ? "object-contain" : "object-cover"
+      }`}
     />
   );
 
@@ -156,17 +193,17 @@ export default function SlideLight({
 
       <motion.p
         {...rise(0.72)}
-        className="mt-6 max-w-[46ch] font-sans text-base leading-relaxed text-ink-soft md:text-lg"
+        className="mt-4 max-w-[46ch] font-sans text-base leading-relaxed text-ink-soft md:mt-6 md:text-lg"
       >
         {slide.sub}
       </motion.p>
 
-      <div className="mt-9 flex flex-wrap items-center gap-3">
+      <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-9">
         <motion.a
           {...rise(0.82)}
           href={slide.primary.href}
           tabIndex={active ? undefined : -1}
-          className="hero-btn-dark group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-7 py-4 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)]"
+          className="hero-btn-dark group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-5 py-3.5 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)] md:px-7 md:py-4"
         >
           <span className="relative z-10">{slide.primary.label}</span>
           <span
@@ -181,7 +218,7 @@ export default function SlideLight({
           {...rise(0.9)}
           href={slide.secondary.href}
           tabIndex={active ? undefined : -1}
-          className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-ink/55 px-6 py-4 font-sans text-sm font-semibold text-ink transition-colors duration-300 hover:border-ink/80"
+          className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-ink/55 px-5 py-3.5 font-sans text-sm font-semibold text-ink transition-colors duration-300 hover:border-ink/80 md:px-6 md:py-4"
         >
           <span className="relative z-10">{slide.secondary.label}</span>
         </motion.a>
@@ -191,21 +228,27 @@ export default function SlideLight({
 
   return (
     <div
-      className="absolute inset-0 overflow-hidden"
+      className="absolute inset-0 flex flex-col overflow-hidden md:landscape:block"
       style={{ background: slide.ground }}
     >
-      {/* Below md both layouts are identical: a band of photograph along the
-          bottom with the copy above it. The split only matters once there is
-          width to arrange things across. */}
-      <motion.div
-        aria-hidden="true"
-        {...photoIn}
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[44svh] md:hidden"
-      >
-        {photo}
-      </motion.div>
 
-      <div className="relative z-10 flex min-h-svh flex-col justify-center pb-[46svh] pt-[calc(var(--header-h)+1.5rem)] md:pb-[clamp(3rem,8vh,6rem)]">
+      {/* NOTHING IS RESERVED ANY MORE, WHICH IS THE WHOLE FIX.
+          Below md this was a picture band of min(38svh, 100svh - 440px) with
+          the copy centred in a matching pixel reservation above it. Two
+          numbers guessing at each other, and on every phone taller than 710px
+          the svh leg won and left the difference empty: 44px at 800, 64px at
+          852, 94px at 932 — gaps ABOVE the plate, and justify-center then
+          split the copy's own slack into a second gap under the header.
+
+          The column below owns its height instead. The copy costs what it
+          costs, the plate takes flex-1 — everything left, whatever the phone
+          — and there is no leftover to place because nothing was set aside.
+          The picture also gets bigger on a taller phone rather than smaller,
+          which is what a reader expects.
+
+          md keeps the original box exactly: min-h-svh and centred, with the
+          plate positioned inside it rather than under it. */}
+      <div className="relative z-10 flex flex-col pb-4 pt-[calc(var(--header-h)+1rem)] md:landscape:min-h-svh md:landscape:justify-center md:landscape:pb-[clamp(3rem,8vh,6rem)] md:landscape:pt-[calc(var(--header-h)+1.5rem)]">
         {flip ? (
           /* CENTRED PAIR — see the note at the top of this file. The box is
              sized off the HEIGHT, min(46vw, 60svh), because object-contain
@@ -213,11 +256,11 @@ export default function SlideLight({
              always does here — so the box ends up within ~12px of the
              subject and there is no empty box beside the copy. */
           <div className="shell-wide">
-            <div className="flex w-full items-center justify-center gap-[clamp(1.5rem,3vw,3.5rem)]">
+            <div className="flex w-full items-center justify-start gap-[clamp(1.5rem,3vw,3.5rem)] md:landscape:justify-center">
               <motion.div
                 aria-hidden="true"
                 {...photoIn}
-                className="relative hidden h-[88svh] w-[min(46vw,60svh)] shrink-0 md:block"
+                className="relative hidden h-[88svh] w-[min(46vw,60svh)] shrink-0 md:landscape:block"
               >
                 {photo}
               </motion.div>
@@ -231,7 +274,7 @@ export default function SlideLight({
             <motion.div
               aria-hidden="true"
               {...photoIn}
-              className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-[48%] max-w-[980px] md:block"
+              className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-[48%] max-w-[980px] md:landscape:block"
             >
               {photo}
             </motion.div>
@@ -239,6 +282,15 @@ export default function SlideLight({
           </>
         )}
       </div>
+
+      {/* the plate, on phones only — it takes every pixel the copy did not */}
+      <motion.div
+        aria-hidden="true"
+        {...photoIn}
+        className="pointer-events-none relative min-h-0 w-full flex-1 md:landscape:hidden"
+      >
+        {photo}
+      </motion.div>
     </div>
   );
 }

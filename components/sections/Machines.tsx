@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import RollValue from "@/components/ui/RollValue";
 import { setOffice } from "@/lib/office";
 
@@ -128,6 +128,39 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 /** the rule the whole section is built on — the one confirmed fact */
 const THRESHOLD_CUPS = 40;
 
+/* ---------------------------------------------------------------
+   THE TRACK'S SCALE, AND WHY IT IS NOT LINEAR.
+
+   It ran 0 to 80 cups — twice the threshold, so the line landed on the exact
+   midpoint. That was tidy and it was broken: the steppers reach 5,000 people,
+   so anything past 80 cups pinned the handle against the right end and left
+   it there. Eighty people at a cup each and the control was dead. Two hundred
+   and it was dead AND lying, because `value` was clamped to the ceiling while
+   the readout directly above it said 200.
+
+   A LINEAR TRACK CANNOT FIX THAT. Stretch it to the real ceiling and the
+   40-cup line lands at 0.6% of the width — the entire argument of the section
+   compressed into six pixels at the left edge.
+
+   So the scale is two legs joined at the line:
+
+     0 .. LINE_AT      minCups -> 40 cups   LINEAR
+     LINE_AT .. 1      40 cups -> maxCups   LOGARITHMIC
+
+   which buys three things. The 40-cup mark sits at the SAME place on the
+   track whatever the rate — it is a fixed landmark now, not a number that
+   slides about when you change cups-per-head. A third of the track is spent
+   on the handful of cups where the answer actually changes. And the far end
+   reaches the steppers' own ceiling, so the control can no longer run out
+   before they do.
+
+   The compression above the line is the honest shape, not a compromise: 200
+   cups and 300 cups are different numbers but the same ANSWER, and the
+   distance between them should say so. */
+const LINE_AT = 0.33;
+/** the range input carries a POSITION, 0..POS_STEPS — see the note there */
+const POS_STEPS = 1000;
+
 const WORKING_DAYS = 26;
 /** INVENTED — blended flask rate a cup, across the menu */
 const FLASK_RATE = 8;
@@ -141,7 +174,8 @@ const MACHINE_FIXED =
 
 /** a desk job through a double shift. Whole cups only — 1.5 was a blended
     average nobody would ever say out loud about their own office. */
-const RATES = [1, 2, 3];
+const MIN_RATE = 1;
+const MAX_RATE = 3;
 
 /** Bounds for the typed number. Ten is the floor because it is the smallest
     office anyone orders a daily round for, and the ceiling only exists to
@@ -214,136 +248,167 @@ const FLASK_SRC = "/img/rig-flasks.webp";
    stop for the group and correct announcement all come free, and none of it
    would if these were <button>s with aria-pressed.
    --------------------------------------------------------------- */
-function Choices({
-  name,
-  legend,
-  options,
-  value,
-  onPick,
-  format,
-}: {
-  name: string;
-  legend: string;
-  options: number[];
-  value: number;
-  onPick: (v: number) => void;
-  format: (v: number) => string;
-}) {
-  return (
-    <fieldset>
-      {/* full cream at 1.02rem, matching the field's label. cream/70 was
-          7.81:1 — legal, but the quietest thing in a row of controls, which
-          is most of why this read as dull. */}
-      <legend className="mb-3 font-sans text-[1.02rem] font-semibold text-cream">
-        {legend}
-      </legend>
-      <div className="flex flex-wrap items-center gap-2">
-        {options.map((o) => (
-          <label key={o} className="cursor-pointer">
-            <input
-              type="radio"
-              name={name}
-              value={o}
-              checked={value === o}
-              onChange={() => onPick(o)}
-              className="peer sr-only"
-            />
-            {/* selected is a filled orange chip with espresso text: 5.95:1,
-                where cream on orange would have been 2.97 */}
-            <span className="block rounded-full border border-cream/40 px-4 py-2 font-sans text-[0.95rem] font-semibold tabular-nums text-cream/75 transition-colors duration-200 hover:border-cream/60 hover:text-cream peer-checked:border-orange peer-checked:bg-orange peer-checked:text-espresso-deep peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange">
-              {format(o)}
-            </span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
 /* ---------------------------------------------------------------
-   How many people. One field, no presets.
+   Both questions are steppers.
 
-   The six chips that used to lead this row are gone. They looked like the
-   question had a small set of right answers, and an office of 63 had to
-   find the typing box at the end of them anyway. A single field asks the
-   question once and takes any answer.
+   They were a typed number field and a row of three radio chips — two
+   different interactions for two questions that are the same shape, and the
+   chips in particular read as though cups-per-head had three approved
+   answers while people could be anything. One control, asked twice.
 
-   It is a real <input type="number">, so a phone raises the numeric keypad
-   and the browser's own min/max validation applies. It carries the visible
-   label rather than an sr-only one, because it is now the only thing
-   answering "How many people?" and a lone number box with no caption is a
-   puzzle.
+   NO TEXT ENTRY, SO THE STEP HAS TO SCALE
+   A field could take "240" in three keystrokes; a +1 button cannot, and the
+   ceiling here is 5000. So the step grows with the number: single people up
+   to fifty, then fives, then twenty-fives, then hundreds. Holding the button
+   also repeats and accelerates, from 400ms down to 40ms. Between the two, a
+   400-person office is a couple of seconds away rather than unreachable —
+   which is what removing the field would otherwise have cost.
 
-   WHY THERE IS A DRAFT STRING
-   Holding the field's text separately from the number the sum uses is what
-   lets a visitor clear the box and start again. Bound straight to `people`,
-   deleting a digit would immediately snap the floor back into the field and
-   they could never type "240" — they would get "10240". The draft holds
-   whatever they have typed, the sum uses the clamped value of it, and on
-   blur the draft is dropped so the field settles on the real number. That
-   is also what makes the floor painless: type "7", the sum quietly uses 10,
-   and the field corrects itself the moment you tab away.
+   The step is taken from the CURRENT value, so 50 goes down to 45 and up to
+   55. Slightly asymmetric at each boundary, and much better than a control
+   that changes size depending on which way you are travelling.
+
+   <output>, not <span>: this is a value the page calculated in response to
+   the buttons beside it, which is exactly what that element is for, and it
+   is announced on change without an aria-live of our own.
+
+   The button outline is cream/50 rather than the /35 it started at. Inside
+   the pill's own cream/6 fill that measured 2.53:1 against a 3.0 floor for
+   anything you are meant to identify as a control; /50 is 3.56. The break-
+   even is 0.425, so /45 would have passed by 0.18 and /50 leaves room for
+   the ground to be a shade lighter than the worst point measured.
    --------------------------------------------------------------- */
-function PeopleEntry({
+function Stepper({
+  legend,
   value,
-  onPick,
+  unit,
+  min,
+  max,
+  onStep,
+  hint,
 }: {
+  legend: string;
   value: number;
-  onPick: (v: number) => void;
+  unit: string;
+  min: number;
+  max: number;
+  onStep: (dir: number) => void;
+  hint?: string;
 }) {
-  const [draft, setDraft] = useState<string | null>(null);
+  const id = useId();
+  const hold = useRef<number | null>(null);
+
+  const stop = useCallback(() => {
+    if (hold.current !== null) {
+      window.clearTimeout(hold.current);
+      hold.current = null;
+    }
+  }, []);
+  /* a pointer released outside the button, or the component unmounting
+     mid-press, must not leave a timer counting */
+  useEffect(() => stop, [stop]);
+
+  const begin = (dir: number) => {
+    onStep(dir);
+    let wait = 400;
+    const tick = () => {
+      onStep(dir);
+      wait = Math.max(40, wait * 0.8);
+      hold.current = window.setTimeout(tick, wait);
+    };
+    hold.current = window.setTimeout(tick, wait);
+  };
+
+  const button = (dir: -1 | 1, disabled: boolean, label: string) => (
+    <button
+      type="button"
+      disabled={disabled}
+      aria-label={label}
+      onPointerDown={(e) => {
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        begin(dir);
+      }}
+      onPointerUp={stop}
+      onPointerCancel={stop}
+      onPointerLeave={stop}
+      /* the keyboard never reaches onPointerDown, so Enter and Space get
+         their own single step rather than nothing at all */
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onStep(dir);
+        }
+      }}
+      className={`grid w-[3.25rem] shrink-0 place-items-center text-cream outline-none transition-colors duration-200 hover:bg-orange hover:text-espresso-deep focus-visible:bg-orange focus-visible:text-espresso-deep disabled:cursor-not-allowed disabled:bg-transparent disabled:text-cream/25 ${
+        dir === 1 ? "border-l border-cream/20" : "border-r border-cream/20"
+      }`}
+    >
+      {/* drawn, not typed. A text "+" and "−" are two different glyphs at
+          two different optical weights and neither sits on the pill's centre
+          line — the minus rides high and the plus reads lighter. Two strokes
+          of the same width, centred in the same box, are the same mark seen
+          twice. */}
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-[1.15rem] w-[1.15rem]"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+      >
+        <path d="M5 12h14" />
+        {dir === 1 && <path d="M12 5v14" />}
+      </svg>
+    </button>
+  );
 
   return (
-    <label className="block cursor-text">
-      <span className="mb-3 block font-sans text-[1.02rem] font-semibold text-cream">
-        Select the number of people
-      </span>
+    <div>
+      <p
+        id={id}
+        className="mb-3 font-sans text-[1.02rem] font-semibold text-cream"
+      >
+        {legend}
+      </p>
       <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        {/* THE FOCUS RING BELONGS TO THE PILL, NOT THE INPUT.
-            globals.css gives every :focus-visible element a 2px orange
-            outline at 3px offset with its own 3px radius. On the input that
-            drew a second rounded rectangle INSIDE the pill — a box in a box,
-            and on an emptied field it was the only thing you could see. The
-            input's outline is suppressed and the pill takes the ring, so
-            keyboard focus is still obvious and it is one shape.
+        {/* ONE SHAPE, THREE SEGMENTS. It was a pill with a circular button
+            sitting inside each end — the same box-inside-a-box the typed
+            field was pulled up for, and the round buttons were small targets
+            besides. The buttons are the ends of the pill now, divided by
+            hairlines: no nesting, a 52px hit area each, and the hover fill
+            reaches the rounded edge because the pill clips it.
 
-            The faint fill is the other half of "it looks dull": a bare
-            outline with a number in it does not read as somewhere you type. */}
-        <span className="inline-flex items-baseline gap-2 rounded-full border border-cream/45 bg-cream/[0.06] px-5 py-2 transition-colors duration-200 hover:border-cream/70 focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/45">
-          <input
-            type="number"
-            inputMode="numeric"
-            min={MIN_PEOPLE}
-            max={MAX_PEOPLE}
-            aria-describedby="people-floor"
-            value={draft ?? String(value)}
-            onChange={(e) => {
-              const text = e.target.value;
-              setDraft(text);
-              if (text.trim() !== "") onPick(clampPeople(Number(text)));
-            }}
-            onBlur={() => setDraft(null)}
-            className="w-[4.6rem] appearance-none border-0 bg-transparent text-right font-display text-[1.45rem] font-extrabold tabular-nums leading-none text-cream outline-none focus:outline-none focus-visible:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-          {/* cream/70 = 8.05:1 at the worst point of the ground */}
-          <span aria-hidden="true" className="whitespace-nowrap font-sans text-[0.95rem] text-cream/70">
-            people
-          </span>
-        </span>
-        {/* On the field's own row, not under it: as a block it cost the
-            section 32px of height, and this section is already past a 768px
-            screen. Kept short for the same reason it is inline — "Any number
-            from 10 up." measured 137px, which left ONE pixel of slack in the
-            column at 768 and would have wrapped or not depending on how the
-            browser rounded. This leaves 66. */}
+            THE FOCUS RING IS ON THE PILL, NOT THE BUTTON. overflow-hidden
+            would have clipped the global focus outline to a flat edge on
+            whichever side it fired. The button announces focus by filling
+            amber and the pill takes the ring, exactly as the number field
+            used to do. */}
         <span
-          id="people-floor"
-          className="font-sans text-[0.8rem] text-cream/60"
+          role="group"
+          aria-labelledby={id}
+          className="inline-flex items-stretch overflow-hidden rounded-full border border-cream/45 bg-cream/[0.06] transition-colors duration-200 focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/45"
         >
-          Minimum {MIN_PEOPLE}.
+          {button(-1, value <= min, `Fewer ${unit}`)}
+          <output
+            htmlFor={id}
+            className="grid min-w-[8.5rem] place-items-center px-3 py-[0.7rem] text-center font-display text-[1.45rem] font-extrabold tabular-nums leading-none text-cream"
+          >
+            <span>
+              {int0(value)}
+              <span className="ml-1.5 font-sans text-[0.95rem] font-medium text-cream/70">
+                {unit}
+              </span>
+            </span>
+          </output>
+          {button(1, value >= max, `More ${unit}`)}
         </span>
+        {hint && (
+          <span className="font-sans text-[0.8rem] text-cream/60">{hint}</span>
+        )}
       </span>
-    </label>
+    </div>
   );
 }
 
@@ -363,23 +428,77 @@ function Sum({
   lines: [string, string][];
   total: number;
 }) {
+  const reduced = useReducedMotion();
   /* the reference colours the cheaper total. Orange is 4.50:1 on this ground
      and the figure is 21px+ extrabold, so the 3.0 large-text bar applies. */
   const totalTone = best ? "text-orange" : "text-cream";
   return (
-    <div
-      className={`rounded-[var(--radius-card)] border p-[clamp(0.9rem,2vh,1.35rem)] transition-colors duration-500 ${
-        best ? "border-orange" : "border-cream/40"
-      }`}
+    /* THE WINNER LIFTS. It used to be a border colour and nothing else, which
+       is a change you can only notice by comparing the two cards deliberately
+       — and the whole point of this section is that the answer changes as you
+       type. Eight pixels of rise, an amber ring and a faint amber ground make
+       the swap something you catch out of the corner of your eye.
+
+       The loser is NOT dimmed. Fading it would have been the obvious move and
+       it takes its type down with it: the working is set in cream/70, which
+       is 8.05:1 here and would land near 5.4 behind an opacity of 0.72. The
+       losing card keeps every value at full strength and simply stops being
+       the one that is raised. */
+    <motion.div
+      animate={reduced ? undefined : { y: best ? -10 : 0 }}
+      transition={{ type: "spring", stiffness: 320, damping: 30 }}
+      className="relative isolate rounded-[var(--radius-card)] border border-cream/30 p-[clamp(0.9rem,2vh,1.35rem)]"
     >
-      <div className="flex items-start justify-between gap-3">
+      {/* THE ANSWER IS ONE PANEL, AND IT SLIDES.
+          Both cards used to carry their own winning styles and `best` decided
+          which set was applied — so crossing the line was two colour changes
+          happening at once in two different places, which is precisely the
+          transition that could not be seen. There is ONE amber panel now,
+          shared between the cards by layoutId, and motion tweens it across
+          the gutter: the highlight physically leaves flasks and arrives at
+          the machine. That is the movement the section was missing.
+
+          -inset-px, not inset-0. An absolutely positioned child is placed
+          against its parent's PADDING box, so inset-0 would have drawn a
+          second ring just inside the card's own border and read as a double
+          outline. One pixel out lands it exactly on the border box. */}
+      {best && (
+        <motion.span
+          layoutId="winner-panel"
+          aria-hidden="true"
+          transition={
+            reduced
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 260, damping: 30 }
+          }
+          className="absolute -inset-px -z-10 rounded-[var(--radius-card)] border border-orange bg-orange/[0.07] shadow-[0_0_0_1px_rgba(242,101,34,0.35),0_18px_44px_-22px_rgba(242,101,34,0.8)]"
+        />
+      )}
+      <div className="flex min-h-[1.9rem] items-start justify-between gap-3">
         <p className="font-sans text-[0.74rem] font-bold uppercase tracking-[0.14em] text-cream/85">
           {label}
         </p>
+        {/* ONE BADGE, TWO POSSIBLE HOMES.
+            layoutId is what makes it TRAVEL. Rendering a separate badge in
+            each card and toggling `best` mounted one and unmounted the other
+            in the same frame — the label simply blinked from the left card to
+            the right one, which is exactly the transition that could not be
+            felt. With a shared layoutId motion keeps it as one element and
+            tweens it across the gap, so the answer visibly moves from flasks
+            to the machine. Neither card clips, so the flight is not cut off
+            crossing the gutter between them. */}
         {best && (
-          <span className="shrink-0 rounded-full bg-orange px-2.5 py-1 font-sans text-[0.66rem] font-bold uppercase tracking-[0.1em] text-espresso-deep">
+          <motion.span
+            layoutId="cheaper-badge"
+            transition={
+              reduced
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 340, damping: 30 }
+            }
+            className="shrink-0 rounded-full bg-orange px-2.5 py-1 font-sans text-[0.66rem] font-bold uppercase tracking-[0.1em] text-espresso-deep"
+          >
             Cheaper
-          </span>
+          </motion.span>
         )}
       </div>
 
@@ -401,14 +520,21 @@ function Sum({
       </dl>
 
       <div className="mt-2.5 border-t border-cream/20 pt-2.5">
-        <p className={`font-display text-[clamp(1.3rem,2.2vw,1.7rem)] font-extrabold leading-none tracking-[-0.02em] ${totalTone}`}>
+        {/* a single beat when this side becomes the answer. The keyframe only
+            re-runs when `best` actually changes, so it fires on the crossover
+            and never while you are simply typing a bigger number. */}
+        <motion.p
+          animate={reduced ? undefined : best ? { scale: [1, 1.07, 1] } : { scale: 1 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className={`origin-left font-display text-[clamp(1.3rem,2.2vw,1.7rem)] font-extrabold leading-none tracking-[-0.02em] ${totalTone}`}
+        >
           <RollValue value={total} format={rupees} duration={420} />
           <span className="ml-1.5 font-sans text-[0.8rem] font-medium text-cream/60">
             a month
           </span>
-        </p>
+        </motion.p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -426,6 +552,68 @@ export default function Machines() {
   useEffect(() => setOffice(people, cups), [people, cups]);
 
   const machineWins = cups > THRESHOLD_CUPS;
+
+  /* THE TRACK'S TWO ENDS, IN CUPS. Both move with the rate, because both are
+     the steppers' own bounds seen through it — ten people is 10, 20 or 30
+     cups, five thousand is 5,000, 10,000 or 15,000. Deriving them from the
+     steppers rather than picking a number is the whole fix: the two controls
+     can no longer disagree about where the end of the range is. */
+  const minCups = MIN_PEOPLE * rate;
+  const maxCups = MAX_PEOPLE * rate;
+
+  /* position <-> cups, across the two legs described at LINE_AT.
+     The guards are for a floor that rises to meet the threshold (it would
+     take 10 people x 4 cups, which no rate reaches) and for a ceiling that
+     is not above it — neither can happen today, and neither should be able
+     to produce a divide-by-zero if the bounds are ever edited. */
+  const lowSpan = Math.max(1, THRESHOLD_CUPS - minCups);
+  const highRatio = Math.max(1.0001, maxCups / THRESHOLD_CUPS);
+
+  const posToCups = (p: number) =>
+    p <= LINE_AT
+      ? minCups + lowSpan * (p / LINE_AT)
+      : THRESHOLD_CUPS * Math.pow(highRatio, (p - LINE_AT) / (1 - LINE_AT));
+
+  const cupsToPos = (c: number) => {
+    const p =
+      c <= THRESHOLD_CUPS
+        ? ((c - minCups) / lowSpan) * LINE_AT
+        : LINE_AT +
+          (1 - LINE_AT) * (Math.log(c / THRESHOLD_CUPS) / Math.log(highRatio));
+    return Math.min(1, Math.max(0, p));
+  };
+
+  /* A native range thumb travels between thumbW/2 and trackW - thumbW/2,
+     but a linear-gradient fill is measured across the WHOLE track — so the
+     two only agree at the midpoint. At the top of the range the orange ran
+     twelve pixels PAST the handle, which is the overshoot you could see. The
+     40-cup mark had the same error and it mattered more: the mark and the
+     handle disagreed about where the line was, so the colour flipped before
+     the thumb reached it.
+
+     Both are expressed against the thumb's own travel instead. 12px is half
+     of the 24px handle in globals.css; the two numbers have to move
+     together. */
+  const THUMB = 24;
+  const along = (frac: number) =>
+    `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${frac.toFixed(4)})`;
+  const fillAt = cupsToPos(cups);
+
+  /* dragging the line sets the headcount, since people is the value the rest
+     of the page (and section 05) reads. Rounding to whole people is what
+     stops a drag printing a headcount nobody could have. */
+  const onCups = (next: number) =>
+    setPeople(clampPeople(Math.round(next / rate)));
+
+  /* see the note on Stepper: the step scales so the 5000 ceiling stays
+     reachable now that there is no box to type it into. It is a named
+     function because the slider's PageUp/PageDown borrow it. */
+  const stepSize = (v: number) =>
+    v < 50 ? 1 : v < 200 ? 5 : v < 1000 ? 25 : 100;
+  const stepPeople = (dir: number) =>
+    setPeople((v) => clampPeople(v + dir * stepSize(v)));
+  const stepRate = (dir: number) =>
+    setRate((v) => Math.min(MAX_RATE, Math.max(MIN_RATE, v + dir)));
   const flaskBill = flaskCost(cups);
   const machineBill = machineCost(cups);
   const gap = flaskBill - machineBill;
@@ -565,14 +753,22 @@ export default function Machines() {
           {...reveal(0.45)}
           className="mt-[clamp(1.25rem,2.8vh,2rem)] grid gap-x-10 gap-y-5 border-t border-cream/15 pt-[clamp(1rem,2.4vh,1.6rem)] md:grid-cols-2"
         >
-          <PeopleEntry value={people} onPick={setPeople} />
-          <Choices
-            name="rate"
+          <Stepper
+            legend="How many people?"
+            value={people}
+            unit="people"
+            min={MIN_PEOPLE}
+            max={MAX_PEOPLE}
+            onStep={stepPeople}
+            hint={`Minimum ${MIN_PEOPLE}. Hold to go faster.`}
+          />
+          <Stepper
             legend="How many cups does each drink a day?"
-            options={RATES}
             value={rate}
-            onPick={setRate}
-            format={(v) => (v === 1 ? "1 cup" : `${v} cups`)}
+            unit={rate === 1 ? "cup" : "cups"}
+            min={MIN_RATE}
+            max={MAX_RATE}
+            onStep={stepRate}
           />
         </motion.div>
 
@@ -600,6 +796,109 @@ export default function Machines() {
           >
             {machineWins ? "Above" : "Under"} the {THRESHOLD_CUPS}-cup line
           </span>
+        </motion.div>
+
+        {/* ---------------- the line, and you can drag it ----------------
+            This started as a read-only bar. It is the control now, because a
+            rule you can only READ about is a rule nobody tests — and the whole
+            argument of this section is that the answer flips somewhere. You
+            have to be able to push it over the edge yourself.
+
+            A native range input, not a div with pointer handlers: dragging,
+            arrow keys, Home/End, touch and screen readers all come free and
+            correct, and none of them would have come free from a rebuild. It
+            is the same .calc-range the size slider used, which had been left
+            styled in globals.css with nothing calling it.
+
+            IT DRIVES CUPS, AND CUPS DRIVE PEOPLE
+            The rule is written in cups, so the axis is cups — and it is NAMED
+            at the left end of the scale now, because "drag to try it" never
+            said what was being dragged. People is derived back out of it, so
+            the handle and the left-hand stepper always move together.
+
+            THE INPUT'S OWN VALUE IS A POSITION, NOT A COUNT
+            A native range positions its thumb linearly in value space, so a
+            non-linear scale cannot be expressed in cups — the input carries
+            0..POS_STEPS notches and the mapping does the rest.
+
+            One consequence has to be handled by hand. An arrow key would
+            otherwise move a thousandth of the track, which down at the floor
+            is a third of a cup and rounds to no change at all — the key would
+            look broken. Arrows, Page keys and Home/End are intercepted and
+            step PEOPLE instead, on the same scaling step as the buttons, so
+            the keyboard gets the same control the pointer has. */}
+        <motion.div
+          {...reveal(0.68)}
+          className="mt-[clamp(0.5rem,1.4vh,0.9rem)] max-w-[46rem]"
+        >
+          <div className="relative">
+            <input
+              type="range"
+              className="calc-range block"
+              min={0}
+              max={POS_STEPS}
+              step={1}
+              value={Math.round(fillAt * POS_STEPS)}
+              onChange={(e) =>
+                onCups(posToCups(Number(e.target.value) / POS_STEPS))
+              }
+              onKeyDown={(e) => {
+                const k = e.key;
+                if (k === "ArrowRight" || k === "ArrowUp") stepPeople(1);
+                else if (k === "ArrowLeft" || k === "ArrowDown") stepPeople(-1);
+                else if (k === "PageUp")
+                  setPeople((v) => clampPeople(v + stepSize(v) * 10));
+                else if (k === "PageDown")
+                  setPeople((v) => clampPeople(v - stepSize(v) * 10));
+                else if (k === "Home") setPeople(MIN_PEOPLE);
+                else if (k === "End") setPeople(MAX_PEOPLE);
+                else return;
+                e.preventDefault();
+              }}
+              aria-label="Cups a day"
+              aria-valuetext={`${int0(cups)} cups a day, ${
+                machineWins ? "above" : "under"
+              } the ${THRESHOLD_CUPS}-cup line`}
+              style={
+                {
+                  "--fill": along(fillAt),
+                  "--fill-col": machineWins
+                    ? "var(--color-orange)"
+                    : "rgba(255,247,240,0.7)",
+                } as React.CSSProperties
+              }
+            />
+            {/* the line itself, over the track and out of the way of the
+                pointer so it can never swallow a drag */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 h-4 w-px -translate-x-1/2 -translate-y-1/2 rounded-full bg-cream/60"
+              style={{ left: along(LINE_AT) }}
+            />
+          </div>
+          {/* THREE LABELS, AND THE LEFT ONE IS THE ANSWER TO "what does this
+              drag?". The row carried only the 40-cup mark and "drag to try
+              it", so nothing on screen said which of the two questions above
+              it moved. It moves cups; the headcount follows.
+
+              The 40 mark is centred on LINE_AT = 33%, which at 736px is 243px
+              in — clear of "Cups a day" ending near 58px and of the right-hand
+              hint, at every width the section reaches. */}
+          <p
+            aria-hidden="true"
+            className="relative mt-1 h-4 font-sans text-[0.72rem] leading-none"
+          >
+            <span className="absolute left-0 text-cream/45">Cups a day</span>
+            <span
+              className="absolute -translate-x-1/2 whitespace-nowrap font-semibold text-cream/70"
+              style={{ left: along(LINE_AT) }}
+            >
+              {THRESHOLD_CUPS} cups
+            </span>
+            <span className="absolute right-0 text-cream/45">
+              drag to try it
+            </span>
+          </p>
         </motion.div>
 
         {/* ---------------- the sum, both sides ---------------- */}
@@ -719,23 +1018,47 @@ export default function Machines() {
           </span>
 
           <div className="min-w-0">
-            <p className="font-sans text-[clamp(1.05rem,1.4vw,1.3rem)] leading-[1.4] text-cream">
-              {machineWins ? (
-                <>
-                  A machine saves you{" "}
-                  <span className="font-display text-[clamp(1.4rem,2.2vw,1.85rem)] font-extrabold text-orange">
-                    <RollValue value={gap} format={rupees} duration={420} />
-                  </span>{" "}
-                  a month.
-                </>
-              ) : (
-                <>
-                  <strong className="font-semibold">Stay on flasks.</strong> A
-                  machine wouldn&rsquo;t pay for itself at {int0(cups)} cups a
-                  day.
-                </>
-              )}
-            </p>
+            {/* The verdict SWAPS rather than rewriting itself in place. Both
+                sentences occupied the same <p> and React reconciled them
+                word by word, so crossing the line changed some text and the
+                reader's eye had nothing to follow. mode="wait" takes the old
+                one out before the new one arrives, which is a beat you can
+                see. */}
+            {/* The height is RESERVED so the swap does not shove the footnote and the
+                button down the page and back. Sized off the taller of the two
+                sentences: the machine verdict carries an inline figure at up to
+                1.85rem, and an inline child inherits leading-[1.4] as a number,
+                so its line box is 1.4x its OWN size, not the paragraph's. That
+                is 41px at 1440, 2.4em of the 20.2px base. Mobile reserves 3.6em
+                because both sentences take two lines in a 335px column. */}
+            <div className="min-h-[3.6em] sm:min-h-[2.4em]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.p
+                  key={machineWins ? "machine" : "flask"}
+                  initial={reduced ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduced ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.28, ease: EASE }}
+                  className="font-sans text-[clamp(1.05rem,1.4vw,1.3rem)] leading-[1.4] text-cream"
+                >
+                  {machineWins ? (
+                    <>
+                      A machine saves you{" "}
+                      <span className="font-display text-[clamp(1.4rem,2.2vw,1.85rem)] font-extrabold text-orange">
+                        <RollValue value={gap} format={rupees} duration={420} />
+                      </span>{" "}
+                      a month.
+                    </>
+                  ) : (
+                    <>
+                      <strong className="font-semibold">Stay on flasks.</strong>{" "}
+                      A machine wouldn&rsquo;t pay for itself at {int0(cups)}{" "}
+                      cups a day.
+                    </>
+                  )}
+                </motion.p>
+              </AnimatePresence>
+            </div>
 
             <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
               {/* Says "indicative", because it is. Until the client confirms

@@ -1,7 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
+
+import { EMAIL, mailHref, PHONE_LABEL, TEL_HREF, waHref } from "@/lib/contact";
+import {
+  currentWorkplace,
+  subscribeWorkplace,
+  WORKPLACE_ASK,
+  type WorkplaceKey,
+} from "@/lib/workplace";
 
 /**
  * Section 07 — Get pricing.
@@ -37,23 +45,9 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const STEP = 0.09;
 const T0 = 0.25;
 
-const PHONE_LABEL = "+91 97504 97509";
-const PHONE_E164 = "+919750497509";
-const WA_NUMBER = "919750497509";
-const EMAIL = "refresh@hotcups.co.in";
-
-const ASK = "Hi Hotcups — we'd like a price per cup and a first delivery date.";
-
-const WA_HREF = `https://wa.me/${WA_NUMBER}?text=` + encodeURIComponent(ASK);
-
-/* "Get a quote" goes to email, not to WhatsApp. A quote is a document, and
-   the button beside this one already covers the instant channel — pointing
-   both at the same place would make one of them decoration. */
-const MAIL_HREF =
-  `mailto:${EMAIL}?subject=` +
-  encodeURIComponent("Pricing request") +
-  "&body=" +
-  encodeURIComponent(ASK);
+/* The number, the inbox and the two hrefs now live in lib/contact — the
+   footer shows the same ones, and one of them being stale would be worse
+   than not repeating them at all. */
 
 function PhoneIcon() {
   return (
@@ -145,6 +139,13 @@ function SpinBadge() {
 }
 
 export default function Pricing() {
+  /* Section 03's answer, if the visitor gave one. It does not change anything
+     you can SEE here — see lib/workplace for why there is no field to fill —
+     it changes what the email and the WhatsApp message say when they open. */
+  const [place, setPlace] = useState<WorkplaceKey | null>(currentWorkplace);
+  useEffect(() => subscribeWorkplace(setPlace), []);
+  const asked = place ? WORKPLACE_ASK[place] : null;
+
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
   const on = useInView(ref, { amount: 0.25, once: true }) || Boolean(reduced);
@@ -164,9 +165,19 @@ export default function Pricing() {
       id="pricing"
       ref={ref}
       className="overflow-x-clip bg-cream"
-      style={{ paddingBlock: "clamp(2.5rem, 6vw, 4.5rem)" }}
+      /* 72px of top padding against a 78px header — the eyebrow was six
+         pixels behind the bar at any rest position with this section at the
+         top of the window. See the note on Service: same fix, same reason. */
+      style={{
+        paddingTop: "calc(var(--header-h) + clamp(1rem, 2vw, 1.75rem))",
+        paddingBottom: "clamp(2.5rem, 6vw, 4.5rem)",
+      }}
     >
-      <div className="shell">
+      {/* .shell-wide, not .shell. The card is a PHOTOGRAPH with copy on it,
+          not a column of reading text, so the 1240 measure that is right for
+          prose was just cropping the picture: +197px at 1440 and +464px from
+          1720 up. It is the same call the hero and the header already make. */}
+      <div className="shell-wide">
         {/* the same eyebrow every other section wears. There is deliberately
             no <h2> out here: the card already carries one, and two headings
             for one section is how a page starts sounding like a brochure. */}
@@ -221,11 +232,22 @@ export default function Pricing() {
           }}
         />
 
-        <div className="relative px-[clamp(1.25rem,4vw,3.5rem)] py-[clamp(2.25rem,6vw,4rem)]">
-          <div className="mx-auto flex max-w-[46rem] flex-col items-center text-center">
+        {/* A HEIGHT, SO THE PICTURE HAS ROOM.
+            The card used to be exactly as tall as its own copy plus padding —
+            about 450px — which made a 1672x941 photograph read as a letterbox
+            strip with a cream field above and below it. It now asks for a real
+            block of height and centres the copy inside that, so the image is
+            shown at a size worth having.
+
+            svh rather than vh: on a phone the URL bar makes vh jump as you
+            scroll, and a card that changes height mid-scroll is worse than one
+            that is slightly short. The rem floor and ceiling stop it collapsing
+            on a laptop in landscape or turning into a wall on a tall monitor. */}
+        <div className="relative flex min-h-[clamp(30rem,66svh,46rem)] flex-col items-center justify-center px-[clamp(1.25rem,4vw,3.5rem)] py-[clamp(2.5rem,6vw,4.5rem)]">
+          <div className="mx-auto flex w-full max-w-[54rem] flex-col items-center text-center">
             <motion.span
               {...step(0)}
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/35 px-4 py-1.5 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm"
+              className="inline-flex items-center gap-2.5 rounded-full border border-white/35 px-5 py-2 font-sans text-[0.78rem] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm"
             >
               <span
                 aria-hidden="true"
@@ -236,7 +258,7 @@ export default function Pricing() {
 
             <motion.h2
               {...step(1)}
-              className="mt-6 font-display text-[clamp(1.9rem,4.2vw,3.2rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-white"
+              className="mt-7 font-display text-[clamp(1.4rem,4.6vw,3.75rem)] font-extrabold leading-[1.08] tracking-[-0.03em] text-white"
             >
               Your first flask can
               <br />
@@ -245,7 +267,7 @@ export default function Pricing() {
 
             <motion.p
               {...step(2)}
-              className="mt-5 max-w-[44ch] font-sans text-[clamp(0.98rem,1.15vw,1.1rem)] leading-[1.6]"
+              className="mt-6 max-w-[44ch] font-sans text-[clamp(1.02rem,1.35vw,1.3rem)] leading-[1.55]"
               style={{ color: "rgba(255,255,255,0.88)" }}
             >
               Tell us your team size and your timings. We&rsquo;ll send a price
@@ -254,11 +276,11 @@ export default function Pricing() {
 
             <motion.div
               {...step(3)}
-              className="mt-8 flex flex-wrap items-center justify-center gap-3"
+              className="mt-9 flex flex-wrap items-center justify-center gap-3.5"
             >
               <a
-                href={MAIL_HREF}
-                className="group relative isolate inline-flex h-[3.25rem] items-center gap-2 overflow-hidden rounded-full bg-orange px-7 font-sans text-[0.95rem] font-semibold text-white"
+                href={mailHref(asked)}
+                className="group relative isolate inline-flex h-[3.6rem] items-center gap-2 overflow-hidden rounded-full bg-orange px-8 font-sans text-[1.05rem] font-semibold text-white"
               >
                 <span
                   aria-hidden="true"
@@ -269,10 +291,10 @@ export default function Pricing() {
               </a>
 
               <a
-                href={WA_HREF}
+                href={waHref(asked)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hero-btn relative inline-flex h-[3.25rem] items-center gap-2.5 overflow-hidden rounded-full border border-white/45 bg-white/10 px-6 font-sans text-[0.95rem] font-semibold text-white backdrop-blur-sm"
+                className="hero-btn relative inline-flex h-[3.6rem] items-center gap-2.5 overflow-hidden rounded-full border border-white/45 bg-white/10 px-7 font-sans text-[1.05rem] font-semibold text-white backdrop-blur-sm"
               >
                 <span className="relative z-10">WhatsApp us</span>
               </a>
@@ -280,10 +302,10 @@ export default function Pricing() {
 
             <motion.div
               {...step(4)}
-              className="mt-7 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-sans text-[0.88rem] text-white"
+              className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 font-sans text-[1rem] text-white"
             >
               <a
-                href={`tel:${PHONE_E164}`}
+                href={TEL_HREF}
                 className="inline-flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-75"
               >
                 <PhoneIcon />
@@ -301,7 +323,7 @@ export default function Pricing() {
 
           {/* bottom right, and out of the copy's way on a phone */}
           <div className="mt-8 flex justify-center md:absolute md:bottom-[clamp(1.25rem,3vw,2.5rem)] md:right-[clamp(1.25rem,3vw,2.5rem)] md:mt-0">
-            <a href={MAIL_HREF} aria-label="Get a quote by email">
+            <a href={mailHref(asked)} aria-label="Get a quote by email">
               <SpinBadge />
             </a>
           </div>

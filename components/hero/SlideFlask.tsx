@@ -264,17 +264,52 @@ export default function SlideFlask({ active }: { active: boolean }) {
           Between the canvas and the copy, guaranteeing contrast whatever the
           noise does on a given frame. Heavy where the words are, gone by the
           time it reaches the flask. */}
+      {/* Above md the copy is on the LEFT and the flask on the right, so the
+          scrim is a radial anchored left. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 hidden md:landscape:block"
         style={{
           background:
             "radial-gradient(76% 120% at 12% 50%, rgba(18,5,2,0.95) 0%, rgba(18,5,2,0.92) 45%, rgba(18,5,2,0.74) 62%, rgba(18,5,2,0.26) 80%, rgba(18,5,2,0) 100%)",
         }}
       />
+      {/* Below md they are STACKED, copy over flask, so the scrim has to be
+          too. A left-anchored radial on a phone darkened the left edge and
+          left the copy's right-hand words sitting on open shader — and it
+          also sat on top of the flask, which is now the bottom of the frame.
+          Vertical: heavy through the copy, clearing by the base.
+
+          IT WAS NOT CLEARING BY THE BASE, AND THAT IS WHAT LOOKED FADED.
+          The old ramp held 0.86 at 66% and 0.58 at 82%. The plate stands in
+          the bottom ~42% of the frame, so its top two thirds sat under an
+          86%-black veil: the flask and the glass were THERE, they were just
+          painted out. What that reads as on a phone is a big empty gap under
+          the copy and a dim picture at the very bottom — which is exactly the
+          two complaints, from one cause.
+
+          The new ramp holds 0.93 across the copy, then falls off a cliff: 0.72
+          by 62%, 0.34 by 73%, 0.12 by 84%. The copy keeps the same ground it
+          had (its last element, the counter pill, sits above 55% on any phone
+          taller than ~760px) and the plate gets the bottom third almost clean.
+
+          The stops stay in PERCENT on purpose. On a short phone the copy runs
+          further down the frame and the veil is correspondingly heavier where
+          it lands — which is the behaviour you want, because below ~700px the
+          copy genuinely does overlap the flask and legibility has to win. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-60"
+        className="pointer-events-none absolute inset-0 md:landscape:hidden"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(18,5,2,0.94) 0%, rgba(18,5,2,0.93) 50%, rgba(18,5,2,0.72) 62%, rgba(18,5,2,0.34) 73%, rgba(18,5,2,0.12) 84%, rgba(18,5,2,0.02) 100%)",
+        }}
+      />
+      {/* Desktop only. On a phone this ramp sat exactly where the flask now
+          stands and crushed its base to almost black. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-60 md:landscape:block"
         style={{
           background:
             "linear-gradient(to top, rgba(18,5,2,0.9), rgba(18,5,2,0))",
@@ -282,7 +317,17 @@ export default function SlideFlask({ active }: { active: boolean }) {
       />
 
       {/* ---------------- the copy ---------------- */}
-      <div className="relative z-10 flex min-h-svh flex-col justify-center pb-[clamp(6rem,13vh,9rem)] pt-[calc(var(--header-h)+2rem)]">
+      {/* TOP-ALIGNED BELOW md, CENTRED ABOVE IT.
+          justify-center split the leftover height in two and handed half of
+          it to the top, which is what put ~140px of nothing under the header
+          and another ~230px under the copy on a tall phone. Top-aligning
+          collects ALL of the slack at the bottom in one piece, which is where
+          the flask now sits — so the same space that read as a gap now reads
+          as the photograph. Above md the copy shares the row with the flask
+          rather than stacking above it, and centring is right again. */}
+      {/* see the note in SlideLight: the split is gated on landscape, not on
+          width, so a portrait tablet stacks instead of halving 1024px */}
+      <div className="relative z-10 flex min-h-svh flex-col justify-start pb-[clamp(6rem,13vh,9rem)] pt-[calc(var(--header-h)+1.25rem)] md:landscape:justify-center md:landscape:pt-[calc(var(--header-h)+2rem)]">
         <motion.div
           className="shell-wide"
           style={reduced ? undefined : { y: copyY, opacity: copyFade }}
@@ -299,7 +344,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 is nothing to stay clear of and the text takes the width.
                 LiquidSurface duplicates this rule and skips its collision
                 floor below md for the same reason. */}
-            <div className="max-w-[min(34rem,90vw)] md:max-w-[min(58rem,48vw)]" style={pourOnDark}>
+            <div className="max-w-[min(34rem,90vw)] md:landscape:max-w-[min(58rem,48vw)]" style={pourOnDark}>
             <motion.p
               {...rise(0.05)}
               className="eyebrow"
@@ -323,13 +368,23 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 min(928, w*0.48) for exactly that reason. Both move together or
                 neither does.
 
-                THE FONT FLOOR IS 2.05rem, NOT 2.3
-                Only the leg below 772px changes, and it changes because the
-                floor was fighting the column: at 768 the column is 369px and a
-                36.8px floor put the longest line at 410px, so it wrapped. At
-                32.8px it is 365px and holds. Desktop is untouched — 4.25vw
-                overtakes the floor at 772. */}
-            <h1 className="mt-5 font-display text-[clamp(2.05rem,4.25vw,5rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream">
+                A FLAT FLOOR CANNOT WORK BELOW md, BECAUSE THE COLUMN MOVES
+                A single clamp(2.05rem, 4.25vw, 5rem) held everywhere from
+                768 up and wrapped on every phone made. Below md the column is
+                90vw, so it shrinks with the window while a rem floor does not
+                shrink at all: "Hot tea and filter coffee," is 11.13 em, so it
+                needs 365px and the column only reaches that at 406px wide.
+                Measured, it wrapped at 320, 360, 375, 390 and 393 — which is
+                every common phone and none of the widths the old floor was
+                checked against.
+
+                So the floor is a vw ramp of its own below md. The cap is
+                2.04rem rather than a round number: 4.25vw at 768 is 32.64px,
+                so the mobile leg tops out at exactly what the desktop leg
+                starts at and there is no step at the breakpoint. 7.2vw hits
+                that cap at 453px and rides the column down below it — 296px
+                of line in 320px of column at 360, 267 in 280 at 320. */}
+            <h1 className="mt-3 font-display text-[clamp(1.5rem,7.2vw,2.04rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream md:mt-5 md:text-[clamp(2.05rem,4.25vw,5rem)]">
               {LINES.map((line, i) => (
                 <span
                   key={line}
@@ -371,17 +426,17 @@ export default function SlideFlask({ active }: { active: boolean }) {
 
             <motion.p
               {...rise(1.0)}
-              className="mt-6 max-w-[44ch] font-sans text-base leading-relaxed text-cream/75 md:text-lg"
+              className="mt-4 max-w-[44ch] font-sans text-base leading-relaxed text-cream/75 md:mt-6 md:text-lg"
             >
               No machine to buy. No pantry staff. We deliver at your timings and
               collect the empties.
             </motion.p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-8">
               <motion.a
                 {...rise(1.08)}
                 href="#pricing"
-                className="hero-btn group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-7 py-4 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)]"
+                className="hero-btn group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-5 py-3.5 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)] md:px-7 md:py-4"
               >
                 <span className="relative z-10">Get pricing</span>
                 <span
@@ -395,13 +450,13 @@ export default function SlideFlask({ active }: { active: boolean }) {
               <motion.a
                 {...rise(1.16)}
                 href="#savings"
-                className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-cream/25 px-6 py-4 font-sans text-sm font-semibold text-cream backdrop-blur-sm transition-colors duration-300 hover:border-cream/60"
+                className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-cream/25 px-5 py-3.5 font-sans text-sm font-semibold text-cream backdrop-blur-sm transition-colors duration-300 hover:border-cream/60 md:px-6 md:py-4"
               >
                 <span className="relative z-10">Calculate savings</span>
               </motion.a>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 md:mt-8">
               {TRUST.map((t, i) => (
                 <motion.span
                   key={t}
@@ -420,7 +475,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
 
             <motion.p
               {...rise(1.34)}
-              className="mt-7 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-2 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm"
+              className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-7 md:py-2"
             >
               <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-70" />

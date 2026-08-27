@@ -145,8 +145,15 @@ export default function SteamCanvas({
            its first tenth — so the plume only became visible well above where
            it started, and read as a gap between the splash and the steam.
            Raising k to 0.65 front-loads the fade-in: 65% opacity at k=0.1
-           instead of 15%, with the same soft death at the top. */
-        const alpha = Math.sin(Math.PI * Math.pow(k, 0.65)) * 0.21 * I;
+           instead of 15%, with the same soft death at the top.
+
+           0.13, DOWN FROM 0.21. The composite is `lighter`, so overlapping
+           puffs SUM rather than blend — forty-six of them over one another
+           built a hot core far brighter than any single puff, which is what
+           made it read as a glowing blob instead of vapour. Cutting the per-
+           puff peak is the right lever: it thins the core without thinning
+           the plume, which fewer puffs or a shorter life would both do. */
+        const alpha = Math.sin(Math.PI * Math.pow(k, 0.65)) * 0.13 * I;
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, grow);
         g.addColorStop(0, `rgba(255,247,240,${alpha})`);
         g.addColorStop(1, "rgba(255,247,240,0)");

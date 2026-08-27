@@ -36,19 +36,38 @@ const POSTER = "/img/hero-poster.webp";
    texture. Two textures would mean two rects, two rises and two reflections
    in the shader; as one image the waterline cut, the mirrored reflection and
    the contact darkening all apply to both for free. */
-const SUBJECT = {
-  /* Flask and glass side by side. The steam rises off the CHAI, not the
-     sealed flask: a closed vacuum flask does not steam, and the glass is the
-     thing that is visibly hot. Measured on the trimmed plate: the splash
-     centroid is 36.8% across, the crown's top 28.3% down and the chai surface
-     about 45% down. v = 0.38 puts the origin between those two — inside the
-     splash, not on its rim, so no gap opens up under the plume. */
-  wide: { src: "/img/hero-subject-v2.webp", u: 0.368, v: 0.38 },
-  /* On a phone the pair clamps to a squat 27% of the height, so the narrow
-     screen gets the flask on its own and keeps its full stature. Its spout is
-     the only thing left to steam from; measured on the crop. */
-  narrow: { src: "/img/hero-flask-v2.webp", u: 0.181, v: 0.134 },
-};
+/* Flask and glass side by side. The steam rises off the CHAI, not the sealed
+   flask: a closed vacuum flask does not steam, and the glass is the thing that
+   is visibly hot.
+
+   THE ORIGIN IS THE GLASS RIM, NOT THE SPLASH. v was 0.38, picked off a
+   measurement of the splash crown — and 0.38 is up in the crown itself, a
+   clear third of the plate ABOVE anything hot. Puffs then climb another 15%
+   of the frame from there, so the brightest part of the plume ended up level
+   with the flask's shoulder: a soft bright blob hanging in mid-air with a gap
+   between it and the chai. Re-measured against guides drawn on the plate, the
+   tumbler's rim sits at v = 0.555 and its centre line at u = 0.35.
+
+   v = 0.5, which is a notch ABOVE the rim rather than on it. Sitting exactly
+   on 0.555 the first half of every puff's life was spent behind the glass and
+   the splash, so the plume only became visible well up the frame — the same
+   complaint as the old 0.38, from the opposite direction. 0.5 is the base of
+   the splash: the plume leaves the chai, rises through the crown, and is
+   visible from its first frame.
+
+   ONE PLATE NOW, NOT TWO.
+   A phone used to get hero-flask-v2.webp, a portrait crop of this same
+   photograph, on the reasoning that the pair "clamps to a squat 27% of the
+   height" on a narrow screen. That reasoning belonged to a layout where the
+   flask stood in the right-hand margin beside the copy. It does not stand
+   there any more — below md it sits in a wide, short band across the bottom,
+   which is exactly the shape this landscape plate wants.
+
+   And the crop was cutting the glass. Its left edge runs straight through the
+   chai tumbler, so the phone was being shown a severed glass while every
+   other width got the whole composition. A wide band and a landscape plate
+   fix the shape and the crop in the same move. */
+const SUBJECT = { src: "/img/hero-subject-v2.webp", u: 0.35, v: 0.5 };
 
 function capable() {
   if (typeof window === "undefined") return false;
@@ -132,10 +151,26 @@ export default function LiquidSurface({
     gl.canvas.style.height = "100%";
     gl.canvas.style.display = "block";
 
-    const wide = window.matchMedia("(min-width: 1280px)").matches;
-    const mid = window.matchMedia("(min-width: 768px)").matches;
-
-    const subject = mid ? SUBJECT.wide : SUBJECT.narrow;
+    /* LIVE, NOT CAPTURED.
+       These were read once at mount and never again. Everything downstream —
+       which subject texture is loaded, how many noise octaves run, and every
+       number in layout() — was therefore frozen at whatever the window
+       happened to be when the effect first ran. Load the page on a desktop,
+       narrow it to a phone, and you kept the wide flask-and-glass plate at
+       desktop proportions on a 390px screen, which is exactly what it looked
+       like. resize() re-reads them now and swaps the texture when the 768
+       line is crossed in either direction. */
+    const mqWide = window.matchMedia("(min-width: 1280px)");
+    /* THE SAME TEST THE CSS md:landscape: PREFIX USES, and it has to be:
+       this decides whether the plate stands in the right-hand margin or
+       centres on the floor, and the DOM decides where the copy goes. If the
+       two disagree the flask sits on top of the headline. */
+    const mqMid = window.matchMedia(
+      "(min-width: 768px) and (orientation: landscape)",
+    );
+    let wide = mqWide.matches;
+    let mid = mqMid.matches;
+    const subject = SUBJECT;
 
     const flask = new Texture(gl, {
       generateMipmaps: false,
@@ -174,13 +209,29 @@ export default function LiquidSurface({
          1280-2560: the widest the subject gets is a right edge at 0.992 of
          the frame (1280x800) and a top at 0.910, so it still clears the
          window and still clears the copy. */
-      let hUV = wide ? 0.62 : mid ? 0.52 : 0.47;
+      /* the SAME source the CSS md: prefix uses. `w` is the canvas client
+         width, short by the scrollbar, so the two disagreed in a ~17px band. */
+      const stacked = !mid;
+      let hUV = wide ? 0.62 : mid ? 0.52 : 0.44;
       let wUV = (hUV * texAspect) / aspect;
       /* on a narrow screen a tall flask can still overflow sideways, so width
-         gets the final say and height follows it back down */
-      if (wUV > 0.6) {
-        hUV *= 0.6 / wUV;
-        wUV = 0.6;
+         gets the final say and height follows it back down. The stacked cap is
+         looser because the flask is centred there rather than tucked into the
+         right margin, so it has the whole width to use. */
+      /* STACKED RUNS FULL WIDTH NOW. At 0.86 the width cap was the binding
+         constraint on a phone — wUV wanted 0.91 at 393x852 and got clamped,
+         which dragged hUV down with it to 0.34. So the plate was smaller than
+         the 0.36 it asked for, and asking for more height did nothing at all
+         while the cap was what actually bound. At 1.0 the same request comes
+         out 393 wide and 336 tall instead of 338x289: about a fifth more
+         flask, and the top edge rises from 62% of the frame to 56.5%, which
+         closes most of the gap under the copy. The plate is a composite with
+         its own transparent margin, so full width does not mean it touches
+         the glass. */
+      const wCap = stacked ? 1.0 : 0.6;
+      if (wUV > wCap) {
+        hUV *= wCap / wUV;
+        wUV = wCap;
       }
       /* Where the DOM copy stops, computed from the same three numbers the
          CSS uses: .shell-wide is max-width 1720 with clamp(1.25rem, 4vw, 4rem)
@@ -198,21 +249,65 @@ export default function LiquidSurface({
          on, darkened by the radial scrim in SlideFlask. Feeding that column
          into the floor below would push the subject clean off the right edge,
          so the floor simply does not apply there. */
-      const stacked = w < 768;
-
       /* A flat value cannot do this job. 0.73 looks right at 1766px and
          overlaps the copy at every width from 1280 to about 1750, because the
          copy column and the subject grow at different rates — the column is
          capped at 688px while the subject keeps widening with the viewport.
          So the wish is a floor, not a position. */
       const wantX = wide ? 0.73 : 0.8;
+      /* STACKED: CENTRED AND ON THE FLOOR.
+         It used to sit at 0.8 across and 0.24 up, which on a phone put it in
+         the middle-right of the frame — straight through the buttons and the
+         trust row, with dead space underneath it. The copy is top-aligned
+         below md now, so all the slack is in one piece at the bottom and the
+         flask fills it: centred, standing on the floor, 36% of the height.
+         44, raised from 36. The old number was chosen to keep the plate's
+         top below a copy block that ends at ~52% of a 393x852 screen, and it
+         was over-cautious by ten points: at 44 the top edge lands at 56.5%,
+         still clear, and the flask reads as a photograph rather than a
+         thumbnail. It is also moot at most phone widths — the width cap binds
+         first and hands height back down. Below about 700px of viewport height nothing clears
+         anything and the flask goes back to being a background — which is
+         what the scrim in SlideFlask is for. */
+      /* THE PLATE HAS TO FIT THE FRAME, NOT ONLY CLEAR THE COPY.
+         baseX was a FLOOR and nothing else: push right until the copy is
+         clear, and stop. Nothing ever checked the other end. On a window that
+         is wide but also tall the plate grows into its 0.6 width cap while
+         the copy column stays put, so the floor pushed it straight off the
+         right edge — 197px gone at 1440x1305, 152 at 1280x1024, and 10px on a
+         1512x982 MacBook Pro 14, which is a machine people actually own.
+
+         There is no arrangement that both clears the copy and fits at those
+         aspects, so the plate gives up size rather than edge: it is shrunk to
+         the strip that is actually available and then centred in it. Height
+         follows width down through the ratio, exactly as it does under the
+         width cap above. Where there IS room — 1920x1080, 1440x900, 1366x768
+         — `room` exceeds wUV, nothing shrinks, and the geometry is untouched.
+
+         The 0.18 floor is a backstop against a degenerate zero-width plate if
+         the copy column is ever widened past what the frame can hold; it
+         would overlap rather than vanish, which is the better failure. */
+      const leftEdge = (copyRight + GUTTER) / w;
+      const RIGHT_MARGIN = 0.008;
+      const room = Math.max(0.18, 1 - RIGHT_MARGIN - leftEdge);
+      if (!stacked && wUV > room) {
+        hUV *= room / wUV;
+        wUV = room;
+      }
       const baseX = stacked
-        ? wantX
-        : Math.max(wantX, (copyRight + GUTTER) / w + wUV / 2);
+        ? 0.5
+        : Math.min(
+            1 - RIGHT_MARGIN - wUV / 2,
+            Math.max(wantX, leftEdge + wUV / 2),
+          );
       /* Sat down into the frame rather than floating in the upper half. It was
          lifted to keep dead liquid out of the bottom, but the new plate is
          taller in frame and fills that space on its own. */
-      const baseY = mid ? 0.29 : 0.24;
+      /* 0.04, not 0: the dot pill sits clamp(1.25rem, 3.5vh, 2.25rem) off the
+         bottom, so a flask standing at exactly 0 has its base behind the
+         controls. Four percent lifts it clear of the worst of that without
+         eating into the gap above, which the copy needs. */
+      const baseY = stacked ? 0.04 : mid ? 0.29 : 0.24;
       uniforms.uFlaskRect.value = [baseX, baseY, wUV, hUV];
       /* the steam leaves the flask's spout, which is off-centre inside the
          composite — reported in the 2D canvas's top-down space */
@@ -241,6 +336,16 @@ export default function LiquidSurface({
       const h = el.clientHeight || window.innerHeight;
       renderer.setSize(w, h);
       uniforms.uResolution.value = [w, h];
+
+      /* LIVE, NOT CAPTURED. These were read once at mount, so every number
+         downstream was frozen at whatever the window was when the effect
+         first ran — load on a desktop, narrow to a phone, and the flask kept
+         desktop proportions on a 390px screen. */
+      wide = mqWide.matches;
+      if (mqMid.matches !== mid) {
+        mid = mqMid.matches;
+        uniforms.uOctaves.value = mid ? 3 : 2;
+      }
       layout();
     };
     resize();

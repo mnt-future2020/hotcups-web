@@ -137,10 +137,23 @@ export default function Cases() {
         {/* Two sentences, two lines, the second in orange-dark — the same
             problem/answer shape sections 02 and 04 use. Plain orange is
             2.97:1 on cream and fails even the large-text floor; orange-dark
-            is 3.88. Measured in Manrope ExtraBold with its -0.03em tracking,
-            the longer line is 11.91 em, so 572px at the 3rem cap against a
-            1128px shell. It holds one line at every width down to 375. */}
-        <h2 className="mt-4 max-w-[24ch] font-display text-[clamp(1.7rem,3.7vw,3rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-ink">
+            is 3.88.
+
+            THE SIZE
+            60px at the top. The vw leg is 4.4 rather than 3.7 so it actually
+            reaches the new cap: .shell holds at 1240, and 3.7vw would not
+            have hit 60px until a 1622px window. 4.4vw gets there at 1366.
+            Measured in Manrope ExtraBold with its -0.03em tracking, the
+            longer line is 11.91 em — 715px at the cap, against a column of
+            878 (24ch scales with the type, so it is the binding measure, not
+            the 1128px shell).
+
+            The floor moved 1.7rem -> 1.6rem, which is not cosmetic: at 1.7
+            the line was 324px against a 320px column on a 360px phone and
+            wrapped. 1.6 is 305px and holds. 320px-wide screens still wrap
+            it — there is no size that fits 324px of words into 280px of
+            column and is still a headline. */}
+        <h2 className="mt-4 max-w-[24ch] font-display text-[clamp(1.6rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink">
           <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
             <motion.span {...clipLine(0.15)} className="block">
               Real workplace problems.

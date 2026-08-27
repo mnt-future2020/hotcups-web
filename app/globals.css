@@ -67,6 +67,56 @@ html {
   scroll-padding-top: var(--header-h);
 }
 
+/* ---------------------------------------------------------------
+   SECTION SNAPPING — DESKTOP ONLY, AND GENTLY.
+
+   PROXIMITY, NOT MANDATORY. Mandatory is a trap on this page: five sections
+   are min-h-svh but three of the rest are taller than the window at common
+   laptop heights, and mandatory makes the middle of a too-tall section
+   unreachable — you scroll, it drags you back. Proximity only engages when
+   you are already CLOSE to a section's top, which is exactly the "settle
+   into place" behaviour asked for and nothing more. scroll-snap-stop stays
+   at its default `normal`, so a fast flick still crosses several sections
+   instead of being caught by each one on the way past.
+
+   WHY scroll-padding-top GOES TO ZERO HERE, WHICH LOOKS BACKWARDS.
+   The root carries scroll-padding-top: var(--header-h) so an anchor lands
+   its target below the fixed header. But every section on this page ALREADY
+   pays for the header inside its own padding-top, so snapping to 78px below
+   the viewport top would offset it twice — 78px of dead air under the bar,
+   and, because five sections are exactly min-h-svh, 78px of their own
+   content pushed off the BOTTOM of the window. Measured across all nine:
+   landing flush at 0 is correct for seven of them and landing at 78 clips
+   three. So the snapport starts at 0 and the sections' own padding does the
+   work it was already doing.
+
+   Zeroing it also keeps anchors and snapping in agreement, which matters
+   more than either on its own: if a "Get pricing" click settled at 78 and
+   the snap then pulled it to 0, every anchor on the page would end with a
+   visible lurch.
+
+   THE THREE CONDITIONS ARE EACH DOING SOMETHING.
+   min-width: 1024px  — desktop, the same breakpoint the layouts use.
+   pointer: fine      — excludes tablets. A 1024px-wide iPad reports
+                        `coarse`; a touchscreen laptop reports `fine` for
+                        its trackpad, so it keeps snapping and an iPad Pro
+                        in landscape does not. Width alone could not tell
+                        those two apart.
+   no-preference      — snapping moves the page further than the reader
+                        asked it to. Someone who has turned motion off has
+                        said no to exactly that. */
+@media (min-width: 1024px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 0;
+  }
+
+  #main > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+}
+
 body {
   background: var(--page-bg);
   color: var(--color-ink);
@@ -250,7 +300,12 @@ body {
 .ticker-track {
   display: flex;
   width: max-content;
-  animation: ticker 38s linear infinite;
+  /* 120s, not 38s. The duration is the time to travel ONE HALF, and the half
+     went from ~1250px to ~5100px when it was widened to outrun the viewport
+     — keeping 38s would have made it four times faster. 120s holds it near
+     42px/s, which is about where it was. Change REPEATS in Ticker.tsx and
+     this has to move with it. */
+  animation: ticker 120s linear infinite;
 }
 
 .ticker-mask:hover .ticker-track {
@@ -378,8 +433,11 @@ body {
    arrow keys, Home/End, touch and screen readers all come free and correct,
    and none of them would have come free from a rebuild.
 
-   --fill carries the played portion, set from React, so the track is orange
-   behind the handle and cream ahead of it.
+   --fill carries the played portion, set from React, so the track is coloured
+   behind the handle and pale ahead of it. --fill-col carries WHICH colour:
+   section 04 drives it from the verdict, so the played track and the handle go
+   amber the moment the 40-cup line is crossed and the control itself becomes
+   part of the answer rather than a neutral input sitting above it.
    --------------------------------------------------------------- */
 
 .calc-range {
@@ -398,7 +456,7 @@ body {
   border-radius: 999px;
   background: linear-gradient(
     to right,
-    var(--color-orange) 0 var(--fill, 0%),
+    var(--fill-col, var(--color-orange)) 0 var(--fill, 0%),
     rgba(255, 247, 240, 0.18) var(--fill, 0%) 100%
   );
 }
@@ -408,7 +466,7 @@ body {
   border-radius: 999px;
   background: linear-gradient(
     to right,
-    var(--color-orange) 0 var(--fill, 0%),
+    var(--fill-col, var(--color-orange)) 0 var(--fill, 0%),
     rgba(255, 247, 240, 0.18) var(--fill, 0%) 100%
   );
 }
@@ -420,9 +478,9 @@ body {
   height: 24px;
   margin-top: -10.5px;
   border-radius: 50%;
-  background: var(--color-orange);
+  background: var(--fill-col, var(--color-orange));
   box-shadow:
-    0 0 0 6px rgba(242, 101, 34, 0.16),
+    0 0 0 6px color-mix(in srgb, var(--fill-col, var(--color-orange)) 16%, transparent),
     0 8px 20px -8px rgba(0, 0, 0, 0.8);
 }
 
@@ -431,9 +489,9 @@ body {
   height: 24px;
   border: 0;
   border-radius: 50%;
-  background: var(--color-orange);
+  background: var(--fill-col, var(--color-orange));
   box-shadow:
-    0 0 0 6px rgba(242, 101, 34, 0.16),
+    0 0 0 6px color-mix(in srgb, var(--fill-col, var(--color-orange)) 16%, transparent),
     0 8px 20px -8px rgba(0, 0, 0, 0.8);
 }
 
@@ -544,6 +602,47 @@ body {
 .hero-btn-dark:hover::after,
 .hero-btn-dark:focus-visible::after {
   transform: scaleY(1);
+}
+
+/* THE LABEL GOES WHITE WHEN THE AMBER ARRIVES, AND ONLY THEN.
+   The ghost buttons were espresso on the wipe — 5.18:1, perfectly legible,
+   and it read as the label having stayed behind while the button changed
+   underneath it. White is what the solid amber buttons already use, so this
+   is the two kinds of button agreeing on hover rather than a new treatment.
+
+   It is one rule rather than a hover:text-white on twelve elements: the
+   pseudo-class beats the utility on specificity, every label is already
+   wrapped in a span that inherits, and there is exactly one place to look
+   when the contrast has to be re-checked.
+
+   Resting states are untouched — espresso stays espresso until you point at
+   it. The transition rides each button's own transition-colors.
+
+   THE WIPE STAYS BRAND AMBER, AND THAT IS A DELIBERATE CONTRAST DECISION.
+   White on #f26522 is 3.15:1 and a 16px semibold label wants 4.5, so the
+   wipe was briefly deepened to #cf4a0d, which does clear it. On screen that
+   was worse, not better: a hero secondary filling #cf4a0d sits directly
+   beside a PRIMARY button that is #f26522, so the hovered control read
+   darker and muddier than the idle one next to it — pressed-and-stuck rather
+   than active.
+
+   The reason it looked wrong is the reason it was wrong. Every solid amber
+   button on this site — header CTA, hero primary, WhatsApp us — is already
+   white on #f26522 AT REST. Holding the hover state to a stricter bar than
+   the button beside it is not accessibility, it is inconsistency: it fixed
+   one 3.15 while a dozen others sat untouched two inches away.
+
+   So 3.15 is the site's standing white-on-amber figure and this matches it.
+   It is a real AA shortfall and there are exactly two honest fixes, both of
+   which have to be taken EVERYWHERE rather than here: deepen the brand amber
+   itself to about #cf4a0d, or set button labels at 19.2px/700, where the
+   large-text threshold is 3.0 and 3.15 passes as it stands. Neither is a
+   decision this stylesheet should take on its own. */
+.hero-btn:hover,
+.hero-btn:focus-visible,
+.hero-btn-dark:hover,
+.hero-btn-dark:focus-visible {
+  color: #fff;
 }
 
 /* ---------------------------------------------------------------
@@ -657,6 +756,56 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* ---------------------------------------------------------------
+   The footer's warmth.
+
+   Two amber radials in opposite corners, under the doodle band. They keep
+   the footer from reading as a flat rectangle of cream after the three
+   cream sections above it — and they are what carries the band on its own
+   until the illustration is dropped in.
+
+   Seventeen seconds, alternating, on opacity and scale together. Long
+   enough that you never catch it turning around: it should read as warmth
+   in the room rather than as an animation, which is why it is the only
+   moving thing down here.
+   --------------------------------------------------------------- */
+
+.foot-glow {
+  animation: foot-glow 17s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+
+@keyframes foot-glow {
+  from { opacity: 0.55; transform: scale(1); }
+  to   { opacity: 1;    transform: scale(1.12); }
+}
+
+/* ---------------------------------------------------------------
+   Steam off the delivery round.
+
+   Section 03's rail carries a flask from stop to stop. Two wisps rise off
+   it, on different periods and drifting opposite ways, so what is moving
+   down the list is visibly HOT — the one detail that makes the token read
+   as a flask being delivered rather than a progress dot.
+
+   Small numbers on purpose: the token is 22px, so a plume sized for the
+   hero would swallow it. Fourteen pixels of travel is about the height of
+   the token again, which is as much as reads at this size.
+   --------------------------------------------------------------- */
+
+.van-steam {
+  animation: van-steam 2.6s ease-in-out infinite;
+  animation-delay: var(--lag, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes van-steam {
+  0%   { transform: translate3d(0, 2px, 0) scale(0.65); opacity: 0; }
+  22%  { opacity: 0.7; }
+  60%  { transform: translate3d(var(--dx, 0px), -8px, 0) scale(1); opacity: 0.4; }
+  100% { transform: translate3d(var(--dx2, 0px), -15px, 0) scale(1.3); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .pour-layer { animation: none; --wx: 0%; }
@@ -679,6 +828,8 @@ body {
   }
   .hero-ken { animation: none; }
   .fcta-spin { animation: none; }
+  .foot-glow { animation: none; opacity: 0.78; }
+  .van-steam { animation: none; opacity: 0; }
   .fcta-arrow { transition: none; }
   .steam-base { animation: none; opacity: 0; }
   *, *::before, *::after {

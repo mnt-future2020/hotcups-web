@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
 import { NAV, SECTIONS } from "@/lib/sections";
-import { currentCups, subscribeCups } from "@/lib/cups";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
 
 export default function Header() {
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("hero");
-  /* the hero badge docks here and stays for the rest of the page */
-  const [cups, setCups] = useState(currentCups);
-  useEffect(() => subscribeCups(setCups), []);
 
   /* The hero is a carousel: slide one is near-black, the other two are cream.
      While the bar is transparent it is floating over whichever of those is
@@ -22,7 +19,35 @@ export default function Header() {
      condition, and every light-chrome decision below hangs off it. */
   const [tone, setTone] = useState<HeroTone>(currentHeroTone);
   useEffect(() => subscribeHeroTone(setTone), []);
-  const onDark = !stuck && tone === "dark";
+  /* THE HEADER IS NOT ALWAYS ON THE HOME PAGE, AND IT WAS ASSUMING IT WAS.
+     Every light-chrome decision hung off `!stuck && tone === "dark"`, and both
+     halves of that quietly break on /blog and /case-studies.
+
+     `stuck` is measured against #hero's height, and those pages have no
+     #hero — so `edge` fell back to 24 and at the top of the page `stuck` was
+     false. `tone` is module state in lib/heroTone that survives a client-side
+     navigation, so arriving from slide one it was still "dark". Both true at
+     once means the bar painted its dark scrim and its white lockup over a
+     cream page: a grey band across the top with white links in it.
+
+     `hasHero` is the missing term. It is re-measured on every pathname change
+     because the Header lives in the layout and does NOT unmount when the
+     route changes — an effect with [] deps would have kept the home page's
+     answer forever. */
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+  /* SEEDED FROM THE ROUTE, NOT FROM `true`. usePathname resolves during the
+     server render too, so the first paint of /blog is already the solid bar
+     — seeding it optimistically would have server-rendered the transparent
+     header and the dark scrim, then corrected both on mount, which is a flash
+     on exactly the page this was meant to fix. The effect below still checks
+     the DOM: the route is the guess, #hero is the answer. */
+  const [hasHero, setHasHero] = useState(onHome);
+
+  const onDark = hasHero && !stuck && tone === "dark";
+  /* with no hero to float over there is nothing to be transparent FOR, so the
+     bar takes its solid ground immediately rather than at 24px of scroll */
+  const solid = stuck || !hasHero;
 
   /* The header stays transparent for the whole of the hero, not the first
      24px of it — a cream bar sliding over a full-bleed photograph after one
@@ -34,20 +59,27 @@ export default function Header() {
     let edge = 24;
     const measure = () => {
       const hero = document.getElementById("hero");
+      setHasHero(Boolean(hero));
       edge = hero ? Math.max(24, hero.offsetHeight - 96) : 24;
     };
     const onScroll = () => setStuck(window.scrollY > edge);
+    /* NAMED, so it can actually be removed. It was an inline arrow and the
+       cleanup only ever detached the scroll listener — survivable while this
+       effect ran once, a leak of one listener per navigation now that it
+       re-runs on every route change. */
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
     measure();
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", () => {
-      measure();
-      onScroll();
-    });
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [pathname]);
 
   /* scroll spy — the nav tells you where you are, so the page never
      feels like an undifferentiated column */
@@ -82,7 +114,7 @@ export default function Header() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        stuck
+        solid
           ? "bg-cream/85 shadow-[0_1px_0_rgba(240,226,214,1)] backdrop-blur-md"
           : "bg-transparent"
       }`}
@@ -103,17 +135,27 @@ export default function Header() {
         }}
       />
 
-      {/* A GRID, NOT justify-between.
+      {/* A GRID AT lg, FLEX BELOW IT.
           With three flex children, justify-between only centres the middle
           one when the outer two are the same width — and they never are: the
           logo is 155px, the CTA group 117px, so the nav sat 19px left of the
-          bar's centre, and further off once the docked cup counter appeared
-          beside the CTA. 1fr / auto / 1fr gives the nav a column of its own
+          bar's centre. 1fr / auto / 1fr gives the nav a column of its own
           width with equal columns either side, so it is centred on the
           container whatever the sides do. The 1fr columns floor at their
           content width, so at a squeeze the nav slides rather than the logo
-          getting crushed. */}
-      <div className="shell-wide relative grid h-full grid-cols-[1fr_auto_1fr] items-center gap-6">
+          getting crushed.
+
+          THE GRID CANNOT APPLY BELOW lg, AND THAT IS NOT A PREFERENCE.
+          The nav is `hidden lg:flex`, and a grid item with display:none is
+          not laid out at all — it does not hold its cell, it leaves the item
+          list. So on a phone the grid had two items, not three: the logo took
+          column 1 and the ACTIONS took column 2 (auto), leaving column 2's
+          1fr sibling empty on the right. At 375px that put the burger at
+          x=156 of 335 — a third of the way across, which is exactly where it
+          was showing up. justify-self-end could not save it, because it only
+          aligns within a column and the column itself was in the wrong place.
+          Two children want flex; three want the grid. */}
+      <div className="shell-wide relative flex h-full items-center justify-between gap-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <Logo light={onDark} />
 
         {/* desktop nav */}
@@ -122,11 +164,15 @@ export default function Header() {
           aria-label="Sections"
         >
           {NAV.map((item) => {
-            const on = active === item.id;
+            const on = hasHero && active === item.id;
             return (
               <a
                 key={item.id}
-                href={`#${item.id}`}
+                /* A bare #hash only resolves on the page that owns the
+                   section. From /blog every one of these pointed at an id
+                   that is not in the document, so the whole nav was inert.
+                   Off home they become real navigations back to it. */
+                href={onHome ? `#${item.id}` : `/#${item.id}`}
                 aria-current={on ? "true" : undefined}
                 className={`relative whitespace-nowrap rounded-full px-3 py-2 font-sans text-[0.9rem] font-medium transition-colors duration-300 min-[1440px]:px-4 min-[1440px]:text-[1.05rem] ${
                   onDark
@@ -158,32 +204,8 @@ export default function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center justify-self-end gap-3">
-          {/* docked counter — same source as the hero badge, so the number
-              cannot disagree with itself across the handover */}
-          {/* 1600, not 1280. It is 192px wide and it holds that width even
-              while faded out, which pushed the centred nav 41px off centre at
-              1280 and 27px at 1440 — the whole point of the grid above. Above
-              1600 the bar has room for it and the nav is still exact. */}
-          <span
-            aria-hidden={!stuck}
-            className={`hidden items-center gap-2 rounded-full border border-line bg-white/70 px-3 py-1.5 font-sans text-[0.72rem] tabular-nums text-ink-soft transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] min-[1600px]:inline-flex ${
-              stuck
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none -translate-y-1 opacity-0"
-            }`}
-          >
-            <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-orange" />
-            </span>
-            <strong className="font-semibold text-ink">
-              {cups.toLocaleString("en-IN")}+
-            </strong>{" "}
-            cups this month
-          </span>
-
           <a
-            href="#pricing"
+            href={onHome ? "#pricing" : "/#pricing"}
             /* Solid amber in both states. It used to be a ghost outline over
                the hero and espresso once stuck, so the site's single most
                important button was the quietest thing in the bar on the one
@@ -244,7 +266,7 @@ export default function Header() {
               {NAV.map((item) => (
                 <li key={item.id}>
                   <a
-                    href={`#${item.id}`}
+                    href={onHome ? `#${item.id}` : `/#${item.id}`}
                     onClick={() => setOpen(false)}
                     className={`block border-b border-line/70 py-3.5 font-display text-lg font-semibold ${
                       active === item.id ? "text-orange" : "text-ink"
@@ -256,7 +278,7 @@ export default function Header() {
               ))}
               <li>
                 <a
-                  href="#pricing"
+                  href={onHome ? "#pricing" : "/#pricing"}
                   onClick={() => setOpen(false)}
                   className="hero-btn-dark relative mt-4 block overflow-hidden rounded-full bg-orange py-3.5 text-center font-sans text-sm font-semibold text-white"
                 >
