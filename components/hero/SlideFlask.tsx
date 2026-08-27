@@ -83,10 +83,16 @@ const T_STEAM_AFTER_SUBJECT = 1.6;
     with no steam at all — which is exactly what happened the last time this
     depended on a callback firing */
 const T_STEAM_FALLBACK = 4;
-const TRUST = [
-  "2 deliveries / day",
-  "500+ organizations",
-  "Brewed the Madurai way",
+/* `phone: false` drops the item below md, separator and all.
+   "2 deliveries / day" is the one that goes, and it goes because it is the
+   only one of the three the headline has ALREADY said — "Twice a day." sits
+   four lines above it, set in orange, as the largest promise on the slide.
+   Losing it on a phone costs nothing; losing either of the other two would
+   cost the proof (500+) or the place (Madurai). */
+const TRUST: { label: string; phone: boolean }[] = [
+  { label: "2 deliveries / day", phone: false },
+  { label: "500+ organizations", phone: true },
+  { label: "Brewed the Madurai way", phone: true },
 ];
 
 /** an eased tween on a uniform, driven off rAF */
@@ -345,14 +351,15 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 LiquidSurface duplicates this rule and skips its collision
                 floor below md for the same reason. */}
             <div className="max-w-[min(34rem,90vw)] md:landscape:max-w-[min(58rem,48vw)]" style={pourOnDark}>
-            <motion.p
-              {...rise(0.05)}
-              className="eyebrow"
-              style={{ color: "rgba(255,247,240,0.6)" }}
-            >
-              Workplace beverage service
-            </motion.p>
+            {/* NO EYEBROW. It read "Workplace beverage service", which is a
+                category label — and the headline directly under it already
+                says the same thing in specifics ("delivered to your office").
+                Slides 2 and 3 never had one, so the slide that did was the odd
+                one out; the three now open the same way.
 
+                It is worth 29px on a phone (17px of its own plus the 12px gap
+                to the headline), which is most of a line of the subcopy in a
+                frame that has none to spare. */}
             {/* Real DOM text at every stage — the masks and the highlight
                 are decoration over it. Selectable, and complete in
                 view-source. */}
@@ -384,7 +391,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 starts at and there is no step at the breakpoint. 7.2vw hits
                 that cap at 453px and rides the column down below it — 296px
                 of line in 320px of column at 360, 267 in 280 at 320. */}
-            <h1 className="mt-3 font-display text-[clamp(1.5rem,7.2vw,2.04rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream md:mt-5 md:text-[clamp(2.05rem,4.25vw,5rem)]">
+            <h1 className="font-display text-[clamp(1.5rem,7.2vw,2.04rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream md:text-[clamp(2.05rem,4.25vw,5rem)]">
               {LINES.map((line, i) => (
                 <span
                   key={line}
@@ -426,13 +433,48 @@ export default function SlideFlask({ active }: { active: boolean }) {
 
             <motion.p
               {...rise(1.0)}
-              className="mt-4 max-w-[44ch] font-sans text-base leading-relaxed text-cream/75 md:mt-6 md:text-lg"
+              /* 1.5 on a phone rather than 1.625: three lines at 16px, so the
+                 looser figure spends 6px of a frame that has none to spare,
+                 and at this measure 1.5 is still comfortably inside the range
+                 that reads well. Above md it goes back to relaxed. */
+              className="mt-4 max-w-[44ch] font-sans text-base leading-[1.5] text-cream/75 md:mt-6 md:text-lg md:leading-relaxed"
             >
-              No machine to buy. No pantry staff. We deliver at your timings and
-              collect the empties.
+              {/* "No machine to buy." USED TO OPEN THIS LINE AND IT HAD TO GO.
+                  It is true of the flask service in isolation, but it is the
+                  first promise a visitor reads on a site whose nav carries a
+                  "Machines" link and whose section 04 exists to argue that
+                  above 40 cups a day a machine is the answer. Opening with a
+                  reason not to want one contradicts the page underneath it.
+
+                  "No pantry staff" survives because it is true either way —
+                  flask or machine, nobody on their payroll makes the tea. */}
+              No pantry staff. We deliver at your timings and collect the
+              empties.
             </motion.p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-8">
+            {/* THE THREE GAPS BELOW ARE TIGHTER THAN THEY WERE, ON PHONES ONLY.
+                Measured across five phones, the copy column is ~520px tall on
+                every one of them — the headline clamp barely moves between 360
+                and 390 — while the photograph starts at a FIXED 52% of the
+                frame, because LiquidSurface stands the plate 4% off the bottom
+                at 44% of the height. So the shorter the phone, the further the
+                copy runs into the picture: 91px of overlap at 390x844, 154px
+                at 365x707, 178px on an SE.
+
+                Rendered, that overlap is not abstract — the counter pill was
+                landing at 74% of the frame, which is squarely on the splash,
+                and the scrim has fallen to 0.30 by then so it sat on an almost
+                clean photograph. A bordered chip floating over a picture reads
+                as a mistake in a way that plain text over the same picture
+                does not.
+
+                Dropping one trust item and taking 4px out of each of the three
+                gaps lifts the pill to 67%, where the scrim is still ~0.55 and
+                the splash has not started. It is the last element either way —
+                the point is only WHERE it lands.
+
+                The md: overrides are untouched, so nothing above 768px moves. */}
+            <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
               <motion.a
                 {...rise(1.08)}
                 href="#pricing"
@@ -456,26 +498,48 @@ export default function SlideFlask({ active }: { active: boolean }) {
               </motion.a>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 md:mt-8">
+            {/* THE SEPARATOR TRAILS ITS ITEM, IT DOES NOT LEAD THE NEXT ONE.
+                It used to render before every item after the first, and since
+                the dot lives INSIDE the item's own flex box it wraps with it —
+                so on a phone, where three of these do not fit on one line, the
+                second line began "· Brewed the Madurai way". A leading dot
+                reads as a bullet nobody finished.
+
+                Trailing it means a wrap now leaves the dot at the END of the
+                line above, which is how a run-on list is punctuated anyway.
+                It also makes an item removable as a UNIT, which is what lets
+                the line below drop one on a phone without stranding a dot. */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 md:mt-8">
               {TRUST.map((t, i) => (
                 <motion.span
-                  key={t}
+                  key={t.label}
                   {...rise(1.26 + i * 0.06)}
-                  className="flex items-center gap-3 font-sans text-[0.82rem] text-cream/55"
+                  className={`items-center gap-3 font-sans text-[0.82rem] text-cream/55 ${
+                    t.phone ? "flex" : "hidden md:flex"
+                  }`}
                 >
-                  {i > 0 && (
+                  {t.label}
+                  {i < TRUST.length - 1 && (
                     <span aria-hidden="true" className="text-cream/25">
                       ·
                     </span>
                   )}
-                  {t}
                 </motion.span>
               ))}
             </div>
 
             <motion.p
               {...rise(1.34)}
-              className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-7 md:py-2"
+              /* This carried a `max-height:699px` rule that hid it outright on
+                 the shortest phones, because at the time the copy still ended
+                 at 72% and the splash began around 68%. Dropping the eyebrow
+                 and "No machine to buy." took 53px out of the column, which is
+                 more than the rule was buying: measured again at 375x667 the
+                 copy now ends at 64% and the chip clears the splash on its
+                 own. A special case that no longer does anything still costs
+                 something — it silently withholds the counter from every small
+                 phone — so it is gone rather than left in place. */
+              className="mt-3 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-7 md:py-2"
             >
               <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-70" />
