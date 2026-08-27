@@ -10,8 +10,10 @@ import {
   MAIL_HREF,
   MAPS_HREF,
   PHONE_LABEL,
+  SOCIALS,
   TEL_HREF,
   WA_HREF,
+  type SocialKey,
 } from "@/lib/contact";
 
 /**
@@ -166,6 +168,89 @@ const PinIcon = () => (
     <circle cx="12" cy="10" r="3" />
   </Svg>
 );
+
+/* ---------------------------------------------------------------
+   The social marks.
+
+   DRAWN, NOT PASTED. The published brand paths are single filled outlines a
+   few hundred characters long, and next to the stroked phone, mail and pin
+   above they would read as three solid stickers dropped into a line of
+   drawings. These are the same 1.75 stroke as the rest of the footer, so the
+   row belongs to the page rather than to the platforms.
+
+   FACEBOOK IS A ROUNDED SQUARE, NOT A CIRCLE. The first draft drew it the
+   way the platform does, as an f inside a CIRCLE — and inside the circular
+   button, beside Instagram's rounded square, it read as a target rather than
+   a logo. Rendered side by side the fix was obvious.
+
+   YouTube keeps its own 16:9 frame, because that shape IS the logo and
+   squaring it off would be the one change that stopped it being recognised.
+   Rendered alongside the other two it sits fine: all three are a mark inside
+   a frame inside a circle, and only the frame's proportion differs.
+
+   THEY DO NOT CARRY THEIR OWN COLOUR. `Svg` above hard-codes orange-dark;
+   these inherit `currentColor` from the button, which is what lets the whole
+   thing — ring, glyph and lift — move together on one hover. */
+const SOCIAL_MARKS: Record<SocialKey, React.ReactNode> = {
+  instagram: (
+    <>
+      <rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.3" cy="6.7" r="1.05" fill="currentColor" stroke="none" />
+    </>
+  ),
+  facebook: (
+    <>
+      <rect x="2.6" y="2.6" width="18.8" height="18.8" rx="4.6" />
+      <path d="M15.1 8.2h-1.4a1.7 1.7 0 0 0-1.7 1.7v11.5" />
+      <path d="M9.6 12.8h4.9" />
+    </>
+  ),
+  youtube: (
+    <>
+      <rect x="2.2" y="5.2" width="19.6" height="13.6" rx="4.4" />
+      <path d="M10.3 9.4 15.5 12l-5.2 2.6V9.4Z" />
+    </>
+  ),
+};
+
+/* 44px, which is the touch-target floor rather than a look. The glyph is 21
+   so the ring has room to read as a ring; the same two numbers were what the
+   render was checked at. */
+function Social() {
+  const shown = SOCIALS.filter((s) => s.href);
+  if (shown.length === 0) return null;
+  return (
+    <ul className="mt-8 flex flex-wrap items-center gap-3">
+      {shown.map((s) => (
+        <li key={s.key}>
+          <a
+            href={s.href as string}
+            target="_blank"
+            rel="noopener noreferrer"
+            /* the platform name alone would announce as "Instagram", which in
+               a footer is ambiguous about whose. */
+            aria-label={`Hotcups on ${s.label}`}
+            className="group grid h-11 w-11 place-items-center rounded-full border border-line text-ink-soft transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-orange-dark hover:text-orange-dark focus-visible:-translate-y-0.5 focus-visible:border-orange-dark focus-visible:text-orange-dark"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-[21px] w-[21px] shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {SOCIAL_MARKS[s.key]}
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /* ---------------------------------------------------------------
    A link, with the underline wiping in from the left.
@@ -329,6 +414,20 @@ export default function Footer() {
               Flask delivery for daily tea and filter coffee, and machines for
               workplaces above 40 cups a day.
             </p>
+
+            {/* UNDER THE BRAND, NOT IN "GET IN TOUCH". The contact column is
+                four ways to start a conversation about an order — a phone
+                that dials, an inbox, a WhatsApp thread, a pin on a map. A
+                social profile is not that; it is where you go to see whether
+                the company is real before you ring it. It belongs beside the
+                wordmark and the descriptor, which is the block that answers
+                exactly that question.
+
+                It also fills the one hole in this row. The brand column ran
+                out of content about 80px above the rule while the three
+                columns beside it did not, so the footer's tallest column was
+                the one carrying the least. */}
+            <Social />
           </motion.div>
 
           {COLUMNS.map((col, i) => (

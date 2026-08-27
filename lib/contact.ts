@@ -60,6 +60,63 @@ export const waHref = (place?: string | null) =>
 
 export const TEL_HREF = `tel:${PHONE_E164}`;
 
+/* ---------------------------------------------------------------
+   SOCIAL PROFILES — THE ONLY CONFIRMED VALUES IN THIS FILE.
+
+   Unlike everything above, these came from the client: they are the three
+   accounts linked from the old Hotcups website. All three were checked and
+   answer 200.
+
+   THE SHARE TOKENS ARE STRIPPED, DELIBERATELY.
+   They arrived as app share links carrying a query string —
+   `?mibextid=LQQJ4d` on Facebook and `?igsh=...` on Instagram. Those are not
+   part of the address; they are one-time tokens the mobile apps attach to
+   identify the account that pressed Share. Publishing them puts a colleague's
+   share provenance in our page source for as long as the site is up, they can
+   expire and start bouncing to a login wall, and they make an otherwise
+   stable URL look generated. Both profiles resolve without them.
+
+   YouTube keeps the whole handle because @praneeshafoodandbeverageho6054 IS
+   the address — the ugly tail is YouTube's auto-generated handle from when
+   the channel was created under the parent company's name, not a token. The
+   channel itself displays as "refresh Hot Cups", so a visitor lands somewhere
+   that looks right. If the client would rather it read @hotcupsmadurai, that
+   is a rename inside YouTube's own settings and this string then changes.
+
+   NOT ON LINKEDIN. An earlier draft assumed the conventional trio and put a
+   LinkedIn button here with a guessed handle. The old site has no LinkedIn,
+   so it is gone rather than left pointing at whoever owns /company/hotcups.
+
+   A null href RENDERS NOTHING. That is the mechanism worth keeping: adding a
+   fourth account, or dropping one, is one line here and no markup anywhere.
+   --------------------------------------------------------------- */
+
+export type SocialKey = "instagram" | "facebook" | "youtube";
+
+export const SOCIALS: {
+  key: SocialKey;
+  /** used for the accessible name, so it is read as "Hotcups on Instagram" */
+  label: string;
+  /** null = we do not have it, so it is not rendered at all */
+  href: string | null;
+}[] = [
+  {
+    key: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/hotcupsmadurai",
+  },
+  {
+    key: "facebook",
+    label: "Facebook",
+    href: "https://www.facebook.com/hotcupsmadurai",
+  },
+  {
+    key: "youtube",
+    label: "YouTube",
+    href: "https://www.youtube.com/@praneeshafoodandbeverageho6054",
+  },
+];
+
 /* "Get a quote" goes to email, not to WhatsApp. A quote is a document, and
    the button beside it already covers the instant channel — pointing both at
    the same place would make one of them decoration. */
