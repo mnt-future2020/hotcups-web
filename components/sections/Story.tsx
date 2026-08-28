@@ -102,7 +102,20 @@ const HIDE_800 = "[@media(max-height:800px)]:hidden";
 /* the sub-line and its rule went from 800 to 900 to pay for the bigger
    heading — see the note on the h2 */
 const HIDE_900 = "[@media(max-height:900px)]:hidden";
+/* the dateline, and it is what pays for a 60px heading — see the h2 */
+const HIDE_820 = "[@media(max-height:820px)]:hidden";
 const HIDE_700 = "[@media(max-height:700px)]:hidden";
+/* THE RAIL CARD FLATTENS BACK TO NOTHING AT 740, and two things agree on it.
+   Below 700 the year labels have gone and below 660 the icons and captions
+   have, so down there the panel would be a 2rem-radius box around a single
+   16px row of dots — a frame with nothing in it. And 740 is where the pinned
+   frame runs out of room: the card is about 15px of inset, and with it on at
+   720 the tightest windows sat at 19px of slack, which is inside my own
+   estimating error on how the 2026 bullets wrap. Dropping it there takes
+   every size to 28px or better. A 1366x768 laptop lands here; a 1920x1080 or
+   a 1440x900 keeps the card. */
+const FLAT_740 =
+  "[@media(max-height:740px)]:rounded-none [@media(max-height:740px)]:border-0 [@media(max-height:740px)]:bg-transparent [@media(max-height:740px)]:p-0";
 /* the rail's icon + caption rows, and the same line the picture goes at */
 const HIDE_660 = "[@media(max-height:660px)]:hidden";
 
@@ -465,7 +478,27 @@ export default function Story() {
                   the clamp is not decoration: the frame is pinned to one
                   viewport, so a width-only clamp can outgrow a short window.
 
-                  IT IS BIGGER NOW, AND THE SUB-LINE PAID FOR IT.
+                  60px AT THE CAP, AT THE CLIENT'S DIRECTION, AND THE
+                  DATELINE UNDER IT IS WHAT PAYS FOR IT.
+                  3.35rem/5.6vh reached 46px at a 1625x812 window. 3.75rem/7.3vh
+                  reaches the full 60 on any window about 900px tall, which is
+                  where the client is reading it. Two lines of it is +33px, and
+                  the year title going to 40px is another +41px on the tallest
+                  stop — 74px against frames that had 52px spare.
+
+                  So "2019 - 2026" goes at 820px of viewport. It is the cheapest
+                  thing in the block (about 30px with its margin) and the most
+                  redundant: the rail spells all seven years out, in order, a
+                  few hundred pixels below it. Swept across seventeen window
+                  sizes, that takes the tightest from -10px to +21px, and the
+                  three that had actually gone negative — 1024x600 and both
+                  720-tall windows — clear by 21 to 33.
+
+                  1.7rem at the floor, not 1.75: at 1.75 "One growing journey."
+                  measures 282px against the 280px a 320px phone leaves, so the
+                  heading broke to three lines on the narrowest screen there is.
+
+                  AND THE SUB-LINE PAID FOR THE ROUND BEFORE THIS ONE.
                   The vh leg went 5 -> 5.6 and the cap 3rem -> 3.35rem, which
                   at a 1625x812 window takes it from 41px to 46px. That window
                   had 16px of slack in the WHOLE frame, so the growth had to
@@ -487,7 +520,7 @@ export default function Story() {
                   headline, not guessed — and 18ch is 10.8em, which was only 7%
                   of margin. At the 1.6rem floor on a 320px phone that margin
                   was gone. */}
-              <h2 className="mx-auto mt-[clamp(0.5rem,1.4vh,0.875rem)] max-w-[20ch] text-balance font-display text-[clamp(1.6rem,min(4.6vw,5.6vh),3.35rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
+              <h2 className="mx-auto mt-[clamp(0.5rem,1.4vh,0.875rem)] max-w-[20ch] text-balance font-display text-[clamp(1.7rem,min(4.6vw,7.3vh),3.75rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
                 <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                   <motion.span {...clipLine(0.15)} className="block">
                     Seven years.
@@ -514,9 +547,13 @@ export default function Story() {
                   alignment fix is what makes it read as a dash at all; U+2013
                   is what it should have been anyway, because an en dash is the
                   mark for a range and an em dash is for a parenthetical. */}
+              {/* GONE AT 820px OF VIEWPORT, and that is what buys the 60px
+                  heading above it — see the note there. It is the cheapest
+                  line in the block and the most redundant, because the rail
+                  prints all seven years in order a few hundred pixels below. */}
               <motion.p
                 {...reveal(0.34, 12)}
-                className="mt-[clamp(0.5rem,1.4vh,0.875rem)] font-display text-[clamp(1.2rem,min(1.5vw,2.4vh),1.4rem)] font-extrabold tracking-[0.22em]"
+                className={`mt-[clamp(0.5rem,1.4vh,0.875rem)] font-display text-[clamp(1.2rem,min(1.5vw,2.4vh),1.4rem)] font-extrabold tracking-[0.22em] ${HIDE_820}`}
               >
                 <DigitRoll
                   value="2019 – 2026"
@@ -526,17 +563,16 @@ export default function Story() {
                 />
               </motion.p>
 
-              {/* max-lg:hidden AS WELL AS the height guard. This line and
-                  the rule under it cost about 70px together, and on a phone
-                  that 70px is the difference between a 111px picture and a
-                  180px one. They are a desktop nicety: the seven stops below
-                  say all of this, at length, one at a time. */}
-              <motion.p
-                {...reveal(0.48)}
-                className={`mx-auto mt-1.5 max-w-[36rem] font-sans text-[clamp(0.94rem,min(1.2vw,1.9vh),1.125rem)] leading-[1.5] text-ink-soft max-lg:hidden ${HIDE_900}`}
-              >
-                From a 200 sq. ft. beginning to a growing beverage ecosystem.
-              </motion.p>
+              {/* THE SUB-LINE IS GONE, at the client's direction.
+                  "From a 200 sq. ft. beginning to a growing beverage
+                  ecosystem." stood here. It was already the most guarded thing
+                  in the section — hidden below lg and again under 900px of
+                  viewport — because it cost about 50px of a pinned frame to
+                  summarise what the seven stops underneath say one at a time,
+                  starting with 200 sq. ft. and ending with the ecosystem.
+
+                  The rule below it stays. It had two sides before and it has
+                  two sides now: the heading above, the story below. */}
 
               <motion.span
                 aria-hidden="true"
@@ -794,13 +830,19 @@ function Stop({
       />
 
       {/* THE TITLE IS THE STORY, SO IT IS SIZED LIKE IT.
-          1.45rem -> 1.8rem at the cap and the vh leg 2.5 -> 2.9, which at
-          1625x812 is 20px -> 24px and on a phone 16.8px -> 18.4px. 24ch ->
-          28ch with it, because the measure has to grow when the type does or
-          the same words simply wrap one line earlier. "BUILDING THE BEVERAGE
-          ECOSYSTEM" still takes two lines at every size — that is what sets
-          the height this whole column reserves. */}
-      <h3 className="mt-[clamp(0.4375rem,1.2vh,0.75rem)] max-w-[28ch] font-display text-[clamp(1.15rem,min(2.1vw,2.9vh),1.8rem)] font-extrabold uppercase leading-[1.25] tracking-[0.03em] text-ink">
+          40px at the cap at the client's direction, from 1.8rem, with the vh
+          leg 2.9 -> 4.9 so it actually reaches it on the windows that can
+          afford it. 28ch stays: the measure has to grow when the type does or
+          the same words wrap one line earlier, and at 40px the 28ch cap is
+          672px against a left column of about 453px, so the column is what
+          bounds the line now. "BUILDING THE BEVERAGE ECOSYSTEM" still takes
+          two lines at every size — that is what sets the height this whole
+          column reserves, and at 40px those two lines are 100px of it.
+
+          A side effect worth having: the empty band between this column and
+          the photograph, which was ~150px, closes to about 45. Bigger type
+          fills a column that a measure was leaving half empty. */}
+      <h3 className="mt-[clamp(0.4375rem,1.2vh,0.75rem)] max-w-[28ch] font-display text-[clamp(1.25rem,min(2.8vw,4.9vh),2.5rem)] font-extrabold uppercase leading-[1.25] tracking-[0.03em] text-ink">
         {m.title}
       </h3>
 
@@ -967,7 +1009,25 @@ function Rail({
   on: boolean;
 }) {
   return (
-    <div className="mt-[clamp(0.5625rem,1.8vh,1.5rem)] shrink-0">
+    /* A CARD, FULL WIDTH OF THE FRAME, at the client's direction.
+       The rail was seven columns of type floating straight on the plate, which
+       is the one thing in this section that is a CONTROL rather than part of
+       the story — and it read as neither. A panel gives it an edge to be a
+       control inside.
+
+       IT ALSO MAKES THE RAIL EASIER TO READ, not harder. The plate behind this
+       section is a 9% wash whose darkest 2% is a saturated orange; cream/70
+       over that lands on rgb(254,242,231), which is lighter than the ground
+       the rail's live caption was already measured legal against. The card can
+       only raise its contrast.
+
+       THE PADDING IS PAID FOR BY THE MARGIN ABOVE IT. The frame is pinned and
+       the tightest window had 21px spare, so a card cannot simply add its own
+       inset: py is clamped on vh and the rail's own top margin drops from
+       1.8vh to 1.2vh, because the card's edge now does the separating that
+       margin was doing. Net cost is about 10px at 1024x600 and 13px at
+       1625x812. */
+    <div className={`mt-[clamp(0.375rem,1.2vh,1rem)] shrink-0 rounded-[var(--radius-panel)] border border-line/70 bg-cream/70 px-[clamp(0.75rem,2vw,1.75rem)] py-[clamp(0.375rem,1.1vh,0.875rem)] ${FLAT_740}`}>
       {/* ---- the year labels ---- */}
       <div className={`grid grid-cols-7 ${HIDE_700}`} aria-hidden="true">
         {MILESTONES.map((m, i) => (

@@ -18,8 +18,8 @@ import { motion, useInView, useReducedMotion } from "motion/react";
  * against a store that still holds the right number.
  *
  * WHAT A CARD SAYS, AND IN WHAT ORDER
- * Name, machine, floor line, capacity — and the name is the biggest thing on
- * the card. It has been all three ways round. It opened with the CAPACITY on
+ * Name, machine, floor line, capacity — and the last two are the same size,
+ * one in ink and one in orange. It has been all three ways round. It opened with the CAPACITY on
  * top, which put a spec before the thing it describes; then the photograph led
  * and both facts sat underneath as a caption. Neither answered the question a
  * visitor actually arrives with, which is "what am I looking at" — a black
@@ -433,15 +433,27 @@ export default function MachineRow() {
                       style={{ background: "rgba(23,17,14,0.28)" }}
                     />
 
-                    {/* THE CAPACITY, UNDER THE FLOOR LINE, AS THE SPEC IT IS.
-                        It stays at 1.1rem while the name went to 1.6, which is
-                        the hierarchy the card was missing: what it is, then how
-                        much it does. It keeps the count-up — the delay lands as
-                        each machine settles on the floor, so the number arrives
-                        with the product rather than ticking away above an empty
-                        space. "cups / day" takes ink/72, the weight the old
-                        "/ day" wore in this exact spot. */}
-                    <p className="mt-2.5 text-center font-display text-[clamp(0.95rem,1.3vw,1.1rem)] font-extrabold leading-none tracking-[-0.02em] text-ink">
+                    {/* THE BAND IS THE HIGHLIGHTED FACT, so it matches the
+                        name for size and takes the brand colour instead. It sat
+                        at 1.1rem against the name's 1.6 on the reasoning that
+                        the card needed a title; at the client's direction it is
+                        1.6 as well, and the two no longer compete because only
+                        one of them is orange.
+
+                        WHICH ORANGE IS NOT A CHOICE HERE. Measured on this
+                        card — 50% white over the darkest 2% of the studio
+                        backdrop, rgb(216,216,220) — plain orange is 2.22:1 and
+                        orange-dark 2.89:1, so both fail even the 3.0 that LARGE
+                        text owes. orange-deep is 3.86:1 and clears it, which is
+                        also why the floor is 1.25rem: at 20px extrabold this is
+                        large text at every size, and 4.5 never applies.
+
+                        It keeps the count-up — the delay lands as each machine
+                        settles on the floor, so the number arrives with the
+                        product rather than ticking away above an empty space.
+                        "cups / day" stays ink at 0.85rem: a unit does not need
+                        to shout, and two oranges of different weight would. */}
+                    <p className="mt-2.5 text-center font-display text-[clamp(1.25rem,1.9vw,1.6rem)] font-extrabold leading-none tracking-[-0.02em] text-orange-deep">
                       {/* BOTH ENDS COUNT UP TOGETHER on the same delay, which
                           is why the band never reads backwards on its way in.
                           Counting only the ceiling would have printed
@@ -454,13 +466,11 @@ export default function MachineRow() {
                       ) : (
                         <>
                           <Count to={r.from} play={on} delay={T_COUNT + i * 0.08} />
-                          <span className="mx-1 font-normal text-ink/60">
-                            &ndash;
-                          </span>
+                          <span className="mx-1 font-normal">&ndash;</span>
                           <Count to={r.cap} play={on} delay={T_COUNT + i * 0.08} />
                         </>
                       )}
-                      <span className="ml-1.5 font-sans text-[0.78rem] font-medium tracking-normal text-ink/72">
+                      <span className="ml-1.5 font-sans text-[0.85rem] font-medium tracking-normal text-ink/72">
                         cups / day
                       </span>
                     </p>

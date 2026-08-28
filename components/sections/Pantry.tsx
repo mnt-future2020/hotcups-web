@@ -93,10 +93,12 @@ type Stop = {
 
 /* THE LABELS ALL HANG OUTWARD, AND SAMOSA'S IS WHY.
    It was first placed to the LEFT of the samosa, which is inward — and inward
-   at the bottom of a ring is the middle, where the hub is. Rendered, "04
-   SAMOSA" sat directly on top of "Delivered with care." Every label points
-   away from the centre now, so the hub owns the middle and nothing can drift
-   into it. (The hub was four lines of type then and is two now, which makes
+   at the bottom of a ring is the middle, where the hub used to be. Rendered,
+   "04 SAMOSA" sat directly on top of "Delivered with care." Every label points
+   away from the centre, which is why nothing drifts into it — and it stays
+   that way now the hub has gone, because a label pointing INWARD would run at
+   an empty middle and read as broken aim. (The hub was four lines of type
+   then and two by the end, which makes
    the clearance larger, not the rule less necessary.)
 
    The route is drawn behind the food deliberately: a line that stops at each
@@ -463,51 +465,21 @@ function Round({
         ))}
       </svg>
 
-      {/* ---- the hub ---- */}
-      {/* 46%, AND THE NUMBER MOVED BECAUSE THE BLOCK GOT SHORTER.
-          It was 44%: with the title and its rule in place the hub was about
-          151px tall in a 640px square, four lines of type hanging below the
-          glyph, and a hub centred at 50% ran its last line into the samosa.
-          Without them it is about 111px, so it spans 40.3% to 51.7% at 46 and
-          the reason for sitting high is gone. 46 rather than 50 because the
+      {/* ---- THE HUB IS GONE, at the client's direction ----
+          A mark in a turning dashed ring with "Delivered with care. / Enjoyed
+          together." under it sat at the centre of the round. It had already
+          lost its title and its rule; this is the rest of it.
+
+          The centre is empty on purpose now rather than by accident. The
+          orange route is a closed loop with five stops on it, so the shape
+          reads as a round whether or not anything stands in the middle — the
+          hub was always a label on something the drawing already said.
+
+          Two knock-on notes for anyone putting something back: the five
+          numbered labels are all angled AWAY from the centre (see the note on
+          LABEL placement) because the hub used to own that space, and the
           route's own mass is not centred either — the food boxes run y 4 to
-          89, so their middle is 46.5. */}
-      <motion.div
-        className="absolute left-1/2 top-[46%] w-[34%] -translate-x-1/2 -translate-y-1/2 text-center"
-        initial={reduced ? false : { opacity: 0, scale: 0.9 }}
-        animate={{
-          opacity: on || reduced ? 1 : 0,
-          scale: on || reduced ? 1 : 0.9,
-        }}
-        transition={{ duration: 0.8, delay: 0.45, ease: EASE }}
-      >
-        <span
-          aria-hidden="true"
-          className="relative mx-auto grid h-[3.4rem] w-[3.4rem] place-items-center rounded-full bg-orange-soft"
-        >
-          {/* the ring turns once a minute — slow enough that you never catch
-              it moving and fast enough that the hub is never a still shape */}
-          <span
-            className="absolute -inset-[0.55rem] rounded-full border border-dashed border-orange-dark/25"
-            style={
-              reduced ? undefined : { animation: "pantry-ring 60s linear infinite" }
-            }
-          />
-          <FlaskGlyph />
-        </span>
-        {/* THE TITLE IS GONE, AND THE RULE WENT WITH IT.
-            "The pantry round" sat here in caps above a hairline that separated
-            it from the caption below. Removing the title leaves that rule
-            separating one thing from nothing, so it goes too — a divider needs
-            two sides. What is left is the mark and its caption, which is the
-            whole hub the diagram actually needs: the route already says it is
-            a round, so naming it was the label on a label. */}
-        <p className="mt-4 font-sans text-[clamp(0.7rem,0.82vw,0.8rem)] leading-[1.6] text-ink-soft">
-          Delivered with care.
-          <br />
-          Enjoyed together.
-        </p>
-      </motion.div>
+          89, so their middle is 46.5, not 50. */}
 
       {/* ---- the two ends ---- */}
       <Pill x={ENTRY.x} y={ENTRY.y} label="We prepare" on={on} reduced={reduced} delay={T_PATH - 0.25} anchor="start" />
@@ -736,24 +708,3 @@ function Pill({
   );
 }
 
-/* the hub's mark. Stroke-only at 1.6, the same drawing language as the
-   footer's phone/mail/pin, so it reads as part of the site rather than as
-   clip art dropped into the middle of a diagram. */
-function FlaskGlyph() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="relative h-7 w-7 text-orange-dark"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="7.5" y="6" width="9" height="15" rx="2.2" />
-      <path d="M9.5 6V4.4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V6" />
-      <path d="M7.5 10.5h9" />
-    </svg>
-  );
-}

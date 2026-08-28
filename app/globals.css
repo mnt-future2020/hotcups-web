@@ -461,12 +461,6 @@ body {
   50% { transform: translateX(-50%) scaleX(0.85); opacity: 0.14; }
 }
 
-/* the hub's dashed ring, once a minute — slow enough that you never catch it
-   moving, and enough that the centre of the diagram is never a still shape */
-@keyframes pantry-ring {
-  to { transform: rotate(360deg); }
-}
-
 @keyframes ticker {
   to {
     transform: translate3d(-50%, 0, 0);
