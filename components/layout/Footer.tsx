@@ -94,7 +94,7 @@ const DOODLE_OPACITY = 0.09;
  * These are the six sections the header nav carries, plus the ask. Every entry
  * now goes somewhere the others do not.
  *
- * #savings — the 40-cup calculator — is the one real anchor left out, because
+ * #savings — the flasks-or-machine section — is the one anchor left out, because
  * the nav leaves it out too. It is reachable from the machines section it
  * belongs to.
  */
@@ -112,6 +112,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Company",
     links: [
       { label: "Case studies", href: "#cases" },
+      { label: "Our story", href: "#story" },
       { label: "Blog", href: "#blog" },
       { label: "Get pricing", href: "#pricing" },
     ],

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
-import { NAV, SECTIONS } from "@/lib/sections";
+import { NAV, NAV_FOR, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
 
 export default function Header() {
@@ -164,7 +164,13 @@ export default function Header() {
           aria-label="Sections"
         >
           {NAV.map((item) => {
-            const on = hasHero && active === item.id;
+            /* NAV_FOR, not a bare id compare. The spy reports whichever
+               section is under the middle of the window, and four of them are
+               not in the nav — so a bare compare left the bar with nothing
+               underlined for the whole of the pantry, the calculator, the case
+               studies and the contact block. NAV_FOR maps each of those to the
+               nav item above it. */
+            const on = hasHero && NAV_FOR[active] === item.id;
             return (
               <a
                 key={item.id}
@@ -174,7 +180,7 @@ export default function Header() {
                    Off home they become real navigations back to it. */
                 href={onHome ? `#${item.id}` : `/#${item.id}`}
                 aria-current={on ? "true" : undefined}
-                className={`relative whitespace-nowrap rounded-full px-3 py-2 font-sans text-[0.9rem] font-medium transition-colors duration-300 min-[1440px]:px-4 min-[1440px]:text-[1.05rem] ${
+                className={`relative whitespace-nowrap rounded-full px-2 py-2 font-sans text-[0.85rem] font-medium transition-colors duration-300 min-[1440px]:px-4 min-[1440px]:text-[1.05rem] ${
                   onDark
                     ? "text-cream/75 hover:bg-cream/12 hover:text-cream"
                     : "text-ink-soft hover:bg-ink/[0.055] hover:text-ink"
@@ -269,7 +275,7 @@ export default function Header() {
                     href={onHome ? `#${item.id}` : `/#${item.id}`}
                     onClick={() => setOpen(false)}
                     className={`block border-b border-line/70 py-3.5 font-display text-lg font-semibold ${
-                      active === item.id ? "text-orange" : "text-ink"
+                      NAV_FOR[active] === item.id ? "text-orange" : "text-ink"
                     }`}
                   >
                     {item.label}

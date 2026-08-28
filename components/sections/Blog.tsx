@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 /**
- * Section 08 — Reading.
+ * Section 10 — Reading.
  *
  * THE QUIETEST SECTION ON THE PAGE, ON PURPOSE
  * It follows the machine row and the pricing band, both of which are loud.
@@ -157,7 +157,7 @@ export default function Blog() {
               cream. The eyebrow is the smallest text on this ground, so it takes
               the darker ink rather than the palette default. */}
           <span className="eyebrow whitespace-nowrap text-ink-soft">
-            08 — Reading
+            10 — Reading
           </span>
           <span className="h-px w-16 bg-line md:w-24" />
         </motion.div>

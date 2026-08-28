@@ -6,7 +6,7 @@ import { motion, useInView, useReducedMotion, type Easing } from "motion/react";
 import DigitRoll from "@/components/ui/DigitRoll";
 
 /**
- * Section 02 — The Service.
+ * Section 01 — The Service.
  *
  * The right column carries the flask itself plus the three numbers a
  * customer actually needs — drop time, pickup time, cups per flask —

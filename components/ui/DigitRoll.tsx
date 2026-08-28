@@ -9,7 +9,9 @@ import { motion, useReducedMotion } from "motion/react";
  * second pass guarantees a full rotation for every digit — including 0,
  * which would otherwise not move at all.
  *
- * Non-digits (":") are rendered static so "9:30" keeps its shape.
+ * Non-digits (":", an en dash) are rendered static so "9:30" and
+ * "2019 - 2026" keep their shape. They take the digit cell's own box —
+ * see the note at the branch — or they sit low against the columns.
  */
 
 const COLUMN = [...Array(10).keys(), ...Array(10).keys()];
@@ -31,10 +33,14 @@ function Digit({
   const target = -(10 + value) * 5;
 
   return (
-    <span
-      className="inline-block h-[1em] overflow-hidden align-baseline"
-      style={{ verticalAlign: "-0.12em" }}
-    >
+    /* THE verticalAlign THAT USED TO BE HERE WAS DEAD.
+       -0.12em was tuned back when these columns sat in an inline context. The
+       wrapper below is `inline-flex`, and vertical-align does nothing to a
+       flex item — so the nudge had not applied for as long as the wrapper has
+       been a flex container. Alignment is done by matching boxes instead: this
+       column and the non-digit spans are both 1em tall with 1em leading, so a
+       glyph lands on the same baseline either way. */
+    <span className="inline-block h-[1em] overflow-hidden">
       <motion.span
         className="flex flex-col"
         initial={{ y: `${rest}%` }}
@@ -91,8 +97,21 @@ export default function DigitRoll({
       >
       {value.split("").map((char, i) => {
         if (char < "0" || char > "9") {
+          /* THE SAME BOX A DIGIT CELL GETS, and that is the whole fix.
+             This span used to carry no height and no leading. As a flex item
+             under `align-items: stretch` it stretched to the line's 1em while
+             its own line box stayed at the inherited `normal` — about 1.2em —
+             so the glyph rendered lower than the digits beside it. On the
+             story dateline that put an em dash low enough to read as an
+             UNDERSCORE: "2019 _ 2026". The colon in Service's "9:30" was
+             sitting low for the same reason.
+
+             h-[1em] leading-[1em] is exactly what each digit cell inside the
+             column wears, so both resolve to a glyph centred in a 1em line
+             box and the baselines agree by construction rather than by a
+             tuned offset. */
           return (
-            <span key={i} className="inline-block">
+            <span key={i} className="inline-block h-[1em] leading-[1em]">
               {char}
             </span>
           );

@@ -7,25 +7,35 @@ import RollValue from "@/components/ui/RollValue";
 import { setOffice } from "@/lib/office";
 
 /**
- * Section 04 — Which one you need.
+ * Section 05 — Which one you need.
  *
  * THE PURPOSE IS THE SECOND LINE ON SCREEN
- * "Above 40 cups a day, a machine costs you less." It used to sit in a side
- * column at 65% opacity, which is where a reader's eye goes last. It is now
- * directly under the heading, at full size, because it is the one sentence
- * the section exists to deliver.
+ * "Above 50 cups a day, a machine is the better fit." It used to sit in a
+ * side column at 65% opacity, which is where a reader's eye goes last. It is
+ * now directly under the heading, at full size, because it is the one
+ * sentence the section exists to deliver.
  *
- * THE CALCULATION IS ON SCREEN, NOT BEHIND A TOGGLE
- * A previous version hid the arithmetic behind "How we work that out". That
- * was wrong: a buyer being told they must spend money on a machine needs to
- * see WHY on the same screen. An accordion asks them to trust us first and
- * check later, which is exactly backwards.
+ * THERE IS NO LONGER ANY MONEY IN THIS SECTION, AND THAT IS THE CLIENT'S CALL.
+ * It used to be a cost calculator: a per-cup flask rate, a per-cup machine
+ * rate, a fixed monthly machine charge, two monthly bills and the difference
+ * between them. Every one of those rupees was INVENTED here — the banner that
+ * stood where this paragraph is said so in capitals, and listed four things to
+ * get from the client before publishing. The fourth was "confirmation that the
+ * threshold is a COST crossover at all — it may well be an OPERATIONAL rule
+ * instead", and the answer came back operational: above the line you want a
+ * machine, and machines are rented or sold rather than billed per cup.
  *
- * IT SHOWS THE WORKING, NOT A PRICE LIST
- * "128 cups x ₹8 / x 26 working days / = ₹26,624" is understood in one pass.
- * The labelled table it replaced ("Price per cup ₹8", "Machine —", "₹26,624")
- * held the same numbers but made the reader assemble the sum themselves. Same
- * count, far less work — that is the difference between visible and legible.
+ * So the arithmetic is gone rather than corrected. What is left is the one
+ * fact the client has actually given us — the line — and what each option IS
+ * on either side of it. A section that argued a saving it could not evidence
+ * was the single biggest publishing risk on this page.
+ *
+ * WHAT THE CARDS DO INSTEAD
+ * They show the two options rather than describing them: a name, a badge and
+ * a photograph nearly twice the height it was, because the differences that
+ * briefly stood under each one were the kind of thing a picture says faster.
+ * "Rent it or buy it" — the one genuinely new fact — moved to the footnote
+ * under the verdict, where it reads as a term rather than a feature.
  *
  * ONE FIELD FOR THE OFFICE, THREE BUTTONS FOR THE RATE
  * The slider went first: a drag handle needs a caption explaining that it is
@@ -36,8 +46,10 @@ import { setOffice } from "@/lib/office";
  * office of 63 had to walk past all six to reach the box anyway. The question
  * is asked once now and takes any number from 10 up.
  *
- * The rate keeps its three buttons, because there genuinely are only three
- * answers a person gives to "how many cups do you drink a day".
+ * The rate runs 1 to 5 at the client's direction. It stopped at 3 on the
+ * reasoning that nobody says a fourth number out loud about their own desk,
+ * which is true of an office and not true of a factory floor or a hospital
+ * through a night shift — and both are on this site's own industries list.
  *
  * IT SITS ON .shell, LIKE EVERY OTHER SECTION
  * This was briefly widened to .shell-wide, 1720px, when the hero moved there.
@@ -62,15 +74,10 @@ import { setOffice } from "@/lib/office";
  * height at 236px.
  *
  * IT STILL ARGUES AGAINST ITS OWN LARGER SALE
- * Pick 10 people and it says stay on flasks, and shows no saving, because
- * there isn't one. That is what turns 40 cups from a threshold we assert into
- * one the visitor checked.
- *
- * THE SAVING IS EXACT, NOT ROUNDED
- * It was "about ₹6,900" while the working was hidden, which was the honest
- * framing for a figure nobody could check. Now that both totals are on screen
- * a reader can subtract them, so a rounded figure would simply look wrong.
- * The estimate disclaimer moved to a line under the sum where it belongs.
+ * Open it and it says stay on flasks, because 10 people at 2 cups is 20 a day
+ * and that is under the line. The section has to be willing to say "you do not
+ * need the bigger thing" or the line is a threshold we assert rather than one
+ * the visitor checked.
  *
  * CONTRAST
  * The ground is a two-layer gradient, so every value here was swept across a
@@ -85,48 +92,40 @@ import { setOffice } from "@/lib/office";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ===============================================================
-   !!  PLACEHOLDER PRICING — INVENTED, NOT CLIENT DATA.       !!
-   !!  DO NOT PUBLISH UNTIL EVERY FIGURE BELOW IS CONFIRMED.  !!
+   THE PRICING IS GONE. THIS IS WHAT WAS HERE AND WHY IT LEFT.
    ===============================================================
 
-   The client gave us exactly ONE fact: above 40 cups a day, a machine
-   is the answer. Every rupee in this file was invented here to make
-   that sentence arithmetically true on screen.
+   A banner stood here in capitals reading PLACEHOLDER PRICING —
+   INVENTED, NOT CLIENT DATA — DO NOT PUBLISH UNTIL CONFIRMED. It
+   carried a flask rate of ₹8 a cup, a machine rate of ₹5 a cup and a
+   fixed monthly machine charge, none of them supplied by the client:
+   the fixed charge was not even a price, it was SOLVED FOR so that the
+   two monthly bills would cross at exactly the threshold.
 
-     FLASK_RATE    ₹8 a cup   INVENTED. No client rate was supplied.
-     MACHINE_RATE  ₹5 a cup   INVENTED. Likewise.
-     MACHINE_FIXED            NOT a quoted price. It is SOLVED FOR, so
-                              the two costs cross at exactly 40 cups.
-                              Change either rate and this moves with it.
+   That banner listed four questions to put to the client. The fourth
+   was whether the threshold is a COST crossover at all, or an
+   OPERATIONAL rule — above the line flasks stop being practical, too
+   many trips, tea arrives cold — which would have nothing to do with
+   rupees. The answer is operational, and machines are RENTED OR SOLD
+   rather than billed by the cup.
 
-   WHY THERE IS A FIXED COST AT ALL
-   Without one the arithmetic cannot produce a 40-cup line: a machine
-   cup at ₹5 beats a flask cup at ₹8 at every volume, so the machine
-   would always win and the rule would have nothing behind it. The
-   fixed monthly charge is the only thing that makes 40 a crossover.
+   So the money came out rather than being corrected, which is what the
+   old banner said should happen in exactly this case. Every rate, the
+   working-day count, the two monthly totals, the difference between
+   them and the "indicative, not a quote" disclaimer went with it.
 
-   WHAT WE DO NOT KNOW
-   Whether that fixed charge is rent, a minimum monthly bill, or a
-   purchase spread over a term. An earlier draft labelled the row
-   "Machine, rented", which asserted a rental contract the client has
-   never described. It is labelled neutrally now.
-
-   BEFORE THIS SECTION GOES LIVE, GET FROM THE CLIENT
-     1. the real per-cup rate on flask delivery
-     2. the real per-cup rate once a machine is installed
-     3. the real fixed monthly charge, and what it actually is
-        (rent / minimum billing / instalment / nothing)
-     4. confirmation that 40 cups is a COST crossover at all — it may
-        well be an OPERATIONAL rule instead: above 40 cups flasks stop
-        being practical (too many trips, tea arrives cold), which has
-        nothing to do with rupees.
-
-   If (4) comes back "operational", this section should argue logistics
-   and the money comes out of it entirely.
+   IF A REAL PRICE EVER ARRIVES it does not belong back in here. This
+   section answers one question — flasks or a machine — and it now does
+   that on volume alone. A price is a different question and section 08
+   is where it is asked.
    =============================================================== */
 
-/** the rule the whole section is built on — the one confirmed fact */
-const THRESHOLD_CUPS = 40;
+/** the rule the whole section is built on — the one confirmed fact.
+    It was 40 and the client has since moved it to 50. Everything that
+    reads as a threshold on screen derives from this constant, so the
+    headline, the pill, the slider mark, the slider's own non-linear
+    mapping and the aria label all followed it without being touched. */
+const THRESHOLD_CUPS = 50;
 
 /* ---------------------------------------------------------------
    THE TRACK'S SCALE, AND WHY IT IS NOT LINEAR.
@@ -144,15 +143,23 @@ const THRESHOLD_CUPS = 40;
 
    So the scale is two legs joined at the line:
 
-     0 .. LINE_AT      minCups -> 40 cups   LINEAR
-     LINE_AT .. 1      40 cups -> maxCups   LOGARITHMIC
+     0 .. LINE_AT      minCups -> 50 cups   LINEAR
+     LINE_AT .. 1      50 cups -> maxCups   LOGARITHMIC
 
-   which buys three things. The 40-cup mark sits at the SAME place on the
+   which buys three things. The 50-cup mark sits at the SAME place on the
    track whatever the rate — it is a fixed landmark now, not a number that
    slides about when you change cups-per-head. A third of the track is spent
    on the handful of cups where the answer actually changes. And the far end
    reaches the steppers' own ceiling, so the control can no longer run out
    before they do.
+
+   AT THE TOP RATE THE LOW LEG HAS NOTHING TO SPAN, AND IT GOES FLAT.
+   5 cups a head times the 10-person floor is 50 — the line exactly. So the
+   linear leg would run from 50 to 50, and the guard it used to carry (a span
+   clamped to 1 cup) put 50 cups at 0% and 55 at 34%: one click of the
+   headcount threw the handle a third of the track. It is a SHELF instead.
+   The first third parks at the floor, 50 cups sits on its own mark, and the
+   crossing stays exactly where the label says it is at every rate.
 
    The compression above the line is the honest shape, not a compromise: 200
    cups and 300 cups are different numbers but the same ANSWER, and the
@@ -161,21 +168,16 @@ const LINE_AT = 0.33;
 /** the range input carries a POSITION, 0..POS_STEPS — see the note there */
 const POS_STEPS = 1000;
 
-const WORKING_DAYS = 26;
-/** INVENTED — blended flask rate a cup, across the menu */
-const FLASK_RATE = 8;
-/** INVENTED — consumables a cup, once a machine is in the pantry */
-const MACHINE_RATE = 5;
+/** One cup is a token appearance; five is a factory floor or a hospital
+    through a night shift. Whole cups only — 1.5 was a blended average nobody
+    would ever say out loud about their own desk.
 
-/** DERIVED, NOT QUOTED: the fixed monthly figure that puts the crossover
-    on THRESHOLD_CUPS. It is a consequence of the rule, not a price. */
-const MACHINE_FIXED =
-  THRESHOLD_CUPS * WORKING_DAYS * (FLASK_RATE - MACHINE_RATE);
-
-/** a desk job through a double shift. Whole cups only — 1.5 was a blended
-    average nobody would ever say out loud about their own office. */
+    THE CEILING IS LOAD-BEARING: MIN_PEOPLE * MAX_RATE must not EXCEED
+    THRESHOLD_CUPS, or the slider's low leg inverts. At 10 x 5 it lands on it
+    exactly, which the shelf at LINE_AT handles; raise either bound past that
+    and read that note first. */
 const MIN_RATE = 1;
-const MAX_RATE = 3;
+const MAX_RATE = 5;
 
 /** Bounds for the typed number. Ten is the floor because it is the smallest
     office anyone orders a daily round for, and the ceiling only exists to
@@ -192,17 +194,10 @@ const clampPeople = (n: number) =>
 /** The section opens on the floor, so the first thing a visitor sees is an
     empty-handed starting point they type over rather than a number we chose
     for them. NOTE the consequence: 10 x 2 = 20 cups, which is UNDER the
-    40-cup line, so the section's opening verdict is "stay on flasks". */
+    line, so the section's opening verdict is "stay on flasks". */
 const START_PEOPLE = MIN_PEOPLE;
 const START_RATE = 2;
 
-const perMonth = (cups: number) => cups * WORKING_DAYS;
-const flaskCost = (cups: number) => perMonth(cups) * FLASK_RATE;
-const machineCost = (cups: number) =>
-  MACHINE_FIXED + perMonth(cups) * MACHINE_RATE;
-
-const rupees = (n: number) =>
-  "₹" + new Intl.NumberFormat("en-IN").format(Math.round(n));
 
 const int0 = (n: number) =>
   new Intl.NumberFormat("en-IN").format(Math.round(n));
@@ -212,16 +207,26 @@ const int0 = (n: number) =>
  * capacities as section 05, so the two sections cannot disagree about what a
  * given office gets.
  *
- * NAMES AND CAPACITIES ARE ALSO UNCONFIRMED. They came from the machine
- * photographs we were given, not from a spec sheet. The cup ceilings in
- * particular are guesses and belong on the same list as the rates above.
+ * THE CEILINGS ARE THE CLIENT'S NOW, not the guesses they were: under 100,
+ * 100-200 and 200-500 a day. Section 06 PRINTS those three bands on its
+ * cards, so a change here has to be made there too — these upTo values are
+ * the top of each band.
+ *
+ * The set before this capped Cothas at 50, which was exactly the line this
+ * section starts recommending a machine at, so the smallest unit could never
+ * be the answer here. At 100 it covers 51-100, which is the commonest office
+ * that crosses the line at all. Brew Max caps at 500 rather than the Infinity
+ * it once carried, so machineFor's -1 fallback is what names it above that.
  */
 const MACHINES = [
-  { key: "cothas", src: "/img/machine-cothas.png", name: "Cothas", upTo: 150 },
+  { key: "cothas", src: "/img/machine-cothas.png", name: "Cothas", upTo: 100 },
   {
-    key: "chaipoint",
+    key: "tata",
+    /* the photograph is a CHACONY-branded unit — see the note in
+       MachineRow.tsx. It stood under "Chai Point" before this and was not
+       that either. */
     src: "/img/machine-chaipoint.png",
-    name: "Chai Point",
+    name: "Tata's",
     upTo: 200,
   },
   {
@@ -230,7 +235,7 @@ const MACHINES = [
        -clean when its retouched replacement landed, and this is it */
     src: "/img/machine-brewmax-clean.png",
     name: "Brew Max",
-    upTo: Infinity,
+    upTo: 500,
   },
 ];
 
@@ -476,15 +481,36 @@ function Stepper({
 }
 
 /* ---------------------------------------------------------------
-   One side of the sum, with its working shown.
+   One side of the answer — a name, a badge and a photograph.
+
+   IT HAS BEEN EMPTIED TWICE, AND THE PICTURE GOT BOTH ROOMS.
+   It began as one side of a SUM: two addends, a rule, a monthly total. The
+   money went first, replaced by three plain differences. Those have gone too,
+   because with the figures already out the card's job is to SHOW the two
+   options rather than describe them — and a 95px photograph of a machine
+   shows almost nothing.
+
+   The picture is now the card. Its box went from clamp(80px, 10.5vh, 126px)
+   to clamp(140px, 22vh, 230px), which is deliberately close to the height the
+   list vacated plus the height the picture already had: about 207px at a
+   900px window against the old 234px of card, so the two cards keep their
+   proportions and the section stays inside its min-h-svh.
+
+   Nothing was lost that the page does not still say. "Rent it or buy it" is
+   in the footnote under the verdict, the twice-a-day round is the hero's own
+   promise, and "sized, installed and serviced" is what the See the machines
+   link goes to.
+
+   Every behaviour survived both emptyings, because none of them were ever
+   about the content: the winner still lifts on an underdamped spring, the
+   badge still flies across the gutter on a shared layoutId, and the shine
+   still crosses the image on a genuine crossing.
    --------------------------------------------------------------- */
 function Sum({
   label,
   best,
   cross,
   image,
-  lines,
-  total,
 }: {
   label: string;
   best: boolean;
@@ -495,13 +521,8 @@ function Sum({
       values are identical every crossing. Remounting is the restart. */
   cross: number;
   image: React.ReactNode;
-  lines: [string, string][];
-  total: number;
 }) {
   const reduced = useReducedMotion();
-  /* the reference colours the cheaper total. Orange is 4.50:1 on this ground
-     and the figure is 21px+ extrabold, so the 3.0 large-text bar applies. */
-  const totalTone = best ? "text-orange" : "text-cream";
   return (
     /* THE WINNER LIFTS. It used to be a border colour and nothing else, which
        is a change you can only notice by comparing the two cards deliberately
@@ -582,7 +603,20 @@ function Sum({
         />
       )}
       <div className="flex min-h-[1.9rem] items-start justify-between gap-3">
-        <p className="font-sans text-[0.74rem] font-bold uppercase tracking-[0.14em] text-cream/85">
+        {/* THE NAME OF THE THING, AND IT IS NOT A CAPTION ANY MORE.
+            0.74rem was sized as a card eyebrow, back when the card also
+            carried a monthly total to be the loudest thing on it. The money
+            went, then the bullet list went, and the label was left as the
+            only words on a card that is otherwise a photograph — at eleven
+            pixels, next to a machine nobody can name by sight.
+
+            clamp(0.85rem, 1.5vw, 1.05rem): 16.8px at a 1236px window against
+            the 11.8px it was. "MACHINE · TATA'S" is 16 characters, about
+            195px with its tracking, against roughly 405px of room once the
+            Recommended badge and the gap are out of the way — and it still
+            clears the ~188px a single-column phone card leaves, so it cannot
+            wrap into the badge. */}
+        <p className="font-sans text-[clamp(0.85rem,1.5vw,1.05rem)] font-bold uppercase tracking-[0.14em] text-cream/85">
           {label}
         </p>
         {/* ONE BADGE, TWO POSSIBLE HOMES.
@@ -596,7 +630,7 @@ function Sum({
             crossing the gutter between them. */}
         {best && (
           <motion.span
-            layoutId="cheaper-badge"
+            layoutId="fit-badge"
             transition={
               reduced
                 ? { duration: 0 }
@@ -604,12 +638,12 @@ function Sum({
             }
             className="shrink-0 rounded-full bg-orange px-2.5 py-1 font-sans text-[0.66rem] font-bold uppercase tracking-[0.1em] text-espresso-deep"
           >
-            Cheaper
+            Recommended
           </motion.span>
         )}
       </div>
 
-      <div className="relative mt-2 h-[clamp(80px,10.5vh,126px)] w-full">
+      <div className="relative mt-3 h-[clamp(140px,22vh,230px)] w-full">
         {image}
         {/* and a highlight travels across the thing itself. Confined to the
             IMAGE box, which is the one region of the card where a cream wash
@@ -637,34 +671,6 @@ function Sum({
         )}
       </div>
 
-      {/* the working. Two columns so the operator and the amount line up down
-          the card, and so the two cards line up with each other. */}
-      <dl className="mt-3 border-t border-cream/12 pt-3">
-        {lines.map(([a, b]) => (
-          <div key={a} className="flex items-baseline justify-between gap-3 py-[0.2rem]">
-            <dt className="font-sans text-[0.88rem] text-cream/70">{a}</dt>
-            <dd className="font-sans text-[0.88rem] font-semibold tabular-nums text-cream/70">
-              {b}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="mt-2.5 border-t border-cream/20 pt-2.5">
-        {/* a single beat when this side becomes the answer. The keyframe only
-            re-runs when `best` actually changes, so it fires on the crossover
-            and never while you are simply typing a bigger number. */}
-        <motion.p
-          animate={reduced ? undefined : best ? { scale: [1, 1.07, 1] } : { scale: 1 }}
-          transition={{ duration: 0.5, ease: EASE }}
-          className={`origin-left font-display text-[clamp(1.3rem,2.2vw,1.7rem)] font-extrabold leading-none tracking-[-0.02em] ${totalTone}`}
-        >
-          <RollValue value={total} format={rupees} duration={420} />
-          <span className="ml-1.5 font-sans text-[0.8rem] font-medium text-cream/60">
-            a month
-          </span>
-        </motion.p>
-      </div>
     </motion.div>
   );
 }
@@ -709,22 +715,36 @@ export default function Machines() {
   const maxCups = MAX_PEOPLE * rate;
 
   /* position <-> cups, across the two legs described at LINE_AT.
-     The guards are for a floor that rises to meet the threshold (it would
-     take 10 people x 4 cups, which no rate reaches) and for a ceiling that
-     is not above it — neither can happen today, and neither should be able
-     to produce a divide-by-zero if the bounds are ever edited. */
-  const lowSpan = Math.max(1, THRESHOLD_CUPS - minCups);
+
+     THE LOW LEG CAN HAVE NOTHING TO SPAN, AND AT 5 CUPS A HEAD IT DOES.
+     The floor is MIN_PEOPLE * rate, so it rises with the rate and at the top
+     rate it reaches the threshold itself: 10 x 5 = 50. The leg would run from
+     50 to 50. The old guard clamped that span to 1 cup, which is arithmetically
+     safe and behaviourally wrong — it mapped the whole first third to 50..51,
+     so cupsToPos put 50 at 0% and the next reachable number, 55, at 34%, and
+     one click of the headcount threw the handle a third of the track.
+
+     flatLow turns the leg into a SHELF: the first third reads as the floor and
+     the floor sits on the mark, so the handle moves continuously and the 50-cup
+     label still points at where the answer actually flips. It also covers a
+     floor ABOVE the threshold, which no bound reaches today. */
+  const lowSpan = THRESHOLD_CUPS - minCups;
+  const flatLow = lowSpan <= 0;
   const highRatio = Math.max(1.0001, maxCups / THRESHOLD_CUPS);
 
   const posToCups = (p: number) =>
     p <= LINE_AT
-      ? minCups + lowSpan * (p / LINE_AT)
+      ? flatLow
+        ? minCups
+        : minCups + lowSpan * (p / LINE_AT)
       : THRESHOLD_CUPS * Math.pow(highRatio, (p - LINE_AT) / (1 - LINE_AT));
 
   const cupsToPos = (c: number) => {
     const p =
       c <= THRESHOLD_CUPS
-        ? ((c - minCups) / lowSpan) * LINE_AT
+        ? flatLow
+          ? LINE_AT
+          : ((c - minCups) / lowSpan) * LINE_AT
         : LINE_AT +
           (1 - LINE_AT) * (Math.log(c / THRESHOLD_CUPS) / Math.log(highRatio));
     return Math.min(1, Math.max(0, p));
@@ -761,9 +781,6 @@ export default function Machines() {
     setPeople((v) => clampPeople(v + dir * stepSize(v)));
   const stepRate = (dir: number) =>
     setRate((v) => Math.min(MAX_RATE, Math.max(MIN_RATE, v + dir)));
-  const flaskBill = flaskCost(cups);
-  const machineBill = machineCost(cups);
-  const gap = flaskBill - machineBill;
   const rig = machineFor(cups);
 
   const reveal = (delay: number, y = 16) =>
@@ -810,7 +827,7 @@ export default function Machines() {
             {/* cream/60 = 5.61:1 on the worst ground. It was cream/45 = 3.90,
                 which is below AA and part of why this section read as dull. */}
             <span className="eyebrow whitespace-nowrap text-cream/60">
-              04 — Which one you need
+              05 — Which one you need
             </span>
             <motion.span
               initial={reduced ? undefined : { scaleX: 0 }}
@@ -841,7 +858,7 @@ export default function Machines() {
             {...reveal(0.3)}
             className="mt-3 max-w-[34ch] font-display text-[clamp(1.15rem,1.9vw,1.55rem)] font-bold leading-[1.28] text-cream/80 sm:max-w-[min(34ch,56%)]"
           >
-            Above {THRESHOLD_CUPS} cups a day, a machine costs you less.
+            Above {THRESHOLD_CUPS} cups a day, a machine is the better fit.
           </motion.p>
 
           {/* ---------------- the machine ----------------
@@ -948,9 +965,18 @@ export default function Machines() {
             initial={cross === 0 || reduced ? false : { scale: 0.78 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 560, damping: 14 }}
+            /* WHITE TYPE, WHICH IS WHY THE FILL WENT DOWN A STEP.
+               It was espresso-deep on flat orange: 5.94:1, legal. Cream on
+               that same orange measures 2.98:1 (pure white only reaches
+               3.15:1), and at 0.7rem this is normal
+               text owing 4.5 — so keeping the fill would have been a knowing
+               failure at eleven pixels. orange-deep is the token that exists
+               for exactly this (see globals.css) and cream on it is 5.18:1.
+               It also settles the two states: both read light-on-dark now,
+               where before the pill inverted as it crossed. */
             className={`rounded-full px-3 py-1.5 font-sans text-[0.7rem] font-bold uppercase tracking-[0.12em] transition-colors duration-500 ${
               machineWins
-                ? "bg-orange text-espresso-deep"
+                ? "bg-orange-deep text-cream"
                 : "border border-cream/40 text-cream/80"
             }`}
           >
@@ -1046,7 +1072,7 @@ export default function Machines() {
                 The cards are 300-500px further down the page; while you are
                 dragging, your eye is on the handle. Without something here
                 the crossing is only ever reported somewhere you are not
-                looking. This ring opens out of the 40-cup mark under the
+                looking. This ring opens out of the 50-cup mark under the
                 thumb, at the instant the thumb passes it. */}
             {cross > 0 && !reduced && (
               <motion.span
@@ -1061,11 +1087,11 @@ export default function Machines() {
             )}
           </div>
           {/* THREE LABELS, AND THE LEFT ONE IS THE ANSWER TO "what does this
-              drag?". The row carried only the 40-cup mark and "drag to try
+              drag?". The row carried only the 50-cup mark and "drag to try
               it", so nothing on screen said which of the two questions above
               it moved. It moves cups; the headcount follows.
 
-              The 40 mark is centred on LINE_AT = 33%, which at 736px is 243px
+              The 50 mark is centred on LINE_AT = 33%, which at 736px is 243px
               in — clear of "Cups a day" ending near 58px and of the right-hand
               hint, at every width the section reaches. */}
           <p
@@ -1094,7 +1120,6 @@ export default function Machines() {
             label="Flasks"
             best={!machineWins}
             cross={cross}
-            total={flaskBill}
             image={
               <Image
                 src={FLASK_SRC}
@@ -1104,23 +1129,12 @@ export default function Machines() {
                 className="object-contain"
               />
             }
-            /* two addends and a total, so the rows visibly sum to the figure
-               under them. An earlier draft put the running subtotal on row 2,
-               which made it identical to the total and read as a mistake. */
-            lines={[
-              [
-                `${int0(cups)} cups × ${rupees(FLASK_RATE)} × ${WORKING_DAYS} days`,
-                rupees(flaskBill),
-              ],
-              ["No machine charge", rupees(0)],
-            ]}
           />
 
           <Sum
             label={`Machine · ${MACHINES[rig].name}`}
             best={machineWins}
             cross={cross}
-            total={machineBill}
             image={
               <>
                 {/* Matte black cut-outs need a little light behind them or
@@ -1160,17 +1174,6 @@ export default function Machines() {
                 ))}
               </>
             }
-            /* "Machine on site", NOT "Machine, rented". The client has never
-               told us whether the fixed monthly figure is rent, a minimum
-               bill or an instalment, and the earlier label asserted one of
-               the three. See the banner at the top of this file. */
-            lines={[
-              [
-                `${int0(cups)} cups × ${rupees(MACHINE_RATE)} × ${WORKING_DAYS} days`,
-                rupees(perMonth(cups) * MACHINE_RATE),
-              ],
-              ["Machine on site", rupees(MACHINE_FIXED)],
-            ]}
           />
         </motion.div>
 
@@ -1229,31 +1232,42 @@ export default function Machines() {
                 >
                   {machineWins ? (
                     <>
-                      A machine saves you{" "}
+                      <strong className="font-semibold">
+                        A machine suits you.
+                      </strong>{" "}
+                      At{" "}
                       <span className="font-display text-[clamp(1.4rem,2.2vw,1.85rem)] font-extrabold text-orange">
-                        <RollValue value={gap} format={rupees} duration={420} />
+                        <RollValue value={cups} format={int0} duration={320} />
                       </span>{" "}
-                      a month.
+                      cups a day you are past the {THRESHOLD_CUPS}-cup line.
                     </>
                   ) : (
                     <>
                       <strong className="font-semibold">Stay on flasks.</strong>{" "}
-                      A machine wouldn&rsquo;t pay for itself at {int0(cups)}{" "}
-                      cups a day.
+                      At {int0(cups)} cups a day a machine is more than you
+                      need.
                     </>
                   )}
                 </motion.p>
               </AnimatePresence>
             </div>
 
-            <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-              {/* Says "indicative", because it is. Until the client confirms
-                  the rates this sum is a worked example of the 40-cup rule,
-                  not a price — and the page must not imply otherwise. */}
-              <p className="max-w-[82ch] font-sans text-[0.85rem] leading-[1.5] text-cream/60">
-                *Indicative, not a quote. Blended rates across the menu — your
-                price depends on what your team drinks.
-              </p>
+            {/* NOTHING BUT THE BUTTON, AND IT HOLDS THE RIGHT.
+                Two lines have stood here and both are gone. First an
+                "indicative, not a quote" disclaimer, which only existed
+                because the section quoted figures nobody had confirmed; then
+                "Machines can be rented or bought", which was the one new fact
+                the client had given us and had nowhere better to live.
+
+                It has somewhere better now — section 06's headline opens
+                "Rent or buy." in brand orange, at up to 60px, above the three
+                machines themselves. A 0.85rem line at cream/60 under a verdict
+                was the weakest possible place to say it.
+
+                justify-end rather than justify-between, because with one child
+                left justify-between would have parked the button on the LEFT
+                under the verdict's first word. */}
+            <div className="mt-1.5 flex flex-wrap justify-end gap-x-6 gap-y-1">
               <a
                 href="#machines"
                 className="hero-btn group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-full border border-cream/40 px-5 py-2.5 font-sans text-[0.9rem] font-semibold text-cream transition-colors duration-300 hover:border-orange"

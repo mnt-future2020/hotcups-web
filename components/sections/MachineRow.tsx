@@ -4,16 +4,28 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { currentOffice, subscribeOffice } from "@/lib/office";
-
 /**
- * Section 05 — The machines.
+ * Section 06 — The machines.
  *
- * IT REMEMBERS WHAT THE SLIDER WORKED OUT
- * The visitor set section 04 to 85 people; it worked out 128 cups a day. So
- * this section opens by answering THEIR question, and each machine carries
- * its own verdict. One shared store between two sections is the whole
- * differentiator, and it costs almost nothing.
+ * IT USED TO ANSWER THE SLIDER, AND IT DOES NOT ANY MORE.
+ * Each card carried a live verdict — "fits you" / "too small" — read out of
+ * the shared office store that section 05 writes, with the ruled-out machine
+ * desaturated. Removed at the client's direction: the cards state a capacity
+ * now and let the reader do the comparing.
+ *
+ * That leaves lib/office.ts written by 05 and read by nobody. It is left in
+ * place rather than deleted because restoring the verdict is a dozen lines
+ * against a store that still holds the right number.
+ *
+ * WHAT A CARD SAYS, AND IN WHAT ORDER
+ * Name, machine, floor line, capacity — and the name is the biggest thing on
+ * the card. It has been all three ways round. It opened with the CAPACITY on
+ * top, which put a spec before the thing it describes; then the photograph led
+ * and both facts sat underneath as a caption. Neither answered the question a
+ * visitor actually arrives with, which is "what am I looking at" — a black
+ * machine is a black machine until something names it. So the name goes first
+ * and reads at up to 1.6rem, and the capacity stays where it was, under the
+ * floor line, as its spec.
  *
  * IT MOVES LIKE MACHINERY, NOT LIKE LIQUID
  * Hard easing, exact stagger, no overshoot anywhere — machines do not bounce.
@@ -38,36 +50,55 @@ const T_FLOOR = 0.45;
 const T_RIG = 0.7;
 const RIG_GAP = 0.14;
 const T_COUNT = 1.5;
-const T_VERDICT = 1.8;
 
 /**
- * A machine fits if its rated capacity carries the load with headroom.
- * Sizing equipment to run flat out all day is how you get a queue at 4pm, so
- * the test is capacity >= cups x 1.25 — which puts Cothas out at 128 a day
- * and the other two in.
+ * The three units, and the capacities are the CLIENT'S OWN NUMBERS — the
+ * first hard figures this section has had. Everything before them was read
+ * off the photographs and guessed.
+ *
+ * THEY ARE RANGES NOW, NOT POINTS: under 100, 100-200, 200-500. A single
+ * figure reads as a rating a machine is certified to and invites the question
+ * "what happens at 101?"; a band says which office each unit is FOR, which is
+ * what this row is for. `from` is null on the smallest, which is what puts the
+ * "<" in front of it.
+ *
+ * The one-line descriptors that used to sit under each name ("Counter-top ·
+ * up to 100 people" and the other two) are gone with the verdict: those were
+ * guesses too, and a rated capacity says the same thing without inventing a
+ * headcount or a desk fraction.
+ *
+ * KEEP THESE IN STEP WITH `MACHINES` IN Machines.tsx (section 05), which
+ * picks a name off the same three units. The two sections must not disagree
+ * about what a given office gets.
+ *
+ * The earlier set had Cothas capped at 50, which is exactly section 05's own
+ * line — so the smallest unit could only ever have served an office that
+ * section was telling to stay on flasks. The new bands fix that on their own:
+ * Cothas now covers everything from the line up to 100.
  */
-const HEADROOM = 1.25;
-
 const RIGS = [
   {
     key: "cothas",
     name: "Cothas",
     src: "/img/machine-cothas.png",
-    cap: 150,
-    /* One line, not two. "150 / day" above already said what "offices up to
-       100" said, and the m² figure meant nothing to anyone — the desk
-       comparison carries it. */
-    line: "Counter-top · up to 100 people",
+    from: null,
+    cap: 100,
     aspect: 900 / 754,
     /* the display, in fractions of the IMAGE — read off each photograph */
     screen: { u: 0.505, v: 0.076, w: 0.14, h: 0.085 },
   },
   {
-    key: "chaipoint",
-    name: "Chai Point",
+    key: "tata",
+    name: "Tata's",
+    /* !! THE PHOTOGRAPH IS NOT A TATA MACHINE, AND IT NEVER WAS A CHAI POINT
+       ONE EITHER. This unit carries a visible CHACONY® mark in two places —
+       beside the touchscreen and on the urn — so the file name records what
+       the picture actually is while the label above it does not. It stood
+       under "Chai Point" for the same reason. A real Tata photograph is the
+       only fix; renaming the file would only hide the mismatch. */
     src: "/img/machine-chaipoint.png",
+    from: 100,
     cap: 200,
-    line: "A third of a desk · chai-first",
     aspect: 1290 / 1219,
     screen: { u: 0.589, v: 0.237, w: 0.31, h: 0.2 },
   },
@@ -75,30 +106,12 @@ const RIGS = [
     key: "brewmax",
     name: "Brew Max",
     src: "/img/machine-brewmax-clean.png",
-    cap: 300,
-    line: "Half a desk · shift work",
+    from: 200,
+    cap: 500,
     aspect: 1278 / 1230,
     screen: { u: 0.329, v: 0.425, w: 0.19, h: 0.354 },
   },
 ];
-
-/** ✓ and ✗ have no glyph in either of the page's typefaces — the cross was
-    rendering as tofu. Drawn instead, so they cannot fail. */
-function Tick({ ok }: { ok: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 12 12"
-      aria-hidden="true"
-      className="inline-block h-[0.78em] w-[0.78em] shrink-0"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-    >
-      {ok ? <path d="M2.4 6.4 L4.9 8.9 L9.6 3.2" /> : <path d="M3 3 L9 9 M9 3 L3 9" />}
-    </svg>
-  );
-}
 
 function Count({ to, play, delay }: { to: number; play: boolean; delay: number }) {
   const reduced = useReducedMotion();
@@ -132,12 +145,7 @@ export default function MachineRow() {
   const inView = useInView(ref, { amount: 0.2, once: true });
   const on = inView || Boolean(reduced);
 
-  const [cups, setCups] = useState(() => currentOffice().cups);
   const [hover, setHover] = useState<string | null>(null);
-
-  useEffect(() => subscribeOffice((_, c) => setCups(c)), []);
-
-  const fits = (cap: number) => cap >= cups * HEADROOM;
 
   const reveal = (delay: number, y = 16) =>
     reduced
@@ -196,7 +204,7 @@ export default function MachineRow() {
           <div className="lg:col-span-7">
             <motion.div {...reveal(0.05, 0)} className="flex items-center gap-4">
               <span className="eyebrow whitespace-nowrap text-ink/72">
-                05 — The machines
+                06 — The machines
               </span>
               <motion.span
                 initial={reduced ? undefined : { scaleX: 0 }}
@@ -206,29 +214,49 @@ export default function MachineRow() {
               />
             </motion.div>
 
-            {/* ONE SPAN, AND IT WRAPS ON ITS OWN.
-                The headline used to be split across two spans so each line
-                could clip-reveal separately. It was shortened to a single
-                sentence and the second span was left behind holding nothing —
-                an empty block that still took a full 51px line of headline
-                height under the title and still ran a reveal on no text. The
-                sentence is 17.50 em, which is 798px against a 638px column,
-                so it breaks to two lines by itself and reveals as one block.
-                That is the right behaviour for a sentence; it was only ever
-                two spans because it used to be two written lines.
+            {/* ONE SPAN, AND IT WRAPS ON ITS OWN — EVEN THOUGH IT IS NOW TWO
+                SENTENCES, AND THAT IS MEASURED RATHER THAN ASSUMED.
+                The obvious reading of the client's line is a span per
+                sentence, so each clip-reveals on its own and the break lands
+                on the full stop. It was built that way first and it is wrong,
+                because the second sentence does not fit one line at the sizes
+                that matter. "Find your right machine." is 24 characters, and
+                this face measures about 0.525em a character averaged over a
+                line — read off the rendered headline at a 1236px window, where
+                "The right machine for" occupies 590px of a 628px column. So
+                the sentence wants 12.6em: 756px at the 60px cap, against a
+                column that stops at 628. It wraps, and the headline becomes
+                three lines with "machine." orphaned on the last.
+
+                As one span it is 18.9em, which breaks to TWO lines from 375px
+                right up to the cap and to one line at 768. The break falls
+                mid-sentence at desktop — "Rent or buy. Find your / right
+                machine." — which is the price, and it is cheaper than an
+                orphan. Holding the clean break instead would have meant
+                dropping the cap to about 2.75rem for a safe margin, and the
+                client's headline is worth more at 60px than the full stop is.
 
                 THE SIZE
                 60px at the top, and the vw leg is 4.4 rather than the 3.5 it
                 was, so it actually REACHES 60 — .shell caps at 1240, which
-                caps this column at 638px, and 3.5vw would not have hit the
-                new ceiling until a 1714px window. 4.4vw gets there at 1366.
-                Checked at eleven widths from 768 to 2560: two lines
-                everywhere, and the longest word ("workplace.") is 307px
-                against 638, so nothing overflows the column at the cap. */}
+                caps this column at 628px, and 3.5vw would not have hit the
+                ceiling until a 1714px window. 4.4vw gets there at 1366. The
+                longest word is "machine." at about 252px, so nothing overflows
+                the column at the cap. */}
             <h2 className="mt-3 font-display text-[clamp(2rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink">
               <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                 <motion.span {...clipLine(T_HEAD)} className="block">
-                  The right machine for your workplace.
+                  {/* THE TERMS ARE THE PART THAT HAS TO BE SEEN.
+                      Set in one colour the sentence reads as one thought and
+                      "rent" disappears into it — and rent-or-buy is the fact
+                      the client wants a visitor to leave with. orange-dark
+                      measures 3.15:1 against the darkest 2% of the photograph
+                      behind this section once the 0.88 wash is over it, which
+                      clears the 3.0 that LARGE text owes; this headline floors
+                      at 32px so it is large text at every size. orange-deep
+                      would have been safer and duller, and it is not needed. */}
+                  <span className="text-orange-dark">Rent or buy.</span> Find
+                  your right machine.
                 </motion.span>
               </span>
             </h2>
@@ -243,14 +271,16 @@ export default function MachineRow() {
               layout telling everyone the same thing in a way that looked
               personalised.
 
-              What a reader actually wants here is what these machines ARE.
-              Both claims trace to copy already on the page: the sizes are the
-              cards' own captions, and "at the touch of a button" is the
-              client's wording from hero slide 3. */}
+              Both this and the headline above it are the client's own
+              words now. The rent-or-buy sentence that briefly sat here has
+              moved up into the headline, so this line is back to one job:
+              saying what the three machines ARE and that they are not
+              interchangeable. "at the touch of a button", the client's wording
+              from hero slide 3, went with the rewrite. */}
           <motion.div {...reveal(0.35)} className="lg:col-span-5 lg:pt-10">
             <p className="max-w-[30ch] font-sans text-[clamp(1.05rem,1.6vw,1.375rem)] leading-[1.55] text-ink-soft">
-              Three sizes, counter-top to half a desk — all at the touch of a
-              button.
+              Three sizes, from counter-top to half a desk — each built for a
+              different workplace.
             </p>
           </motion.div>
         </div>
@@ -271,7 +301,6 @@ export default function MachineRow() {
             <div className="grid grid-cols-1 gap-x-6 gap-y-7 sm:grid-cols-3">
               {RIGS.map((r, i) => {
                 const at = T_RIG + i * RIG_GAP;
-                const ok = fits(r.cap);
                 const hot = hover === r.key;
                 const dim = hover !== null && !hot;
 
@@ -291,36 +320,38 @@ export default function MachineRow() {
                       transition: `transform ${hot ? 300 : 250}ms cubic-bezier(0.33,1,0.68,1), box-shadow ${hot ? 300 : 250}ms linear`,
                     }}
                   >
-                    {/* the dim stops here: the verdict below stays at full
-                        opacity in every state, so a machine never becomes
-                        harder to rule in or out just by not being hovered */}
+                    {/* the whole card dims together now. It used to stop
+                        short of the verdict, so a ruled-in machine stayed
+                        readable while a neighbour was hovered; with the
+                        verdict gone there is nothing left that has to survive
+                        the dim. */}
                     <div
                       style={{
                         opacity: dim ? 0.55 : 1,
                         transition: `opacity ${hot ? 300 : 250}ms linear`,
                       }}
                     >
-                    <p className="text-center font-display text-[clamp(1.05rem,1.7vw,1.4rem)] font-extrabold leading-none text-ink">
-                      <Count to={r.cap} play={on} delay={T_COUNT + i * 0.08} />
-                      <span className="ml-1.5 font-sans text-[0.76rem] font-medium text-ink/72">
-                        / day
-                      </span>
+                    {/* THE NAME, FIRST AND LARGEST. Three black machines in
+                        a row are three black machines until something names
+                        them, so this is what a visitor reads before anything
+                        else. 1.6rem at the cap against the 1.22rem it wore at
+                        the foot of the card: "Brew Max" is about 113px of a
+                        338px card at a 1236px window, so the longest of the
+                        three has room to spare. */}
+                    <p className="text-center font-display text-[clamp(1.15rem,1.9vw,1.6rem)] font-extrabold tracking-[-0.02em] text-ink">
+                      {r.name}
                     </p>
 
                     {/* the machine, rising from behind the floor line */}
-                    <div className="relative mt-3 h-[clamp(112px,18vh,196px)] overflow-hidden">
+                    <div className="relative mt-2 h-[clamp(112px,18vh,196px)] overflow-hidden">
                       <motion.div
                         className="relative mx-auto h-full w-auto"
                         style={{
                           aspectRatio: String(r.aspect),
-                          /* "too small" desaturates — it does NOT fade out.
-                             opacity(0.55) was inherited from the dark version
-                             of this section; on the light ground it drops the
-                             machine to 3.7:1 against its own card and the
-                             product all but disappears. Grayscale carries the
-                             same meaning and keeps it at 15.4:1. The verdict
-                             underneath does the rest of the work. */
-                          filter: ok ? "none" : "grayscale(1)",
+                          /* no grayscale any more. A ruled-out machine used
+                             to desaturate; with no verdict under it to say
+                             why, a grey product would just read as a broken
+                             image. */
                         }}
                         initial={reduced ? false : { y: "34%", opacity: 0 }}
                         animate={
@@ -362,7 +393,7 @@ export default function MachineRow() {
 
                         <Image
                           src={r.src}
-                          alt={`${r.name} — ${r.cap} cups a day`}
+                          alt={`${r.name} — ${r.from == null ? "under" : `${r.from} to`} ${r.cap} cups a day`}
                           fill
                           sizes="(max-width: 640px) 70vw, 26vw"
                           className="relative object-contain"
@@ -402,40 +433,38 @@ export default function MachineRow() {
                       style={{ background: "rgba(23,17,14,0.28)" }}
                     />
 
-                    <p className="mt-2.5 text-center font-display text-[clamp(1rem,1.4vw,1.22rem)] font-extrabold tracking-[-0.02em] text-ink">
-                      {r.name}
-                    </p>
-                    <p className="mt-1 text-center font-sans text-[0.86rem] leading-[1.45] text-ink-soft">
-                      {r.line}
+                    {/* THE CAPACITY, UNDER THE FLOOR LINE, AS THE SPEC IT IS.
+                        It stays at 1.1rem while the name went to 1.6, which is
+                        the hierarchy the card was missing: what it is, then how
+                        much it does. It keeps the count-up — the delay lands as
+                        each machine settles on the floor, so the number arrives
+                        with the product rather than ticking away above an empty
+                        space. "cups / day" takes ink/72, the weight the old
+                        "/ day" wore in this exact spot. */}
+                    <p className="mt-2.5 text-center font-display text-[clamp(0.95rem,1.3vw,1.1rem)] font-extrabold leading-none tracking-[-0.02em] text-ink">
+                      {/* BOTH ENDS COUNT UP TOGETHER on the same delay, which
+                          is why the band never reads backwards on its way in.
+                          Counting only the ceiling would have printed
+                          "100 - 0", "100 - 47" for half a second. */}
+                      {r.from == null ? (
+                        <>
+                          &lt;
+                          <Count to={r.cap} play={on} delay={T_COUNT + i * 0.08} />
+                        </>
+                      ) : (
+                        <>
+                          <Count to={r.from} play={on} delay={T_COUNT + i * 0.08} />
+                          <span className="mx-1 font-normal text-ink/60">
+                            &ndash;
+                          </span>
+                          <Count to={r.cap} play={on} delay={T_COUNT + i * 0.08} />
+                        </>
+                      )}
+                      <span className="ml-1.5 font-sans text-[0.78rem] font-medium tracking-normal text-ink/72">
+                        cups / day
+                      </span>
                     </p>
                     </div>
-
-                    <motion.p
-                      className="mt-2 flex items-center justify-center gap-1.5 font-sans text-[0.84rem] font-semibold"
-                      initial={reduced ? false : { opacity: 0, scale: 1.14 }}
-                      animate={
-                        on ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.14 }
-                      }
-                      transition={{
-                        duration: 0.24,
-                        delay: T_VERDICT + i * 0.09,
-                        ease: HARD,
-                      }}
-                      style={{
-                        /* #f26522 is 2.5:1 on this ground and #d9500f is
-                           3.3:1 — neither clears 4.5 for text this size. So
-                           the TICK carries the orange (an icon only needs
-                           3.0) and the words take a colour that passes. */
-                        color: ok
-                          ? "var(--color-espresso)"
-                          : "rgba(23,17,14,0.72)",
-                      }}
-                    >
-                      <span style={{ color: ok ? "var(--color-orange-dark)" : "inherit" }}>
-                        <Tick ok={ok} />
-                      </span>
-                      {ok ? "fits you" : "too small"}
-                    </motion.p>
                   </div>
                 );
               })}

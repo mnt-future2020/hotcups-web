@@ -7,7 +7,7 @@ import CardSteam from "@/components/ui/CardSteam";
 import DigitRoll from "@/components/ui/DigitRoll";
 
 /**
- * Section 03 — The Menu.
+ * Section 02 — The Menu.
  *
  * Centred, unlike The Service above it, which is a left-weighted split.
  * Four equal categories are a symmetrical idea and deserve a symmetrical
@@ -45,11 +45,18 @@ import DigitRoll from "@/components/ui/DigitRoll";
  * a wash behind the row in its colour. Nothing moves until you move.
  *
  * NO CARDS UNDER THE GLASSES
- * The name, the count and the price used to sit in a bordered, blurred
- * box each. Four boxes in a row under a heading read as TABS — as though
- * they switched something — and they were the loudest thing in a section
- * whose subject is the photographs. They are plain text now, centred
- * under each drink, which is also how a menu is actually written.
+ * The name and the count used to sit in a bordered, blurred box each,
+ * alongside a per-cup price. Four boxes in a row under a heading read as
+ * TABS — as though they switched something — and they were the loudest
+ * thing in a section whose subject is the photographs. They are plain text
+ * now, centred under each drink, which is also how a menu is written.
+ *
+ * !! THE FOUR PER-CUP PRICES ARE GONE, AT THE CLIENT'S DIRECTION.
+ * ONE PRICE IS STILL ON THIS SECTION: the sub-heading closes "From ₹8 a
+ * cup", with the 8 rolling on entrance. It was not part of the same
+ * instruction, so it stays until someone says otherwise — but it is the
+ * same unconfirmed figure the four cards were carrying, and it is now the
+ * only rupee left in the section. Removing it is one span.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -62,7 +69,6 @@ const CATEGORIES = [
     key: "tea",
     name: "Tea",
     count: "8 blends",
-    price: "₹8",
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
     wash: "#E5A863",
@@ -74,7 +80,6 @@ const CATEGORIES = [
     key: "coffee",
     name: "Coffee",
     count: "6 roasts",
-    price: "₹10",
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
     wash: "#C08A57",
@@ -86,7 +91,6 @@ const CATEGORIES = [
     key: "milk",
     name: "Milk",
     count: "5 options",
-    price: "₹12",
     img: "/img/menu-milk.webp",
     alt: "A tall milk beverage with almonds and cardamom",
     wash: "#E7CFA6",
@@ -98,7 +102,6 @@ const CATEGORIES = [
     key: "specialty",
     name: "Specialty",
     count: "4 seasonal",
-    price: "₹15",
     img: "/img/menu-specialty.webp",
     alt: "Hot chocolate in a stoneware mug with cocoa and beans",
     wash: "#C18A62",
@@ -338,12 +341,14 @@ export default function Menu() {
                   </div>
 
                   {/* ---- the details: text, no box ----
-                      Name, what is in the category, and the price. The
-                      count sits at white/70 rather than the /55 it wore
-                      inside the card: without a panel behind it, it is
-                      reading straight off the section and off the tail of
-                      the wash, where /55 measured 3.94:1. /70 holds 5.29
-                      even under the brightest wash. */}
+                      Name and what is in the category. A per-cup price used
+                      to sit under both and has been removed at the client's
+                      direction; the figures were never confirmed. The count
+                      sits at white/70 rather than the /55 it wore inside the
+                      card: without a panel behind it, it is reading straight
+                      off the section and off the tail of the wash, where /55
+                      measured 3.94:1. /70 holds 5.29 even under the
+                      brightest wash. */}
                   <motion.div
                     animate={reduced ? undefined : { y: isOn ? -4 : 0 }}
                     transition={{ type: "spring", stiffness: 170, damping: 19 }}
@@ -354,13 +359,6 @@ export default function Menu() {
                     </h3>
                     <p className="mt-2 font-sans text-[1rem] font-medium text-white/70">
                       {cat.count}
-                    </p>
-                    {/* the price stays full orange even on a dimmed drink:
-                        orange/70 measured 2.86:1 once the wash reached it,
-                        under the 3.0 its size asks for. The photograph
-                        stepping back is what carries the dimming. */}
-                    <p className="mt-3 font-display text-[1.6rem] font-extrabold tabular-nums leading-none text-orange md:text-[2rem]">
-                      {cat.price}
                     </p>
                   </motion.div>
                 </motion.div>

@@ -494,7 +494,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 href="#savings"
                 className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-cream/25 px-5 py-3.5 font-sans text-sm font-semibold text-cream backdrop-blur-sm transition-colors duration-300 hover:border-cream/60 md:px-6 md:py-4"
               >
-                <span className="relative z-10">Calculate savings</span>
+                <span className="relative z-10">Flasks or a machine?</span>
               </motion.a>
             </div>
 

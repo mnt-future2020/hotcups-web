@@ -10,7 +10,7 @@ import {
 } from "@/lib/workplace";
 
 /**
- * Section 03 — Which one are you?
+ * Section 04 — Which one are you?
  *
  * Six workplaces as chips down the left, ONE large photograph on the right.
  * Never a grid of thumbnails: six small pictures at once is a mood board, and
@@ -413,7 +413,7 @@ export default function Industries() {
       <div className="shell relative z-10">
         {/* ---------------- the question ---------------- */}
         <motion.div {...rise(0.05, 0)} className="flex items-center gap-4">
-          <span className="eyebrow whitespace-nowrap">03 — Where the flasks go</span>
+          <span className="eyebrow whitespace-nowrap">04 — Where the flasks go</span>
           <motion.span
             initial={reduced ? undefined : { scaleX: 0 }}
             animate={reduced ? undefined : on ? { scaleX: 1 } : { scaleX: 0 }}

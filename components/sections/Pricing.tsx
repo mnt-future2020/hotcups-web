@@ -12,7 +12,7 @@ import {
 } from "@/lib/workplace";
 
 /**
- * Section 07 — Get pricing.
+ * Section 09 — Get pricing.
  *
  * IT IS THE ONLY ASK ON THE PAGE
  * There was a second one: a form section that wanted a headcount and four
@@ -185,7 +185,7 @@ export default function Pricing() {
           {...step(0)}
           className="mb-[clamp(1rem,2.5vw,1.75rem)] flex items-center gap-4"
         >
-          <span className="eyebrow whitespace-nowrap">07 — Get pricing</span>
+          <span className="eyebrow whitespace-nowrap">09 — Get pricing</span>
           <span className="h-px w-16 bg-line md:w-24" />
         </motion.div>
 

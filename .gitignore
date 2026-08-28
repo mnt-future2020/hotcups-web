@@ -49,3 +49,31 @@ next-env.d.ts
 # 100 files, 54MB, which is 88% of what the repo would otherwise weigh, and
 # anything committed here could only be removed by rewriting shared history.
 /public/img/unused images/
+
+# SUPERSEDED SOURCE ART, same reasoning as the folder above and the same
+# precedent. Every one of these is the multi-megabyte original that a shipped
+# .webp was made from — the seven story photographs, the two background plates,
+# the drink and snack stills. 36MB across twenty files, none of them referenced
+# by a single line of code, and everything under public/ is SERVED, so they
+# would ship to production as well as sit in history forever. They stay on disk
+# next to the webps they produced.
+/public/img/2019.png
+/public/img/2020.png
+/public/img/2021.png
+/public/img/2022–2023.png
+/public/img/2024.png
+/public/img/2025.png
+/public/img/2026.png
+/public/img/badam milk slider.png
+/public/img/banana chips.png
+/public/img/biscuits.png
+/public/img/choclate cofee sldier.png
+/public/img/coffee slider.png
+/public/img/murukku.png
+/public/img/our story bg image.png
+/public/img/pantry bg image.png
+/public/img/samosa.png
+/public/img/tea silder.png
+/public/img/tiffin-lid.png
+/public/img/tiffin-tier.png
+/public/img/vada.png

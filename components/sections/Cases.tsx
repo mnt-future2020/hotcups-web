@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 /**
- * Section 06 — Case studies.
+ * Section 07 — Case studies.
  *
  * WHAT THIS REPLACES, AND WHY IT MATTERS
  * A two-office split panel either side of the 40-cup line: company names,
@@ -124,7 +124,7 @@ export default function Cases() {
           {/* ink-soft, not the eyebrow's default mute: mute is 3.88:1 on
               cream and this is the smallest type in the section */}
           <span className="eyebrow whitespace-nowrap text-ink-soft">
-            06 — Case studies
+            07 — Case studies
           </span>
           <motion.span
             initial={reduced ? undefined : { scaleX: 0 }}

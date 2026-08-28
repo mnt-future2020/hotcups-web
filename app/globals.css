@@ -11,6 +11,20 @@
   --color-mute: #8b7a6f;
   --color-orange: #f26522;
   --color-orange-dark: #d9500f;
+  /* ORANGE FOR SMALL TEXT, AND IT EXISTS BECAUSE THE OTHER TWO CANNOT DO IT.
+     Measured on cream-deep (#fdefe3): orange is 2.80:1 and orange-dark 3.65:1,
+     so both clear the 3.0 that LARGE text and non-text marks owe and both fail
+     the 4.5 that normal text does. Every orange word under 18.66px bold on
+     this site is therefore either illegal or has to become ink.
+
+     #b8420c is the first step down the ramp that passes: 4.87:1 on cream-deep
+     and 4.69:1 on orange-soft, so it is safe on a chip as well as on the flat
+     ground. It is still recognisably the brand hue — 184,66,12 against
+     orange-dark's 217,80,15 — which is the whole point: the alternative was
+     giving up orange for small type entirely.
+
+     Use orange-dark for display sizes and this for anything smaller. */
+  --color-orange-deep: #b8420c;
   --color-orange-soft: #ffe9dc;
   --color-cream: #fff7f0;
   --color-cream-deep: #fdefe3;
@@ -422,6 +436,35 @@ body {
 
 .ticker-mask:hover .ticker-track {
   animation-play-state: paused;
+}
+
+/* SECTION 03'S FOOD, BREATHING.
+
+   An entrance is not the same thing as being alive: the first build of this
+   section landed beautifully and then stopped dead. The menu section is the
+   one that works and the reason is that its steam never stops.
+
+   Each item gets its own duration and its own NEGATIVE delay, so the five are
+   out of phase on frame one and never come back into step — the rule
+   CardSteam is built on, because everything pulsing together is the fastest
+   way to look synthetic. The rise is a variable so they travel different
+   distances as well as at different speeds. */
+@keyframes pantry-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-1 * var(--rise, 6px))); }
+}
+
+/* and the shadow answers it. It carries its own centring, because a keyframe
+   on `transform` has to be that element's only writer. */
+@keyframes pantry-shadow {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.22; }
+  50% { transform: translateX(-50%) scaleX(0.85); opacity: 0.14; }
+}
+
+/* the hub's dashed ring, once a minute — slow enough that you never catch it
+   moving, and enough that the centre of the diagram is never a still shape */
+@keyframes pantry-ring {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes ticker {
