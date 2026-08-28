@@ -160,9 +160,11 @@ type Milestone = {
    twice, and under the icon is where the reference puts them.
 
    EVERYTHING ELSE IS VERBATIM, including "50+ machines deployed" and the RFID
-   claim. Those go live as public statements the moment this ships, alongside
-   the hero's "500+ organizations" — they came from the client, they are not
-   ours to soften, and they are not ours to invent either.
+   claim. Those go live as public statements the moment this ships — they came
+   from the client, they are not ours to soften, and they are not ours to
+   invent either. (This used to say "alongside the hero's 500+
+   organizations"; that row has been removed, so these two are now the only
+   hard numbers the site claims about the business.)
 
    Titles are stored in sentence case and uppercased in CSS. The sheet sets
    them in caps, but caps in the markup is what makes a screen reader spell

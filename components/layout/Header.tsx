@@ -6,6 +6,92 @@ import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
 import { NAV, NAV_FOR, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
+import { currentCups, subscribeCups } from "@/lib/cups";
+
+/* THE COUNTER DOCK, at the client's direction — the badge moves out of the
+   hero and up here. lib/cups.ts has described this since it was written
+   ("shared by the hero badge and the header dock"), so the single source was
+   already in place and the number cannot disagree with itself.
+
+   min-[1280px] AND NOT LOWER, MEASURED.
+   The bar is a 1fr / auto / 1fr grid whose outer columns floor at their
+   content, so a right column that outgrows its share does not clip — it
+   pushes the nav off centre, and past a point it stops fitting at all.
+   Modelled across eight widths with the nav's own metrics:
+
+     1024   content 942   nav 536   1fr 203   dock+CTA 345 -> OVERFLOWS
+     1152   content 1060  nav 536   1fr 262   dock+CTA 345 -> nav slides 83px
+     1280   content 1178  nav 536   1fr 321   dock+CTA 345 -> nav slides 24px
+     1366   content 1257  nav 536   1fr 361   dock+CTA 345 -> centred
+     1440   content 1325  nav 756   1fr 284   dock+CTA 345 -> nav slides 61px
+     1728+  content 1600  nav 756   1fr 422   dock+CTA 345 -> centred
+
+   1280 is where the shift stops being visible. Below it the badge stays in
+   the hero (see SlideFlask) — exactly one of the two renders at any width, so
+   nothing is duplicated and nothing is lost on a laptop or a phone.
+
+   "cups this month", not "cups served this month". Four characters of chrome
+   buy 27px, which is the difference between sliding the nav 24px at 1280 and
+   sliding it 79px; "served" is doing no work that "cups ... this month" is
+   not already doing. The hero badge keeps the full line. */
+function CupsDock({ onDark }: { onDark: boolean }) {
+  const [cups, setCups] = useState(currentCups);
+  useEffect(() => subscribeCups(setCups), []);
+
+  return (
+    <p
+      /* LIGHT CHROME IS NOT THE DARK ONE WITH THE COLOURS SWAPPED, and the
+         first pass proved it. It ran border-line over bg-ink/[0.03], which
+         MEASURES at 1.20:1 for the border and a 3% wash for the plate — so on
+         a cream slide the pill simply was not there. The label was never the
+         problem (ink-soft on that plate is 8.9:1); the badge around it was.
+
+         The dark chip works because it is glass: a wash and a hairline
+         LIGHTER than their ground. The light one has to be the mirror —
+         darker than its ground — and the alphas that reads at are not the
+         same numbers. Solved against both grounds the bar floats over:
+
+                              hero cream slide      stuck cream bar
+           border ink/50         3.31:1 PASS          3.36:1 PASS
+           plate  ink/[0.05]     1.11:1 lift          1.11:1 lift
+           label  ink-soft       8.04:1               8.55:1
+           number ink           15.00:1              15.93:1
+           dot    orange-deep    4.41:1 PASS          4.68:1 PASS
+
+         ink/50 and not /45: 45% lands on 2.95 and 2.99, which is under the
+         3.0 a non-text boundary owes and is not worth arguing about for 5%.
+
+         THE DOT CHANGES COLOUR TOO. Brand orange on a light plate is 2.80:1
+         and fails, and it is the one part of this that is not text — the live
+         indicator carries "this is ticking right now" on its own. orange-deep
+         is the same dot at 4.41:1. On dark, plain orange is already clear. */
+      className={`hidden shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full border px-3 py-1.5 font-sans text-[0.82rem] backdrop-blur-sm transition-colors duration-300 min-[1280px]:inline-flex ${
+        onDark
+          ? "border-cream/15 bg-cream/[0.06] text-cream/70"
+          : "border-ink/50 bg-ink/[0.05] text-ink-soft"
+      }`}
+    >
+      <span className="relative flex h-2 w-2 shrink-0">
+        <span
+          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-70 ${
+            onDark ? "bg-orange" : "bg-orange-deep"
+          }`}
+        />
+        <span
+          className={`relative inline-flex h-2 w-2 rounded-full ${
+            onDark ? "bg-orange" : "bg-orange-deep"
+          }`}
+        />
+      </span>
+      <span className="tabular-nums">
+        <strong className={`font-semibold ${onDark ? "text-cream" : "text-ink"}`}>
+          {cups.toLocaleString("en-IN")}+
+        </strong>{" "}
+        cups this month
+      </span>
+    </p>
+  );
+}
 
 export default function Header() {
   const [stuck, setStuck] = useState(false);
@@ -210,6 +296,8 @@ export default function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center justify-self-end gap-3">
+          <CupsDock onDark={onDark} />
+
           <a
             href={onHome ? "#pricing" : "/#pricing"}
             /* Solid amber in both states. It used to be a ghost outline over

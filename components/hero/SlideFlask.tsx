@@ -83,17 +83,15 @@ const T_STEAM_AFTER_SUBJECT = 1.6;
     with no steam at all — which is exactly what happened the last time this
     depended on a callback firing */
 const T_STEAM_FALLBACK = 4;
-/* `phone: false` drops the item below md, separator and all.
-   "2 deliveries / day" is the one that goes, and it goes because it is the
-   only one of the three the headline has ALREADY said — "Twice a day." sits
-   four lines above it, set in orange, as the largest promise on the slide.
-   Losing it on a phone costs nothing; losing either of the other two would
-   cost the proof (500+) or the place (Madurai). */
-const TRUST: { label: string; phone: boolean }[] = [
-  { label: "2 deliveries / day", phone: false },
-  { label: "500+ organizations", phone: true },
-  { label: "Brewed the Madurai way", phone: true },
-];
+/* THE TRUST ROW IS GONE, at the client's direction. It ran "2 deliveries /
+   day - 500+ organizations - Brewed the Madurai way" between the buttons and
+   the live counter, with the first item dropping below md so the remaining
+   two stayed on one line.
+
+   Nothing else needs it, but two of the three claims were the client's own
+   and are worth keeping somewhere if they ever come back: "500+
+   organizations" is cited in Story's note on verbatim client claims, and the
+   delivery cadence is the headline's "Twice a day." said twice. */
 
 /** an eased tween on a uniform, driven off rAF */
 function tween(
@@ -498,38 +496,13 @@ export default function SlideFlask({ active }: { active: boolean }) {
               </motion.a>
             </div>
 
-            {/* THE SEPARATOR TRAILS ITS ITEM, IT DOES NOT LEAD THE NEXT ONE.
-                It used to render before every item after the first, and since
-                the dot lives INSIDE the item's own flex box it wraps with it —
-                so on a phone, where three of these do not fit on one line, the
-                second line began "· Brewed the Madurai way". A leading dot
-                reads as a bullet nobody finished.
-
-                Trailing it means a wrap now leaves the dot at the END of the
-                line above, which is how a run-on list is punctuated anyway.
-                It also makes an item removable as a UNIT, which is what lets
-                the line below drop one on a phone without stranding a dot. */}
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 md:mt-8">
-              {TRUST.map((t, i) => (
-                <motion.span
-                  key={t.label}
-                  {...rise(1.26 + i * 0.06)}
-                  className={`items-center gap-3 font-sans text-[0.82rem] text-cream/55 ${
-                    t.phone ? "flex" : "hidden md:flex"
-                  }`}
-                >
-                  {t.label}
-                  {i < TRUST.length - 1 && (
-                    <span aria-hidden="true" className="text-cream/25">
-                      ·
-                    </span>
-                  )}
-                </motion.span>
-              ))}
-            </div>
-
+            {/* mt-4/md:mt-8 and rise(1.26) were the TRUST row's, inherited when
+                it was removed: the chip now sits where that row sat, at the gap
+                the buttons have always had below them, and arrives on the beat
+                the row used to — otherwise there is a dead 180ms after the
+                buttons land and nothing following them. */}
             <motion.p
-              {...rise(1.34)}
+              {...rise(1.26)}
               /* This carried a `max-height:699px` rule that hid it outright on
                  the shortest phones, because at the time the copy still ended
                  at 72% and the splash began around 68%. Dropping the eyebrow
@@ -539,7 +512,14 @@ export default function SlideFlask({ active }: { active: boolean }) {
                  own. A special case that no longer does anything still costs
                  something — it silently withholds the counter from every small
                  phone — so it is gone rather than left in place. */
-              className="mt-3 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-7 md:py-2"
+              /* IT YIELDS TO THE HEADER DOCK AT 1280, at the client's
+                 direction — the badge belongs at the top of the page now.
+                 It cannot simply move, because the bar has no room for it
+                 below 1280 (the model is in Header.tsx): so above that width
+                 the dock renders and this hides, below it this renders and
+                 the dock hides. Exactly one at any width. Both read the same
+                 lib/cups.ts value, so they cannot disagree. */
+              className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-8 md:py-2 min-[1280px]:hidden"
             >
               <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-70" />
