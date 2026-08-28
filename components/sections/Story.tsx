@@ -267,6 +267,9 @@ const MILESTONES: Milestone[] = [
 
 const N = MILESTONES.length;
 
+/** how many of 2026's four bullets a phone shows — see the note on the list */
+const MOBILE_BULLETS = 3;
+
 /* THE TRACK, AND WHY IT IS 42 AND NOT 60.
    The track is the tall empty thing you actually scroll; the frame pinned
    inside it consumes one viewport of that height, so the pin lasts
@@ -738,10 +741,21 @@ function Numeral({ active, reduced }: { active: number; reduced: boolean }) {
    photograph crops to suit.
 
    On a phone the height comes from the 1fr row it sits in — the slack the rest
-   of the frame did not use — and the aspect-[3/2] runs the OTHER way for once,
-   deriving the WIDTH from that height. max-w-full then caps it at the column,
-   so on a wide short window (a landscape tablet at 1023x600) it stays a
-   picture rather than becoming a 10:1 letterbox.
+   of the frame did not use — and the WIDTH is simply the column.
+
+   IT USED TO DERIVE THE WIDTH FROM THAT HEIGHT, via aspect-[3/2] and w-auto,
+   so that a short row could not letterbox. That was the wrong trade and 2026
+   is what proved it. 2026 is the one stop with a bullet list, so its copy is
+   the tallest and the row under it the shortest — and a narrower row made a
+   narrower PICTURE, which sat hard against the left edge of the column with a
+   third of the width empty beside it. A short picture reads as a crop. A
+   narrow one reads as a bug.
+
+   Full width and a variable height instead: about 1.2:1 on a short stop and
+   2:1 on 2026, both of which are ordinary crops of a 3:2 source. The case
+   aspect-[3/2] was defending against — a wide, short window turning this into
+   a 10:1 strip — cannot arise any more, because the picture is hidden below
+   660px of viewport and that is the only place a frame is short enough.
 
    alt is empty on purpose. Each picture illustrates a heading and a paragraph
    already in the DOM beside it, so captioning all seven would make a screen
@@ -749,7 +763,7 @@ function Numeral({ active, reduced }: { active: number; reduced: boolean }) {
    --------------------------------------------------------------- */
 function Pictures({ active, reduced }: { active: number; reduced: boolean }) {
   return (
-    <div className={`relative min-h-0 justify-self-start aspect-[3/2] h-full w-auto max-w-full overflow-hidden rounded-[var(--radius-media)] bg-orange-soft ${HIDE_660} lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:aspect-auto lg:h-[clamp(11rem,43vh,25rem)] lg:w-full lg:max-w-none lg:justify-self-stretch lg:self-center`}>
+    <div className={`relative min-h-0 h-full w-full overflow-hidden rounded-[var(--radius-media)] bg-orange-soft ${HIDE_660} lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-[clamp(11rem,43vh,25rem)] lg:self-center`}>
       {MILESTONES.map((m, i) => (
         <motion.div
           key={m.key}
@@ -852,7 +866,33 @@ function Stop({
         </p>
       ) : null}
 
-      {/* 52ch, NOT 46. The longest bullet — "Moved from a traditional delivery
+      {/* THE PHONE GETS THREE OF THE FOUR, AND SMALLER.
+          2026 is the only stop with a list, so its copy is the tallest by a
+          long way: six lines of list where a short stop has a two-line body,
+          measured at 390px wide. The picture below takes whatever the copy
+          leaves, so 2026 was the one year whose photograph came out half the
+          size of everybody else's. At the client's direction the phone drops
+          the last bullet and steps the rest down to 0.78rem with tighter
+          leading and gaps.
+
+          THE LAST ONE, because it is the one the heading already makes:
+          "Moved from a traditional delivery business to beverage ecosystem
+          infrastructure provider" sits directly under a title that reads
+          BUILDING THE BEVERAGE ECOSYSTEM. It is also the longest at 87
+          characters, so it was two of the six lines on its own.
+
+          BELOW lg ONLY. Desktop keeps all four, verbatim, because there the
+          copy sits beside the picture rather than above it and costs it
+          nothing — and a claim this substantive should not quietly leave the
+          site.
+
+          MEASURED, at 390x844: the list goes from six lines to four, and with
+          the smaller type and gaps the block sheds 54px — 13.12px/1.45 over
+          6px gaps becomes 12.48px/1.4 over 4px. All 54 go to the photograph,
+          which grows 350x182 -> 350x236. The other four phone widths gain 54
+          to 72px the same way.
+
+          52ch, NOT 46. The longest bullet — "Moved from a traditional delivery
           business to beverage ecosystem infrastructure provider", 87
           characters — wrapped to THREE lines at 46ch, and 2026 is the stop that
           sets the height of the whole pinned frame. 52ch takes it to two.
@@ -861,11 +901,13 @@ function Stop({
           inside the truthy branch is a second expression in the same pair of
           parentheses, and it does not parse. */}
       {m.bullets ? (
-        <ul className="mt-2.5 grid max-w-[68ch] gap-1.5">
+        <ul className="mt-2.5 grid max-w-[68ch] gap-1.5 max-lg:gap-1">
           {m.bullets.map((b, i) => (
             <li
               key={b}
-              className="flex items-start gap-2.5 font-sans text-[clamp(0.82rem,min(1vw,1.5vh),1rem)] leading-[1.45] text-ink-soft"
+              className={`flex items-start gap-2.5 font-sans text-[clamp(0.82rem,min(1vw,1.5vh),1rem)] leading-[1.45] text-ink-soft max-lg:gap-2 max-lg:text-[0.78rem] max-lg:leading-[1.4] ${
+                i >= MOBILE_BULLETS ? "max-lg:hidden" : ""
+              }`}
             >
               <Check play={live} delay={0.22 + i * 0.08} reduced={reduced} />
               {b}
