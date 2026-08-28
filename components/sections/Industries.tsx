@@ -555,7 +555,12 @@ export default function Industries() {
                     fill
                     sizes="(max-width: 1023px) 92vw, 55vw"
                     className="object-cover"
-                    priority={i === 0}
+                    /* NO priority. This is section 04 — a full-bleed
+                       photograph a long way below the fold — and marking it
+                       priority put a preload link in the head that raced the
+                       hero for bandwidth on first paint, to fetch something
+                       nobody had scrolled to. Lazy is correct here: the
+                       loader starts it well before the section arrives. */
                   />
                 </motion.div>
               ))}

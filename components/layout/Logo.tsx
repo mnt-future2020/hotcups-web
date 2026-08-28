@@ -75,10 +75,23 @@ export default function Logo({
       }
       className={`relative inline-flex shrink-0 items-center ${className}`}
     >
+      {/* loading="eager", NOT priority. `priority` is deprecated in Next 16
+          (it split into `preload` and `loading`/`fetchPriority`), and on THIS
+          pair it was the wrong half anyway: it put a <link rel=preload> in the
+          head for BOTH lockups, and exactly one of them is ever visible — the
+          other is the opacity-0 half of the light/dark swap. A preload the
+          page never uses is what Chrome logs as "preloaded using link preload
+          but not used within a few seconds from the window's load event".
+
+          The docs' own rule is that preload is for the ONE above-the-fold LCP
+          image, and explicitly not "when you have multiple images that could
+          be considered the LCP element". Two lockups at 28KB and 32KB are
+          neither. eager still loads them straight away, which is all the bar
+          needed: no lazy threshold, no preload link, no warning. */}
       <Image
         src={dark}
         alt="Hotcups"
-        priority
+        loading="eager"
         sizes="220px"
         className={`h-auto ${size} transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]`}
         style={{ opacity: light ? 0 : 1 }}
@@ -87,7 +100,7 @@ export default function Logo({
         src={white}
         alt=""
         aria-hidden="true"
-        priority
+        loading="eager"
         sizes="220px"
         className={`absolute left-0 top-0 h-auto ${size} transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]`}
         style={{ opacity: light ? 1 : 0 }}

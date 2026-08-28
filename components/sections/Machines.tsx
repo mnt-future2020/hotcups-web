@@ -1206,7 +1206,20 @@ export default function Machines() {
             </svg>
           </span>
 
-          <div className="min-w-0">
+          {/* flex-1, AND THAT IS WHAT PUTS THE BUTTON ON THE RIGHT.
+              The button's own row has said justify-end all along, and it was
+              obeying it — but a flex item with no basis sizes to its CONTENT,
+              so this column was only as wide as the verdict sentence (about
+              640px of a 1100px row). "The right" was therefore the end of
+              "...more than you need.", roughly the middle of the section,
+              which is where the button was sitting.
+
+              flex-1 makes the column take the rest of the row, so justify-end
+              now means the section's right edge — under the machine card,
+              which is where a "See the machines" link belongs. The verdict is
+              unaffected: it is one line at every width this section has, and
+              a wider box does not move where a left-aligned line starts. */}
+          <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-6">
             {/* The verdict SWAPS rather than rewriting itself in place. Both
                 sentences occupied the same <p> and React reconciled them
                 word by word, so crossing the line changed some text and the
@@ -1220,7 +1233,7 @@ export default function Machines() {
                 so its line box is 1.4x its OWN size, not the paragraph's. That
                 is 41px at 1440, 2.4em of the 20.2px base. Mobile reserves 3.6em
                 because both sentences take two lines in a 335px column. */}
-            <div className="min-h-[3.6em] sm:min-h-[2.4em]">
+            <div className="min-h-[3.6em] sm:min-h-[2.4em] sm:flex-1">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.p
                   key={machineWins ? "machine" : "flask"}
@@ -1266,8 +1279,26 @@ export default function Machines() {
 
                 justify-end rather than justify-between, because with one child
                 left justify-between would have parked the button on the LEFT
-                under the verdict's first word. */}
-            <div className="mt-1.5 flex flex-wrap justify-end gap-x-6 gap-y-1">
+                under the verdict's first word.
+
+                ON THE VERDICT'S OWN LINE FROM sm UP, not the line below it.
+                Stacked, it sat about 50px under the sentence and read as a
+                stray control rather than the end of that thought.
+
+                items-baseline, NOT items-center, and the reserved height is
+                why. That box is min-h-2.4em because the two verdicts are
+                different heights — the machine one carries an inline 1.85rem
+                figure whose line box is 1.4x its OWN size — while the flask
+                sentence only fills 1.8em of it. Centring puts the button in
+                the middle of the RESERVE, about 10px below a sentence that
+                sits at the top of it. Baseline ignores the box and lines the
+                button's text up with the verdict's text, which is the thing
+                the eye is actually measuring against. Modelled, that puts the
+                button's top within a pixel of the verdict box's top.
+
+                Below sm they stay stacked: the verdict takes two lines in a
+                335px column and there is no room beside it. */}
+            <div className="mt-1.5 flex flex-wrap justify-end gap-x-6 gap-y-1 sm:mt-0 sm:shrink-0">
               <a
                 href="#machines"
                 className="hero-btn group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-full border border-cream/40 px-5 py-2.5 font-sans text-[0.9rem] font-semibold text-cream transition-colors duration-300 hover:border-orange"

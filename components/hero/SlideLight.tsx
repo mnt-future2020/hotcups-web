@@ -170,7 +170,24 @@ export default function SlideLight({
       src={slide.image.src}
       alt=""
       fill
-      priority={active}
+      /* NO priority, AND NO eager EITHER — the default lazy is right here.
+
+         priority={active} was the old value, and toggling it was the bug: the
+         preload <link> got injected the moment a slide became current, which
+         is seconds after the window load event, so the browser had already
+         written that preload off and logged "preloaded ... but not used".
+         (priority is deprecated in Next 16 as well.)
+
+         eager is the wrong replacement, measured: these two plates are 320KB
+         and 154KB, and eager makes React emit a preload for both, so 474KB
+         races the hero for bandwidth on first paint to show a slide nobody
+         has reached. Neither is ever the LCP — slide one is SlideFlask, a
+         WebGL canvas, and that is what paints.
+
+         Lazy costs nothing here because these sit INSIDE the hero's own box:
+         they are in the viewport from the first frame, just at opacity 0, so
+         the browser fetches them at once anyway. Lazy only defers what is
+         actually off screen, which these never are. */
       sizes="(max-width: 767px) 100vw, 50vw"
       className={`object-bottom md:landscape:object-contain md:landscape:object-center ${
         flip ? "object-contain" : "object-cover"

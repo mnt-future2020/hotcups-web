@@ -189,6 +189,34 @@ export default function Header() {
     return () => io.disconnect();
   }, []);
 
+  /* THE HASH IS CLEARED WHEN YOU GET BACK TO THE TOP.
+     A nav link is a plain href="#menu", so the browser writes the hash and
+     then leaves it there for good — scroll all the way back to the hero and
+     the address bar still reads /#menu. It is stale the moment you leave the
+     section, and on a reload it silently throws the visitor back down the
+     page they had just scrolled up from.
+
+     replaceState, NOT pushState: the click that set the hash already made a
+     history entry, and adding a second one would mean Back took two presses
+     to leave the page. This rewrites the entry that is already there.
+
+     ONLY AT THE HERO, and that is a decision rather than laziness. The
+     obvious alternative is to keep the hash on the section you are looking
+     at, but scroll-behavior is smooth (globals.css) — one click on Contact
+     scrolls THROUGH every section between, and the spy fires for each, so the
+     URL would rewrite eight times per click and land somewhere different if
+     you interrupted it. Clearing at one known point cannot do that.
+
+     pathname and search survive, so a ?utm_source= is not thrown away. */
+  useEffect(() => {
+    if (!onHome || active !== "hero" || !window.location.hash) return;
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + window.location.search,
+    );
+  }, [active, onHome]);
+
   /* lock the page behind the mobile drawer */
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";

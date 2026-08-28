@@ -186,7 +186,27 @@ export default function LiquidSurface({
       uRim: { value: 0.42 },
       uScroll: { value: 0 },
       uMouse: { value: [0.5, 0.5] },
-      uRipples: { value: new Float32Array(8 * 4) },
+      /* A PLAIN ARRAY, NOT A Float32Array, AND THE RIPPLES DID NOTHING UNTIL
+         IT WAS. WebGL reports `vec4 uRipples[8]` under the name
+         "uRipples[0]", and ogl splits that into a base name plus components,
+         then walks them (core/Program.js ~line 182). The component "0" is not
+         a key on { value }, so it falls to `Array.isArray(uniform.value)` to
+         decide whether this is an array uniform being supplied whole — and
+         Array.isArray of a TYPED array is false. So it took the else branch,
+         set the uniform to undefined, logged "Active uniform uRipples[0] has
+         not been supplied" and RETURNED BEFORE UPLOADING.
+
+         Which meant uRipples stayed at its GL default of all zeros for the
+         life of the page: strength (.w) was always 0, so every ripple summed
+         to nothing. The pointer wake and the ripple fired at 1150ms behind
+         the flask have never once been visible. It also explains the console
+         — one warning per uniform per frame, which is what "more than 100
+         program warnings - stopping logs" was counting.
+
+         Every other array uniform here is already a plain array (uMouse,
+         uFlaskRect); this was the one that was not. 32 slots, 8 ripples of
+         vec4, and gl.uniform4fv takes a number[] as happily as a typed one. */
+      uRipples: { value: new Array(8 * 4).fill(0) },
       uOctaves: { value: mid ? 3 : 2 },
       uSweep: { value: -0.5 },
       uFlask: { value: flask },
