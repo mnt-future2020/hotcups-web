@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import CardSteam from "@/components/ui/CardSteam";
-import DigitRoll from "@/components/ui/DigitRoll";
 
 /**
  * Section 02 — The Menu.
@@ -51,12 +50,19 @@ import DigitRoll from "@/components/ui/DigitRoll";
  * thing in a section whose subject is the photographs. They are plain text
  * now, centred under each drink, which is also how a menu is written.
  *
- * !! THE FOUR PER-CUP PRICES ARE GONE, AT THE CLIENT'S DIRECTION.
- * ONE PRICE IS STILL ON THIS SECTION: the sub-heading closes "From ₹8 a
- * cup", with the 8 rolling on entrance. It was not part of the same
- * instruction, so it stays until someone says otherwise — but it is the
- * same unconfirmed figure the four cards were carrying, and it is now the
- * only rupee left in the section. Removing it is one span.
+ * THERE IS NO PRICE IN THIS SECTION ANY MORE, AT THE CLIENT'S DIRECTION.
+ * The four per-cup prices under the drinks went first; the sub-heading kept
+ * closing "From ₹8 a cup" with the 8 rolling on entrance, flagged here as
+ * the same unconfirmed figure and the last rupee left. It has now gone too,
+ * and the sentence ends on "and more." — which is what it was already
+ * building to, since the list before it is the actual subject.
+ *
+ * DigitRoll went with it: that span was its only caller in this file.
+ *
+ * The section now names the drinks and shows them, and nothing on the page
+ * quotes a rate. Section 05 stopped costing cups at the same instruction,
+ * so if a price ever comes back it needs a home and a confirmed number,
+ * not a corner of a sub-heading.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -231,12 +237,7 @@ export default function Menu() {
                 {n.sep}
               </span>
             ))}
-            more.{" "}
-            {/* the price must never break across lines */}
-            <span className="whitespace-nowrap">
-              From &#8377;
-              <DigitRoll value="8" play={on} delay={0.68} from="#ffffff" /> a cup.
-            </span>
+            more.
           </motion.p>
         </div>
 
