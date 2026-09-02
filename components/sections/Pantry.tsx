@@ -24,7 +24,7 @@ import { motion, useInView, useReducedMotion } from "motion/react";
  * one shape none of them has.
  *
  * EVERY COORDINATE IS IN ONE TABLE, IN ONE SPACE
- * The curve, the joint rings, the leader lines, the food and the labels all
+ * The curve, the leader lines, their terminal dots, the food and the labels
  * live in the same 0-100 square: the SVG uses it as a viewBox, the HTML uses
  * it as percentages. That is what keeps a leader line pointing at the thing it
  * belongs to at every window size — nothing is positioned twice, so nothing
@@ -55,7 +55,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
    Seven points in the 0-100 square, in travel order: the entry pill, five
    stops, the exit pill. `d` is built from these rather than hand-written, so
-   moving a stop moves the curve, the ring, the leader and the label together.
+   moving a stop moves the curve, the leader, the dot and the label together.
 
    !!  THE RANGE IS PLAUSIBLE, NOT CONFIRMED BY THE CLIENT, AND CARRIES NO
        PRICES — section 05 already holds every invented rupee this site can
@@ -72,8 +72,11 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    --------------------------------------------------------------- */
 type Stop = {
   key: string;
-  n: string;
+  /** the CATEGORY, over two lines. It is not what the photograph shows — see
+      the note on STOPS — so it cannot double as the alt text. */
   name: [string, string?];
+  /** what the photograph actually shows, for a reader who cannot see it */
+  alt: string;
   src: string;
   /** the file's real pixels — drives aspect-ratio, so nothing is letterboxed */
   w: number;
@@ -91,33 +94,96 @@ type Stop = {
   side: "left" | "right";
 };
 
-/* THE LABELS ALL HANG OUTWARD, AND SAMOSA'S IS WHY.
-   It was first placed to the LEFT of the samosa, which is inward — and inward
-   at the bottom of a ring is the middle, where the hub used to be. Rendered,
-   "04 SAMOSA" sat directly on top of "Delivered with care." Every label points
-   away from the centre, which is why nothing drifts into it — and it stays
-   that way now the hub has gone, because a label pointing INWARD would run at
-   an empty middle and read as broken aim. (The hub was four lines of type
-   then and two by the end, which makes
-   the clearance larger, not the rule less necessary.)
+/* THE LABELS ALL HANG OUTWARD, AND THE BOTTOM-RIGHT STOP IS WHY.
+   Its label was first placed to the LEFT of the food, which is inward — and
+   inward at the bottom of a ring is the middle, where the hub used to be.
+   Rendered, it sat directly on top of "Delivered with care." Every label
+   points away from the centre, which is why nothing drifts into it — and it
+   stays that way now the hub has gone, because a label pointing INWARD would
+   run at an empty middle and read as broken aim. (The hub was four lines of
+   type then and two by the end, which makes the clearance larger, not the
+   rule less necessary.)
+
+   The names have since become the mockup's categories, so the label that
+   proved this is "Team Favourites" rather than "04 SAMOSA" — the geometry it
+   established did not change with them.
 
    The route is drawn behind the food deliberately: a line that stops at each
    silhouette reads as five separate arrows, and one that passes behind reads
    as a single round with things sitting on it. */
-/* THE ROUND WAS TOO SMALL AND THE FOOD WITH IT. The first pass kept every
+/* !!  THE LABELS ARE CATEGORIES AND THE PHOTOGRAPHS ARE NOT.            !!
+   !!  FOUR OF THE FIVE PAIRINGS ARE STAND-INS — NOT FINAL ART.          !!
+
+   The client's mockup names five categories and shows five photographs made
+   for them: an assorted cracker bowl, fried bondas, a fruit salad, a slider
+   board and a cup of coffee. None of those five files exist. The only
+   cut-outs on disk are the original snack set, so the NAMES here are the
+   mockup's and the PICTURES are the nearest thing we own — which is a
+   different claim in four places:
+
+     Customised Snacks   butter biscuits   one biscuit, not an assortment
+     Hot & Fresh         medhu vadai       honest — fried, hot, served warm
+     Healthy Choices     banana chips      THE BAD ONE. Deep-fried, under a
+                                           label promising the opposite.
+     Team Favourites     a samosa          defensible, but it is one item
+     Beverages ...       filter coffee     honest, and closest to the mockup
+
+   "Healthy Choices" over banana chips is the pairing to fix first: it is not
+   a weaker picture of a true claim, it contradicts the label. Dropping a
+   fruit photograph in is a one-line change on that row.
+
+   MURUKKU IS NO LONGER RENDERED. Five categories, five slots, and the vada
+   took the one it used to hold. /img/snack-murukku.webp is still on disk and
+   is the obvious candidate if a sixth stop is ever wanted.
+
+   THE ROUND WAS TOO SMALL AND THE FOOD WITH IT. The first pass kept every
    stop inside about 80% of the square, which left a ring of empty cream all
    the way round and made five photographs of food look like clip art. The
-   stops now sit against the edges and each image is 5-6 points wider.
+   stops sit against the edges and each image is 5-6 points wider.
 
-   The labels are what stops it going further: "BANANA CHIPS" is the widest,
-   and at lx 88 it runs to about 99% of the square. That is the real ceiling
-   on the arc's radius, not the arc itself. */
+   THE LABELS ARE WHAT STOPS IT GOING FURTHER, and the constraint moved when
+   the names did. It used to be "BANANA CHIPS" at lx 88 reaching ~99%; it is
+   now "Choices" at the same lx, reaching about 96% — shorter because every
+   name is deliberately split over two lines. That split is load-bearing, not
+   styling: set on one line, "Beverages for Every Break" is wider than the
+   diagram it is supposed to sit beside.
+
+   THE BEVERAGE PLATE IS DERIVED, NOT NEW. /img/pantry-beverage.webp is
+   menu-coffee.webp trimmed to its own alpha bounding box and resized to the
+   snack set's 560px. The source carried 355px of empty pixels above the cup,
+   and object-contain sizes by the BOX — so untrimmed it would have drawn the
+   cup at two-thirds the mass of everything else and sitting low in its slot.
+   Trimmed it is 560x458, between the vada and the murukku. Same treatment
+   the snack set already had; menu-coffee.webp is untouched for section 02.
+
+   TWO COORDINATES ARE SET BY A PHONE, NOT BY THE DESKTOP DRAWING. Both were
+   measured at 390px, where the label type has bottomed out at its 0.7rem
+   clamp floor while the square has gone on shrinking to 335px — so the words
+   are at their largest RELATIVE to the diagram exactly where there is least
+   room for them. Neither fault is visible on a desktop.
+
+   healthy.lx IS 83, NOT 88. "Healthy Choices" ran to 102.2% of the square:
+   past the right edge, into the shell's own gutter, and closer to the screen
+   edge than anything else on the page. 83 brings it back to about 99% on a
+   phone and 94% at 1920. The horizontal run of its leader is short as a
+   result — three units — which is what the mockup draws for this stop too.
+
+   beverages.ly IS 55, NOT 63. This is the one label that hangs BELOW its
+   leader (see StopItem), so it grows down TOWARDS its own photograph rather
+   than away from it: at 63 the second line reached 70.5% and the cup's box
+   begins at 67.4%. It cleared only because that corner of the plate happens
+   to be transparent — which stops being true the moment the photograph is
+   replaced, and this table says in writing that it will be. 55 clears the
+   box itself rather than the pixels that happen to be in it.
+
+   Moving it up that far is what forced the leader's vertical run to be
+   derived rather than fixed — see leaderFrom. */
 const STOPS: Stop[] = [
-  { key: "biscuits", n: "01", name: ["Butter", "biscuits"], src: "/img/snack-biscuits.webp", w: 560, h: 536, px: 31, py: 26, ix: 31, iy: 16, iw: 25, lx: 49, ly: 4, side: "right" },
-  { key: "murukku", n: "02", name: ["Murukku"], src: "/img/snack-murukku.webp", w: 560, h: 449, px: 65, py: 34, ix: 68, iy: 26, iw: 24, lx: 85, ly: 15, side: "right" },
-  { key: "chips", n: "03", name: ["Banana", "chips"], src: "/img/snack-chips.webp", w: 560, h: 357, px: 79, py: 60, ix: 80, iy: 55, iw: 29, lx: 88, ly: 41, side: "right" },
-  { key: "samosa", n: "04", name: ["Samosa"], src: "/img/snack-samosa.webp", w: 560, h: 385, px: 58, py: 85, ix: 57, iy: 78, iw: 25, lx: 74, ly: 67, side: "right" },
-  { key: "vada", n: "05", name: ["Medhu", "vada"], src: "/img/snack-vada.webp", w: 560, h: 421, px: 25, py: 87, ix: 23, iy: 78, iw: 28, lx: 4, ly: 63, side: "left" },
+  { key: "snacks",     name: ["Customised", "Snacks"],         alt: "A stack of butter biscuits",                      src: "/img/snack-biscuits.webp",  w: 560, h: 536, px: 31, py: 26, ix: 31, iy: 16, iw: 25, lx: 49, ly: 4,  side: "right" },
+  { key: "hot",        name: ["Hot &", "Fresh"],               alt: "Two medhu vadai, freshly fried",                  src: "/img/snack-vada.webp",      w: 560, h: 421, px: 65, py: 34, ix: 68, iy: 26, iw: 24, lx: 85, ly: 15, side: "right" },
+  { key: "healthy",    name: ["Healthy", "Choices"],           alt: "A heap of banana chips with curry leaves",        src: "/img/snack-chips.webp",     w: 560, h: 357, px: 79, py: 60, ix: 80, iy: 55, iw: 29, lx: 83, ly: 41, side: "right" },
+  { key: "favourites", name: ["Team", "Favourites"],           alt: "A samosa",                                        src: "/img/snack-samosa.webp",    w: 560, h: 385, px: 58, py: 85, ix: 57, iy: 78, iw: 25, lx: 74, ly: 67, side: "right" },
+  { key: "beverages",  name: ["Beverages", "for Every Break"], alt: "Filter coffee in a brass davara set, with beans", src: "/img/pantry-beverage.webp", w: 560, h: 458, px: 25, py: 87, ix: 23, iy: 78, iw: 26, lx: 5,  ly: 55, side: "left" },
 ];
 
 /* the entry and the exit — the two ends of the round.
@@ -164,6 +230,28 @@ function routeD(pts: { x: number; y: number }[], tension = 0.26) {
   }
   return d;
 }
+
+/* WHERE A LEADER HAS TO START, DERIVED RATHER THAN GUESSED.
+
+   The vertical run used to begin a flat 3.5 units below its label, which
+   worked only because all five images happened to sit about that far under
+   their labels. They no longer do: the beverage stop's label had to move up
+   to 55 to keep clear of its own photograph, and a 3.5-unit stub from there
+   stopped at y 58.5 with the cup's box beginning at 67.4 — nine units of
+   nothing between the line and the thing it points at, which reads as a
+   leader aimed at empty cream.
+
+   The image's own top edge is knowable: iy is its centre and its height is
+   iw scaled by the file's real aspect, so the top is one half-height up. The
+   run starts 0.8 units inside that, which is enough to look attached without
+   burying the line in the food.
+
+   THE GUARD IS FOR THE TOP STOP. The biscuits sit at y 4.04 and their label
+   at ly 4 — the image top is ABOVE the label, so the derivation alone would
+   draw the stub upwards and the polyline would double back on itself. Two
+   units below the label is the floor, which is what that stop drew before. */
+const imgTop = (s: Stop) => s.iy - (s.iw * s.h) / s.w / 2;
+const leaderFrom = (s: Stop) => Math.max(s.ly + 2, imgTop(s) - 0.8);
 
 const ROUTE = [ENTRY, ...STOPS.map((s) => ({ x: s.px, y: s.py })), EXIT];
 const ROUTE_D = routeD(ROUTE);
@@ -311,8 +399,8 @@ export default function Pantry() {
               {...reveal(0.55)}
               className="mt-6 max-w-[30rem] font-sans text-[clamp(1.05rem,1.35vw,1.3rem)] leading-relaxed text-ink-soft"
             >
-              From a quick biscuit to a hot samosa, give your team something
-              more to look forward to.
+              From a quick snack to a customised spread, give your team
+              something more to look forward to.
             </motion.p>
 
             <motion.p
@@ -325,12 +413,16 @@ export default function Pantry() {
               {...reveal(0.86)}
               className="mt-1.5 font-sans text-[clamp(1rem,1.3vw,1.25rem)] text-orange-dark"
             >
-              Drinks and bites, on the same round.
+              Drinks and bites, customised for your team.
             </motion.p>
 
             <motion.div {...reveal(0.95)}>
               <a
-                href="#menu"
+                /* it said "See what's on the pantry menu" and scrolled UP to
+                   the drinks — the one place on the page that is not the
+                   pantry. /menu carries both halves, so the button now goes
+                   where its own words say. */
+                href="/menu"
                 className="hero-btn group relative mt-7 inline-flex items-center gap-3 overflow-hidden rounded-[var(--radius-card)] border border-orange-dark/45 px-7 py-[1.15rem] font-sans text-[clamp(0.78rem,0.92vw,0.88rem)] font-bold uppercase tracking-[0.12em] text-orange-dark transition-colors duration-300 hover:border-orange focus-visible:border-orange"
               >
                 <span className="relative z-10">See what&rsquo;s on the pantry menu</span>
@@ -427,39 +519,93 @@ function Round({
             the one decoration, and next to a pill that now says WE DELIVER
             they were a second, weaker way of saying the same thing. */}
 
+        {/* THE JOINT RINGS ARE GONE, and the mockup is only half the reason.
+
+            Five cream-filled, orange-stroked circles used to sit ON the route
+            where each item met it. The mockup has no such marks — the curve
+            runs clean behind the food — but "the reference does not have it"
+            is not on its own a reason to delete something that was carrying
+            information. What settles it is that the ring and the dot at the
+            far end of the leader were both saying "there is a stop here", and
+            the dot says it where the reader is actually looking: next to the
+            words. Two markers for one fact, and the redundant one was also
+            the one sitting under a photograph.
+
+            The route still reads as a round with five things on it, because
+            the five things are on it. */}
+
         {STOPS.map((s, i) => (
-          <g key={s.key}>
-            {/* the joint, sitting ON the line where the food meets it */}
+          <g
+            key={s.key}
+            /* THE DIM IS A CSS TRANSITION AND NOT A motion ANIMATION, WHICH IS
+               A FIX RATHER THAN A STYLE CHOICE. The polyline's opacity used to
+               carry the hover dim inside the same `animate` that carries its
+               entrance — and one element gets ONE transition, so the dim
+               inherited the entrance's `delay: arriveAt(i)`. That is 1.1s on
+               the first stop and 2.85s on the last: hover a label and its
+               neighbours faded a beat and a half later, which reads as the
+               page lagging rather than as a response.
+
+               Hoisting it to the group lets motion own the entrance and CSS
+               own the state change, so each runs on its own clock. */
+            style={{
+              opacity: lit !== null && lit !== i ? 0.32 : 1,
+              transition: "opacity 0.3s linear",
+            }}
+          >
+            {/* the leader: up out of the food, then across to its label. An L
+                rather than a diagonal — a diagonal reads as a pointer, an L
+                reads as a callout, and the reference is a callout.
+
+                SOLID, AND DARKER. It was a 1-1 dash in `mute`, which at 0.28
+                units is about two pixels of line and two of gap — at the size
+                this renders, a dotted hairline over a busy doodle plate reads
+                as a printing artefact rather than as a line. The mockup draws
+                it solid and dark; `ink-soft` is the site's own token nearest
+                to what it uses, and solid at 0.22 is thinner in ink than the
+                dashed 0.28 was while being far easier to follow.
+
+                IT RUNS TO lx EXACTLY, not to lx minus a gap. The dot below is
+                what now occupies that point, so the line ends underneath it
+                and the label clears the pair with its own padding. */}
+            <motion.polyline
+              points={`${s.ix} ${leaderFrom(s)} ${s.ix} ${s.ly} ${s.lx} ${s.ly}`}
+              fill="none"
+              stroke="var(--color-ink-soft)"
+              strokeWidth="0.22"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={reduced ? false : { pathLength: 0, opacity: 0 }}
+              animate={{
+                pathLength: on || reduced ? 1 : 0,
+                opacity: on || reduced ? 1 : 0,
+              }}
+              transition={{ duration: 0.45, delay: arriveAt(i) + 0.1, ease: EASE }}
+            />
+
+            {/* the terminal dot, where the leader hands off to the words.
+
+                It is the one orange mark outside the route itself, and that is
+                deliberate: it ties five grey callouts back to the orange round
+                they belong to. orange-dark rather than orange — measured on
+                this section's own ground (#f8e7d2 under the scrim) orange is
+                2.71:1 and orange-dark is 3.54:1, and a non-text mark owes 3.0.
+
+                It arrives AFTER its leader has drawn (0.1 + 0.45 = 0.55) so it
+                lands as the line reaches it rather than waiting at the end of
+                a line that has not got there yet. */}
             <motion.circle
-              cx={s.px}
-              cy={s.py}
-              r="1.05"
-              fill="var(--color-cream-deep)"
-              stroke="var(--color-orange-dark)"
-              strokeWidth="0.4"
+              cx={s.lx}
+              cy={s.ly}
+              r="0.8"
+              fill="var(--color-orange-dark)"
               initial={reduced ? false : { scale: 0, opacity: 0 }}
               animate={{
                 scale: on || reduced ? 1 : 0,
                 opacity: on || reduced ? 1 : 0,
               }}
-              transition={{ duration: 0.4, delay: arriveAt(i), ease: EASE }}
-              style={{ transformOrigin: `${s.px}px ${s.py}px` }}
-            />
-            {/* the leader: up out of the food, then across to its label. An L
-                rather than a diagonal — a diagonal reads as a pointer, an L
-                reads as a callout, and the reference is a callout. */}
-            <motion.polyline
-              points={`${s.ix} ${s.ly + 3.5} ${s.ix} ${s.ly} ${s.lx + (s.side === "right" ? -2.5 : 2.5)} ${s.ly}`}
-              fill="none"
-              stroke="var(--color-mute)"
-              strokeWidth="0.28"
-              strokeDasharray="1 1"
-              initial={reduced ? false : { pathLength: 0, opacity: 0 }}
-              animate={{
-                pathLength: on || reduced ? 1 : 0,
-                opacity: on || reduced ? (lit !== null && lit !== i ? 0.35 : 1) : 0,
-              }}
-              transition={{ duration: 0.45, delay: arriveAt(i) + 0.1, ease: EASE }}
+              transition={{ duration: 0.35, delay: arriveAt(i) + 0.55, ease: EASE }}
+              style={{ transformOrigin: `${s.lx}px ${s.ly}px` }}
             />
           </g>
         ))}
@@ -476,7 +622,7 @@ function Round({
           hub was always a label on something the drawing already said.
 
           Two knock-on notes for anyone putting something back: the five
-          numbered labels are all angled AWAY from the centre (see the note on
+          labels all hang AWAY from the centre (see the note on
           LABEL placement) because the hub used to own that space, and the
           route's own mass is not centred either — the food boxes run y 4 to
           89, so their middle is 46.5, not 50. */}
@@ -582,7 +728,9 @@ function StopItem({
             >
               <Image
                 src={stop.src}
-                alt={stop.name.filter(Boolean).join(" ")}
+                /* the photograph, not the label above it — the two do not
+                   agree and the alt has to describe what is actually there */
+                alt={stop.alt}
                 fill
                 sizes="(max-width: 1024px) 26vw, 190px"
                 className="object-contain"
@@ -592,45 +740,88 @@ function StopItem({
         </div>
       </motion.div>
 
-      {/* the number and the name */}
-      <motion.div
-        onMouseEnter={() => setLit(index)}
-        onMouseLeave={() => setLit(null)}
-        onFocus={() => setLit(index)}
-        onBlur={() => setLit(null)}
-        tabIndex={0}
-        className={`absolute cursor-default rounded outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/50 ${
-          dim ? "opacity-45" : "opacity-100"
-        } ${stop.side === "right" ? "text-left" : "text-left"}`}
+      {/* ---- the name ----
+
+          THE NUMBER IS GONE. "01" through "05" in orange sat above each name.
+          The mockup has no numbers, and dropping them costs nothing the
+          drawing was not already doing better: a numbered list claims an
+          ORDER, and the order here is the route — which is drawn, animates in
+          sequence, and starts at a pill that says WE PREPARE. The numerals
+          were a second, weaker telling of that, and they were the reason each
+          label needed two type sizes and two colours to itself.
+
+          The name inherits the slot. It is Title Case at 600 rather than
+          uppercase at 800 with 0.06em of tracking, because these are now
+          phrases rather than tags — "Beverages for Every Break" set in spaced
+          capitals is a different and much wider object than "MURUKKU" was.
+
+          THE OFFSET IS THE `translate` PROPERTY AND IT HAS TO BE.
+          This element's own file already records why: motion owns `transform`
+          on anything it animates, so a `transform` written in `style` here is
+          silently dropped — which is exactly what was happening to the old
+          `translateY(-0.35em)`, sitting alongside an animated `x`. Tailwind
+          v4's split saves it: `translate` is a standalone CSS property that
+          motion never writes, and it composes with motion's transform rather
+          than fighting it.
+
+          The font-size is set on THIS element rather than on the <p> so those
+          em units resolve against the label's own size at every breakpoint. A
+          size on the child would leave them resolving against the inherited
+          16px and the offsets would drift as the clamp moved. */}
+      <div
+        className="absolute"
         style={{
           left: `${stop.lx}%`,
           top: `${stop.ly}%`,
-          transform: "translateY(-0.35em)",
+          /* the dim rides here, on a plain CSS transition, for the same reason
+             the leader's does — see the note in Round. On the motion element
+             it inherited `delay: at + 0.18` and answered a hover up to three
+             seconds late. */
+          opacity: dim ? 0.4 : 1,
+          transition: "opacity 0.3s linear",
         }}
-        initial={reduced ? false : { opacity: 0, x: stop.side === "right" ? -6 : 6 }}
-        animate={{
-          opacity: on || reduced ? (dim ? 0.45 : 1) : 0,
-          x: on || reduced ? 0 : stop.side === "right" ? -6 : 6,
-        }}
-        transition={{ duration: 0.5, delay: at + 0.18, ease: EASE }}
       >
-        <p
-          className={`font-display text-[clamp(0.85rem,1.15vw,1.1rem)] font-extrabold leading-none tracking-[-0.01em] transition-colors duration-300 ${
-            isLit ? "text-orange" : "text-orange-dark"
-          }`}
+        <motion.div
+          onMouseEnter={() => setLit(index)}
+          onMouseLeave={() => setLit(null)}
+          onFocus={() => setLit(index)}
+          onBlur={() => setLit(null)}
+          tabIndex={0}
+          className="cursor-default rounded font-display text-[clamp(0.7rem,0.82vw,0.95rem)] leading-[1.32] outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
+          style={{
+            /* RIGHT: clear of the dot, and line one centred ON the leader —
+               0.66em is half of the 1.32 line-height, so the first line's
+               middle lands on the line the eye just followed.
+
+               LEFT: there is one, and it hangs BELOW instead. Its leader runs
+               INWARD from x 5 towards the food at x 23, so text set level with
+               that line would be struck through by it for its whole width.
+               Under the line, starting at the dot, is what the mockup draws
+               and the only placement that does not collide. */
+            translate: stop.side === "right" ? "0.9em -0.66em" : "0 0.5em",
+          }}
+          initial={reduced ? false : { opacity: 0, x: stop.side === "right" ? -6 : 6 }}
+          animate={{
+            opacity: on || reduced ? 1 : 0,
+            x: on || reduced ? 0 : stop.side === "right" ? -6 : 6,
+          }}
+          transition={{ duration: 0.5, delay: at + 0.18, ease: EASE }}
         >
-          {stop.n}
-        </p>
-        <p className="mt-1.5 whitespace-nowrap font-display text-[clamp(0.68rem,0.88vw,0.85rem)] font-extrabold uppercase leading-[1.3] tracking-[0.06em] text-ink">
-          {stop.name[0]}
-          {stop.name[1] && (
-            <>
-              <br />
-              {stop.name[1]}
-            </>
-          )}
-        </p>
-      </motion.div>
+          <p
+            className={`whitespace-nowrap font-semibold tracking-[-0.005em] transition-colors duration-300 ${
+              isLit ? "text-orange-dark" : "text-ink"
+            }`}
+          >
+            {stop.name[0]}
+            {stop.name[1] && (
+              <>
+                <br />
+                {stop.name[1]}
+              </>
+            )}
+          </p>
+        </motion.div>
+      </div>
     </li>
   );
 }

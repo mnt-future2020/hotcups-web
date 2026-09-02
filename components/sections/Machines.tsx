@@ -215,18 +215,25 @@ const int0 = (n: number) =>
  * The set before this capped Cothas at 50, which was exactly the line this
  * section starts recommending a machine at, so the smallest unit could never
  * be the answer here. At 100 it covers 51-100, which is the commonest office
- * that crosses the line at all. Brew Max caps at 500 rather than the Infinity
- * it once carried, so machineFor's -1 fallback is what names it above that.
+ * that crosses the line at all. The largest caps at 500 rather than the
+ * Infinity it once carried, so machineFor's -1 fallback is what selects it
+ * above that.
  */
 const MACHINES = [
-  { key: "cothas", src: "/img/machine-cothas.png", name: "Cothas", upTo: 100 },
+  /* NO `name` ON ANY OF THE THREE, at the client's direction — the brands
+     came off section 06's cards and this section named the same three units,
+     so they had to come off here too or the page would identify a machine in
+     one place and refuse to in another. What is left identifies each unit by
+     the only thing the client has confirmed about it: how many cups a day it
+     is for. See the docblock in MachineRow.tsx. */
+  { key: "cothas", src: "/img/machine-cothas.png", upTo: 100 },
   {
     key: "tata",
-    /* the photograph is a CHACONY-branded unit — see the note in
-       MachineRow.tsx. It stood under "Chai Point" before this and was not
-       that either. */
+    /* the photograph is a CHACONY-branded unit. It was labelled "Tata's"
+       here and "Chai Point" before that, and was neither; with no label left
+       there is no longer a wrong claim, only a filename that still carries
+       one. See the note in MachineRow.tsx. */
     src: "/img/machine-chaipoint.png",
-    name: "Tata's",
     upTo: 200,
   },
   {
@@ -234,7 +241,6 @@ const MACHINES = [
     /* the brief asks for machine-brewmax.png; that file was renamed to
        -clean when its retouched replacement landed, and this is it */
     src: "/img/machine-brewmax-clean.png",
-    name: "Brew Max",
     upTo: 500,
   },
 ];
@@ -611,11 +617,15 @@ function Sum({
             pixels, next to a machine nobody can name by sight.
 
             clamp(0.85rem, 1.5vw, 1.05rem): 16.8px at a 1236px window against
-            the 11.8px it was. "MACHINE · TATA'S" is 16 characters, about
-            195px with its tracking, against roughly 405px of room once the
-            Recommended badge and the gap are out of the way — and it still
-            clears the ~188px a single-column phone card leaves, so it cannot
-            wrap into the badge. */}
+            the 11.8px it was. The measurement that set this was "MACHINE ·
+            TATA'S" at 16 characters and about 195px with its tracking,
+            against roughly 405px of room once the Recommended badge and the
+            gap are out of the way, and ~188px on a single-column phone card.
+            The string is now "MACHINE" — 7 characters, well under half that
+            — so the clamp is comfortably oversized rather than tight, and
+            the badge is further out of reach than it has ever been. Nothing
+            needed re-tuning; the old numbers are kept because they are the
+            ones that justify the size, and they are now a floor. */}
         <p className="font-sans text-[clamp(0.85rem,1.5vw,1.05rem)] font-bold uppercase tracking-[0.14em] text-cream/85">
           {label}
         </p>
@@ -1132,7 +1142,11 @@ export default function Machines() {
           />
 
           <Sum
-            label={`Machine · ${MACHINES[rig].name}`}
+            /* "Machine", with nothing after it. This read "Machine · Tata's"
+               and the name is gone; the card underneath still swaps which of
+               the three units it shows as the slider moves, so the picture
+               goes on answering what the label no longer spells out. */
+            label="Machine"
             best={machineWins}
             cross={cross}
             image={
@@ -1165,7 +1179,7 @@ export default function Machines() {
                   >
                     <Image
                       src={m.src}
-                      alt={m.name}
+                      alt={`A beverage machine for up to ${m.upTo} cups a day`}
                       fill
                       sizes="(max-width: 768px) 90vw, 420px"
                       className="object-contain"

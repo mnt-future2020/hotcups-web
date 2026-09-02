@@ -81,6 +81,7 @@ const CATEGORIES = [
     rim: 39,
     cx: 66,
     mouth: 52,
+    steam: true,
   },
   {
     key: "coffee",
@@ -92,6 +93,7 @@ const CATEGORIES = [
     rim: 39,
     cx: 60,
     mouth: 37,
+    steam: true,
   },
   {
     key: "milk",
@@ -103,17 +105,62 @@ const CATEGORIES = [
     rim: 30,
     cx: 66,
     mouth: 51,
+    steam: true,
   },
   {
-    key: "specialty",
-    name: "Specialty",
-    count: "4 seasonal",
-    img: "/img/menu-specialty.webp",
-    alt: "Hot chocolate in a stoneware mug with cocoa and beans",
-    wash: "#C18A62",
-    rim: 45,
-    cx: 46,
-    mouth: 52,
+    /* THE ONE COLD DRINK, and everything odd about this entry follows from
+       that. It was a mug of hot chocolate; it is now a rose sarbath, at the
+       client's direction. /img/menu-specialty.webp is unreferenced from here
+       on but left on disk.
+
+       THE SOURCE WAS SHOT ON A WET WHITE TABLE, which the other three were
+       not — they are clean cut-outs floating on the section's espresso. Its
+       alpha channel was already correct, but the opaque subject included the
+       white puddle the glass stands in, and on this ground that read as a milky
+       haze under one drink and nothing under the other three.
+
+       It could not be keyed out: measured, the puddle runs sat 0.01-0.19 at
+       luminance 141-240 and the ICE CUBES run sat 0.02 at luminance 226-242.
+       They occupy the same range, so any colour key that removed the surface
+       removed the ice and the glass base with it. What worked instead was
+       blending the wet surface TOWARDS the ground rather than erasing it —
+       low-saturation pixels below y1150 fade to espresso-deep, saturated
+       ones (lemon, mint, the drink) are held back — so it now reads as the
+       shadow the glass sits in. See the build note in the commit.
+
+       THAT BAKES #240a06 INTO THE FILE. If this section's ground ever stops
+       being espresso-deep, this one image will show a brown smear at its
+       base and has to be rebuilt from app/sarbath.png.
+
+       rim / cx / mouth were measured off the rose liquid in the finished
+       800x1000 frame, not guessed: the glass spans 31% of the frame against
+       tea's 52%, because a highball is narrow. `wash` is the mean of the
+       drink's own lit quartile (#EC817E, luminance 161) which lands inside
+       the range the other three already occupy (148-210). */
+    key: "seasonal",
+    /* "Seasonal", not "Specialty", at the client's direction — and the count
+       under it could then no longer say "seasonal" too. The row's pattern is
+       <number> <noun> ("8 blends", "6 roasts", "5 options"), so the noun had
+       to change rather than be dropped; "specials" keeps the pattern, keeps
+       the length near "5 options", and does not repeat the word directly
+       above it. If the client would rather it read "2 seasonal", that is
+       this one string. */
+    name: "Seasonal",
+    count: "2 specials",
+    img: "/img/menu-sarbath.webp",
+    alt: "Rose sarbath over ice with lemon, mint and basil seeds",
+    wash: "#EC817E",
+    rim: 35,
+    cx: 56,
+    mouth: 31,
+    /* NO PLUME. This section is built on steam and this drink is served over
+       ice — a visible plume off a glass of sarbath is not a stylistic choice,
+       it is wrong about the drink. CardSteam is simply not mounted for it.
+
+       VARIANTS[3] in CardSteam is now unreachable. It is left in place
+       because `variant` is the card's index, so deleting the entry would
+       shift tea, coffee and milk onto each other's plumes. */
+    steam: false,
   },
 ];
 
@@ -128,7 +175,10 @@ const NAMED = [
   { label: "Tea", sep: ", " },
   { label: "filter coffee", sep: ", " },
   { label: "badam milk", sep: ", " },
-  { label: "hot chocolate", sep: " and " },
+  /* follows the fourth glass, and has to: each name lights up when its own
+     card is hovered, so leaving "hot chocolate" here would light those two
+     words while a sarbath came forward. */
+  { label: "sarbath", sep: " and " },
 ];
 
 export default function Menu() {
@@ -297,13 +347,15 @@ export default function Menu() {
                       }}
                     />
 
-                    <CardSteam
-                      rim={cat.rim}
-                      cx={cat.cx}
-                      mouth={cat.mouth}
-                      variant={i}
-                      boost={isOn}
-                    />
+                    {cat.steam && (
+                      <CardSteam
+                        rim={cat.rim}
+                        cx={cat.cx}
+                        mouth={cat.mouth}
+                        variant={i}
+                        boost={isOn}
+                      />
+                    )}
 
                     <motion.div
                       className="absolute inset-0"
@@ -373,7 +425,10 @@ export default function Menu() {
           className="mt-[clamp(1.5rem,3.5vh,2.5rem)] text-center"
         >
           <a
-            href="#pricing"
+            /* "Explore more menu" pointed at #pricing, which was the only
+               honest destination while the menu was four glasses in a row —
+               there was no more menu to explore. There is now. */
+            href="/menu"
             /* hover:text-orange had to go: the fill IS orange, so orange
                text on it would vanish the moment the wipe arrived */
             className="hero-btn group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full border border-white/25 px-7 py-4 font-sans text-sm font-semibold text-white transition-colors duration-300 hover:border-orange"

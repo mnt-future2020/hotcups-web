@@ -17,15 +17,24 @@ import { motion, useInView, useReducedMotion } from "motion/react";
  * place rather than deleted because restoring the verdict is a dozen lines
  * against a store that still holds the right number.
  *
- * WHAT A CARD SAYS, AND IN WHAT ORDER
- * Name, machine, floor line, capacity — and the last two are the same size,
- * one in ink and one in orange. It has been all three ways round. It opened with the CAPACITY on
- * top, which put a spec before the thing it describes; then the photograph led
- * and both facts sat underneath as a caption. Neither answered the question a
- * visitor actually arrives with, which is "what am I looking at" — a black
- * machine is a black machine until something names it. So the name goes first
- * and reads at up to 1.6rem, and the capacity stays where it was, under the
- * floor line, as its spec.
+ * WHAT A CARD SAYS, AND WHAT IT DELIBERATELY NO LONGER DOES
+ * Machine, floor line, capacity. There is no name on it.
+ *
+ * THE BRAND NAMES ARE GONE, at the client's direction, and one of them was
+ * wrong anyway — see the note on the middle unit's photograph, which carries
+ * a CHACONY mark and has now sat under two manufacturers it does not belong
+ * to. Removing all three is the only version of this row that is not making
+ * a claim about who built these machines.
+ *
+ * That reverses an argument this file used to make out loud: the name led,
+ * at up to 1.6rem, because "three black machines in a row are three black
+ * machines until something names them". The answer now is that the CAPACITY
+ * names them — a visitor choosing between these is choosing by how many cups
+ * a day they pour, which is the one thing the row is actually for, and it is
+ * the only figure on the card the client has confirmed.
+ *
+ * So the card is a photograph over a rule over a band, and the band is the
+ * loudest thing on it.
  *
  * IT MOVES LIKE MACHINERY, NOT LIKE LIQUID
  * Hard easing, exact stagger, no overshoot anywhere — machines do not bounce.
@@ -74,12 +83,17 @@ const T_COUNT = 1.5;
  * The earlier set had Cothas capped at 50, which is exactly section 05's own
  * line — so the smallest unit could only ever have served an office that
  * section was telling to stay on flasks. The new bands fix that on their own:
- * Cothas now covers everything from the line up to 100.
+ * the smallest unit now covers everything from the line up to 100.
  */
 const RIGS = [
   {
+    /* THE KEYS AND THE FILENAMES STILL CARRY THE BRANDS. They are not
+       rendered, but an image URL is visible to anyone who opens the network
+       tab — /img/machine-cothas.png and /img/machine-chaipoint.png say what
+       the cards no longer do. Renaming the files is the fix if the removal
+       is meant to reach that far; it was left alone because it is a rename
+       across two sections and this one was a copy change. */
     key: "cothas",
-    name: "Cothas",
     src: "/img/machine-cothas.png",
     from: null,
     cap: 100,
@@ -89,13 +103,13 @@ const RIGS = [
   },
   {
     key: "tata",
-    name: "Tata's",
-    /* !! THE PHOTOGRAPH IS NOT A TATA MACHINE, AND IT NEVER WAS A CHAI POINT
-       ONE EITHER. This unit carries a visible CHACONY® mark in two places —
-       beside the touchscreen and on the urn — so the file name records what
-       the picture actually is while the label above it does not. It stood
-       under "Chai Point" for the same reason. A real Tata photograph is the
-       only fix; renaming the file would only hide the mismatch. */
+    /* THE MISMATCH THAT USED TO BE HERE IS RESOLVED BY DELETION, NOT BY A
+       CORRECTION. This unit carries a visible CHACONY® mark in two places —
+       beside the touchscreen and on the urn — and it was labelled "Tata's"
+       here, having previously been labelled "Chai Point". Neither was what
+       the photograph shows. With no name on the card there is no longer a
+       claim to be wrong; the file name is the only place the mismatch
+       survives. */
     src: "/img/machine-chaipoint.png",
     from: 100,
     cap: 200,
@@ -104,7 +118,6 @@ const RIGS = [
   },
   {
     key: "brewmax",
-    name: "Brew Max",
     src: "/img/machine-brewmax-clean.png",
     from: 200,
     cap: 500,
@@ -331,19 +344,14 @@ export default function MachineRow() {
                         transition: `opacity ${hot ? 300 : 250}ms linear`,
                       }}
                     >
-                    {/* THE NAME, FIRST AND LARGEST. Three black machines in
-                        a row are three black machines until something names
-                        them, so this is what a visitor reads before anything
-                        else. 1.6rem at the cap against the 1.22rem it wore at
-                        the foot of the card: "Brew Max" is about 113px of a
-                        338px card at a 1236px window, so the longest of the
-                        three has room to spare. */}
-                    <p className="text-center font-display text-[clamp(1.15rem,1.9vw,1.6rem)] font-extrabold tracking-[-0.02em] text-ink">
-                      {r.name}
-                    </p>
+                    {/* NO NAME ROW. A centred 1.6rem name stood here and is
+                        gone with the brands — see the docblock. The card is
+                        shorter by that line plus its 8px gap, and the three
+                        shorten together, so the row stays level and only the
+                        band below the floor line carries any words. */}
 
                     {/* the machine, rising from behind the floor line */}
-                    <div className="relative mt-2 h-[clamp(112px,18vh,196px)] overflow-hidden">
+                    <div className="relative h-[clamp(112px,18vh,196px)] overflow-hidden">
                       <motion.div
                         className="relative mx-auto h-full w-auto"
                         style={{
@@ -393,7 +401,10 @@ export default function MachineRow() {
 
                         <Image
                           src={r.src}
-                          alt={`${r.name} — ${r.from == null ? "under" : `${r.from} to`} ${r.cap} cups a day`}
+                          /* the capacity is what identifies it now, here as
+                             well as on the card — the alt cannot name a
+                             manufacturer the page has stopped naming */
+                          alt={`A beverage machine for ${r.from == null ? "under" : `${r.from} to`} ${r.cap} cups a day`}
                           fill
                           sizes="(max-width: 640px) 70vw, 26vw"
                           className="relative object-contain"

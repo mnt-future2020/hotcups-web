@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
-import { NAV, NAV_FOR, SECTIONS } from "@/lib/sections";
+import { NAV, NAV_FOR, NAV_HREF, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
 import { currentCups, subscribeCups } from "@/lib/cups";
 
@@ -30,10 +30,25 @@ import { currentCups, subscribeCups } from "@/lib/cups";
    the hero (see SlideFlask) — exactly one of the two renders at any width, so
    nothing is duplicated and nothing is lost on a laptop or a phone.
 
-   "cups this month", not "cups served this month". Four characters of chrome
-   buy 27px, which is the difference between sliding the nav 24px at 1280 and
-   sliding it 79px; "served" is doing no work that "cups ... this month" is
-   not already doing. The hero badge keeps the full line. */
+   "cups this day", not "cups served this day". Dropping "served" is what the
+   dock has always done — it is doing no work the rest of the line is not
+   already doing, and the words it saves are the difference between the dock
+   fitting at 1280 and not. The hero badge keeps the full line.
+
+   THE PERIOD CHANGED FROM A MONTH TO A DAY, at the client's direction, and
+   the table above is now CONSERVATIVE rather than wrong. It was modelled on
+   "cups this month" at a dock+CTA of 345px; measured at 1280 the current
+   string gives a dock of 178px and a dock+CTA of 320px, so every row in it
+   has 25px more room than it claims. 1280 is therefore still safe as the
+   threshold — it was chosen against the wider string and nothing has grown.
+   Widen the label again and re-measure before trusting those numbers.
+
+   THE HERO BADGE SAYS THE SAME PERIOD, AND HAS TO.
+   Exactly one of the two renders at any width (see SlideFlask), so a visitor
+   never sees both at once — which is precisely why they cannot be allowed to
+   disagree. Left at "this month" below 1280, dragging a window across that
+   breakpoint would have turned the same number from a month's work into a
+   day's. Both strings change together or neither does. */
 function CupsDock({ onDark }: { onDark: boolean }) {
   const [cups, setCups] = useState(currentCups);
   useEffect(() => subscribeCups(setCups), []);
@@ -87,7 +102,7 @@ function CupsDock({ onDark }: { onDark: boolean }) {
         <strong className={`font-semibold ${onDark ? "text-cream" : "text-ink"}`}>
           {cups.toLocaleString("en-IN")}+
         </strong>{" "}
-        cups this month
+        cups this day
       </span>
     </p>
   );
@@ -284,15 +299,29 @@ export default function Header() {
                underlined for the whole of the pantry, the calculator, the case
                studies and the contact block. NAV_FOR maps each of those to the
                nav item above it. */
-            const on = hasHero && NAV_FOR[active] === item.id;
+            /* AN ITEM WITH A PAGE IS LIT TWO WAYS, AND IT NEEDS BOTH.
+               "The Service" points at /service now, so it has to underline
+               while a reader is ON that page — the spy cannot help there,
+               because the page has no #service in it and hasHero is false.
+
+               But the section is also still on the home page, and dropping
+               the spy test would leave the bar dark for the whole of it while
+               scrolling past. Either condition lights the item: the route when
+               you are on it, the spy when you are looking at the section it
+               summarises. */
+            const routeHref = NAV_HREF[item.id];
+            const on =
+              (hasHero && NAV_FOR[active] === item.id) ||
+              (routeHref !== undefined && pathname === routeHref);
             return (
               <a
                 key={item.id}
                 /* A bare #hash only resolves on the page that owns the
                    section. From /blog every one of these pointed at an id
                    that is not in the document, so the whole nav was inert.
-                   Off home they become real navigations back to it. */
-                href={onHome ? `#${item.id}` : `/#${item.id}`}
+                   Off home they become real navigations back to it. A route
+                   href overrides both — it is not a place in a document. */
+                href={routeHref ?? (onHome ? `#${item.id}` : `/#${item.id}`)}
                 aria-current={on ? "true" : undefined}
                 className={`relative whitespace-nowrap rounded-full px-2 py-2 font-sans text-[0.85rem] font-medium transition-colors duration-300 min-[1440px]:px-4 min-[1440px]:text-[1.05rem] ${
                   onDark
@@ -385,19 +414,26 @@ export default function Header() {
             className="absolute inset-x-0 top-full border-t border-line bg-cream lg:hidden"
           >
             <ul className="shell flex flex-col py-3">
-              {NAV.map((item) => (
-                <li key={item.id}>
-                  <a
-                    href={onHome ? `#${item.id}` : `/#${item.id}`}
-                    onClick={() => setOpen(false)}
-                    className={`block border-b border-line/70 py-3.5 font-display text-lg font-semibold ${
-                      NAV_FOR[active] === item.id ? "text-orange" : "text-ink"
-                    }`}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+              {NAV.map((item) => {
+                /* the same two-way test as the desktop bar above */
+                const routeHref = NAV_HREF[item.id];
+                const on =
+                  NAV_FOR[active] === item.id ||
+                  (routeHref !== undefined && pathname === routeHref);
+                return (
+                  <li key={item.id}>
+                    <a
+                      href={routeHref ?? (onHome ? `#${item.id}` : `/#${item.id}`)}
+                      onClick={() => setOpen(false)}
+                      className={`block border-b border-line/70 py-3.5 font-display text-lg font-semibold ${
+                        on ? "text-orange" : "text-ink"
+                      }`}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })}
               <li>
                 <a
                   href={onHome ? "#pricing" : "/#pricing"}
