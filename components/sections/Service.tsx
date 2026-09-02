@@ -275,8 +275,23 @@ export default function Service() {
               {...reveal(0.35)}
               className="mt-6 max-w-[42ch] font-sans text-[1.0625rem] leading-[1.6] text-ink-soft"
             >
-              A hassle-free pantry solution for your team. Nothing to install,
-              nothing to clean.
+              {/* IT SAYS WHAT WE DO, NOT WHAT CATEGORY WE ARE.
+                  The line before this opened "A hassle-free pantry solution
+                  for your team" — and "solution" is a word that describes the
+                  shape of a purchase rather than the thing being bought. The
+                  headline above already promises filled flasks and collected
+                  empties; this repeats it in the plain register and then names
+                  the three jobs the customer does NOT inherit.
+
+                  Every clause is already claimed elsewhere on the site: the
+                  flasks and the empties are the headline's own, and "no
+                  washing, no storage, no pantry staff" is step 03. Nothing new
+                  is asserted, and no schedule is reintroduced.
+
+                  KEEP IN STEP WITH /service. The hero of that page carries
+                  this same sentence — see app/service/ServiceView.tsx. */}
+              We bring the filled flasks and take the empties away. No machine
+              to install, nothing to wash, and no pantry staff to manage.
             </motion.p>
 
           </div>
@@ -351,10 +366,21 @@ export default function Service() {
               className="relative -mt-10 rounded-[var(--radius-card)] border border-line bg-white/95 p-5 backdrop-blur-sm lg:absolute lg:bottom-2 lg:left-0 lg:w-[62%]"
               style={{ boxShadow: "var(--shadow-2)" }}
             >
-              {[
-                ["Delivered", "To your pantry"],
-                ["Pantry staff", "None"],
-              ].map(([k, v], i, rows) => (
+              {/* ONE ROW LEFT, AND EACH REMOVAL HAD A REASON.
+                  This card began as three: MORNING DROP / before 9:30,
+                  EVENING PICKUP / 6:00 and PER FLASK / 40+ cups. The two
+                  times went when the section stopped quoting a schedule,
+                  "Per flask" went at the client's direction, and PANTRY STAFF
+                  / None has now gone too — the paragraph two inches above it
+                  ends "and no pantry staff to manage", so the card was
+                  answering a question the copy had just answered.
+
+                  A one-row definition list is a thin thing to call a card,
+                  and it is worth saying so: what is left states where the
+                  flasks land and nothing else. If it ever looks too slight
+                  beside the photograph, the fix is a second CONFIRMED fact
+                  rather than bringing back one of the three above. */}
+              {[["Delivered", "To your pantry"]].map(([k, v], i, rows) => (
                 <div
                   key={k}
                   /* THE RULE IS DERIVED, AND IT HAD TO BECOME SO.

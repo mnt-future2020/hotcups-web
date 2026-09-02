@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 /**
@@ -584,113 +585,10 @@ function Round({
   );
 }
 
-/* ---------------------------------------------------------------
-   THE GLYPHS.
-
-   The photographs came off and the boxes were bare, which made five
-   identical rectangles that could only be told apart by reading them. These
-   put the difference back without putting the photographs back.
-
-   THEY ARE DRAWN, NOT PHOTOGRAPHED, AND THAT IS THE POINT. The plate behind
-   this section is the client's own line art — biscuits, a bowl of fruit, a
-   flask, a mug, all outline at a constant weight. Five photographs sat on top
-   of that as a second, louder medium; five drawings belong to it. It is also
-   the one thing no other section on the site does: 02 photographs its drinks,
-   04 photographs its workplaces, 06 photographs its machines. This is the
-   only one that draws.
-
-   ONE STROKE, NO FILLS. `currentColor` so a glyph inherits its box's colour
-   and shifts to orange with it on hover, one shared stroke width so the five
-   read as a set, and round caps and joins because the plate's line art has
-   them. 1.4 at a ~24px render is close to the plate's own weight at the size
-   it is displayed.
-
-   A 32-unit box for all five, so swapping one out later means matching one
-   number rather than re-measuring the row.
-   --------------------------------------------------------------- */
-const GLYPH = {
-  viewBox: "0 0 32 32",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.4,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-} as const;
-
-function Glyph({ name, className }: { name: string; className?: string }) {
-  /* aria-hidden throughout: the box already says the category in words, so a
-     labelled glyph would have a screen reader announce it twice. */
-  const common = { ...GLYPH, className, "aria-hidden": true as const };
-
-  switch (name) {
-    /* a stack of three biscuits seen from the side, with two holes pricked in
-       the top one — the detail that stops it reading as a stack of coins */
-    case "snacks":
-      return (
-        <svg {...common}>
-          <ellipse cx="16" cy="9.5" rx="9" ry="3.3" />
-          <path d="M7 9.5v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3V9.5" />
-          <path d="M7 15.2v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3v-3.4" />
-          <path d="M7 20.9v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3v-3.4" />
-          <path d="M13.2 8.8h.01M18.9 9.9h.01" />
-        </svg>
-      );
-
-    /* a vada — a ring, with steam over it. The steam is what carries "Hot",
-       and the ring is what stops it being any other hot thing. */
-    case "hot":
-      return (
-        <svg {...common}>
-          <circle cx="16" cy="20.5" r="7.8" />
-          <circle cx="16" cy="20.5" r="2.5" />
-          <path d="M11.2 9.4c0-1.6 1.5-1.9 1.5-3.5" />
-          <path d="M16 8.8c0-1.8 1.7-2.1 1.7-3.8" />
-          <path d="M20.8 9.4c0-1.6 1.5-1.9 1.5-3.5" />
-        </svg>
-      );
-
-    /* a leaf. It is the one glyph that is not a dish, deliberately: the label
-       says "Healthy Choices", and the photograph under that label was
-       deep-fried banana chips. A leaf claims the category without claiming
-       the contradiction. */
-    case "healthy":
-      return (
-        <svg {...common}>
-          <path d="M6.5 25.5C6.5 14 14 6.5 25.5 6.5c0 11.5-7.5 19-19 19Z" />
-          <path d="M25.5 6.5 11 21" />
-        </svg>
-      );
-
-    /* a samosa: triangle, bowed base, seam running off the apex.
-
-       THE SEAM IS DIAGONAL BECAUSE A CENTRED ONE IS A WARNING SIGN. The first
-       version ran it straight down the middle — `M16 5v20.9` — and a triangle
-       with a vertical bar through it is the exclamation glyph every alert on
-       the web uses. Rendered at 24px it read as a caution icon sitting in a
-       box that says "Team Favourites", which is the opposite of the intended
-       feeling. Taking the seam off-axis breaks that read instantly, and it is
-       also where a samosa's fold actually is. */
-    case "favourites":
-      return (
-        <svg {...common}>
-          <path d="M16 5 27.5 25c-7.2 2.1-16.3 2.1-23 0L16 5Z" />
-          <path d="M16 5.2 10.2 24.6" />
-        </svg>
-      );
-
-    /* a cup with steam — the only stop that is a drink rather than a bite */
-    case "beverages":
-    default:
-      return (
-        <svg {...common}>
-          <path d="M6.5 13.5h14.8v5.8a6 6 0 0 1-6 6h-2.8a6 6 0 0 1-6-6v-5.8Z" />
-          <path d="M21.3 15.6h2.4a3 3 0 0 1 0 6h-2.4" />
-          <path d="M11.6 9.6c0-1.5 1.4-1.8 1.4-3.3" />
-          <path d="M16.4 9.2c0-1.7 1.6-2 1.6-3.7" />
-        </svg>
-      );
-  }
-}
+/* The five line-art glyphs that stood here are gone with the return of the
+   photographs — see the note in StopItem. They were one <svg> per category in
+   the plate's own stroke weight, and git has them if drawings are ever wanted
+   back instead of pictures. */
 
 function StopItem({
   stop,
@@ -775,16 +673,38 @@ function StopItem({
         }}
         transition={{ duration: 0.5, delay: at, ease: EASE }}
       >
-        {/* The glyph carries the colour shift on hover and the label stays
-            ink, so the box brightens without the words changing weight. It is
-            the drawing that responds, which is the right way round — the text
-            is what has to stay readable. */}
-        <Glyph
-          name={stop.key}
-          className={`mx-auto mb-1.5 block h-[clamp(19px,2.1vw,26px)] w-[clamp(19px,2.1vw,26px)] transition-colors duration-300 ${
-            isLit ? "text-orange-dark" : "text-orange-dark/65"
-          }`}
-        />
+        {/* ---- THE PHOTOGRAPH, BACK, BUT INSIDE THE BOX ----
+
+            It was a drawn glyph for a while and is a picture again at the
+            client's direction. This is not the old arrangement returning: the
+            cut-outs used to be large objects standing free on the round with
+            the names called out to one side, and they are now thumbnails
+            contained by the box that names them. The box stays the stop.
+
+            A FIXED BAND, NOT EACH FILE'S OWN RATIO. The five differ — 560x536
+            for the biscuits against 560x357 for the chips — so sizing by
+            width would set every label at a different height and the row of
+            boxes would stop lining up. A band of fixed height with
+            object-contain inside it gives every box the same distance from
+            its top edge to its first word, while each photograph keeps its
+            own proportions within the band.
+
+            The lift on hover is a scale on the picture alone. The box does
+            not move and the words do not reflow; only the thing being pointed
+            at responds. */}
+        <div className="relative mb-1.5 h-[clamp(34px,4vw,52px)] w-full">
+          <Image
+            src={stop.src}
+            /* the photograph, not the label above it — the two do not always
+               agree, and the alt has to describe what is actually there */
+            alt={stop.alt}
+            fill
+            sizes="(max-width: 1024px) 22vw, 130px"
+            className={`object-contain transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isLit ? "scale-[1.08]" : ""
+            }`}
+          />
+        </div>
         <span className="whitespace-nowrap">
           {stop.name[0]}
           {stop.name[1] && (
