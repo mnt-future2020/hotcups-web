@@ -327,7 +327,61 @@ export default function LiquidSurface({
          bottom, so a flask standing at exactly 0 has its base behind the
          controls. Four percent lifts it clear of the worst of that without
          eating into the gap above, which the copy needs. */
-      const baseY = stacked ? 0.04 : mid ? 0.29 : 0.24;
+      /* 0.13 ON DESKTOP, DOWN FROM 0.29, at the client's direction — the
+         plate was sitting too high in the frame.
+
+         Measured at 1440x900 before any of this: hUV 0.62 makes the plate
+         558px tall, its base sat 261px up, and its TOP therefore landed at
+         y=81 — three pixels under a 78px header — with 261px of empty frame
+         beneath it. It read as pressed against the bar with a hole under it.
+
+         IT WAS TUNED BY EYE, IN THREE STEPS, AND THE MIDDLE ONE IS WHY THE
+         NUMBER LOOKS ARBITRARY. 0.18 centred the plate in the band below the
+         header and was still too high. 0.09 stood it on the floor of the
+         frame and went too far the other way. 0.13 is the settle: base about
+         120px up at 1920x930, which lands the plate's mass level with the
+         copy block beside it rather than above or below it.
+
+         That is the actual target, and it is worth stating because it is not
+         "centre the plate". The copy column runs roughly 210..710 on a
+         desktop; matching the photograph to THAT, not to the frame, is what
+         makes the two halves read as one composition.
+
+         THE BOTTOM SCRIM WAS EXPECTED TO STOP THIS AND DOES NOT.
+         SlideFlask lays a desktop-only `bottom-0 h-60` ramp to
+         rgba(18,5,2,0.9) over this area, and the phone case already records
+         that ramp "sat exactly where the flask now stands and crushed its
+         base to almost black". The same was predicted here below about 0.14
+         — which 0.13 is under — and it was checked rather than assumed. The
+         test was run at 0.09, further down than this sits, where the plate's
+         lower body takes roughly 0.5-0.66 of that ramp at 1280x720: the worst
+         case, because h-60 is a FIXED 240px and therefore a third of a short
+         frame against an eighth of a tall one.
+
+         It survives, and the reason is what the ramp lands on. On a phone it
+         fell across a small plate whose base was already the darkest thing in
+         the frame. Here it falls across a polished steel body that is the
+         BRIGHTEST thing in the frame, and 0.6 of black over specular metal is
+         still legible metal — it reads as light falling off towards the
+         floor, which is what the reflection underneath is already doing.
+
+         So the floor on baseY is not the scrim. It is the dot pill, which
+         sits clamp(1.25rem, 3.5vh, 2.25rem) off the bottom and is centred,
+         while the plate is tucked right — they do not overlap horizontally at
+         any width the desktop branch covers.
+
+         Checked at 1280x720, 1440x900, 1512x982 and 1920x930. 0.18 and 0.09
+         were both looked at on the short 1280x720 frame and both held, so the
+         0.13 between them is bracketed rather than separately eyeballed
+         there.
+
+         THE THIRD ARM WAS UNREACHABLE AND IS GONE. This read
+         `stacked ? 0.04 : mid ? 0.29 : 0.24`, but `stacked` is defined four
+         lines up as `!mid` — so `!stacked` guarantees `mid`, and 0.24 could
+         never be selected. Two states, two values. (hUV above genuinely has
+         three, because it branches on `wide` first, which is a different
+         query.) */
+      const baseY = stacked ? 0.04 : 0.13;
       uniforms.uFlaskRect.value = [baseX, baseY, wUV, hUV];
       /* the steam leaves the flask's spout, which is off-centre inside the
          composite — reported in the 2D canvas's top-down space */

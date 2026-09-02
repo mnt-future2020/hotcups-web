@@ -10,9 +10,31 @@ import { setHeroTone, type HeroTone } from "@/lib/heroTone";
  * The hero, as a carousel of three.
  *
  * THREE SLIDES, THREE ARGUMENTS
- * Delivery, then the menu, then the machine. A carousel whose slides all make
+ * Delivery, then the machine, then the menu. A carousel whose slides all make
  * the same point is a slideshow of one idea, and a visitor learns nothing by
  * waiting for it. These three are the three reasons to buy, in order.
+ *
+ * THE THIRD ARGUMENT IS NOW FRAMED THROUGH THE MACHINE, and that is worth
+ * watching. Slide three used to open "Tea, filter coffee, badam milk and hot
+ * chocolate"; the client's copy opens "One Machine. Every Favourite." It is
+ * still the MENU argument — the whole paragraph is four named drinks — but it
+ * arrives through the same noun slide two leads with, so the gap between the
+ * two is narrower than it was. If a fourth slide is ever added, or if these
+ * start reading as one idea told twice, this is the pair to separate.
+ *
+ * THE MACHINE MOVED AHEAD OF THE MENU at the client's direction. It used to
+ * run delivery -> menu -> machine. Nothing about the slides changed except
+ * which comes second: each entry in LIGHT_SLIDES carries its own ground,
+ * copy, buttons, `flip` and photograph, so reordering the array moves all of
+ * that together and cannot separate a headline from its picture.
+ *
+ * Worth knowing if it is ever reordered again: the two are NOT
+ * interchangeable objects. The machine slide is the one with `flip: true` —
+ * its photograph faces right and is mirrored so it reads into the copy
+ * rather than off the edge — and the two grounds are different (warm peach
+ * for the drinks, cool greige for the machine). Swapping only the `image`
+ * fields, rather than the whole entries, is what leaves a slide showing the
+ * wrong picture under the right words.
  *
  * IT CROSSFADES, IT DOES NOT SLIDE
  * Slide one is a full-screen WebGL canvas. Translating it horizontally means
@@ -63,23 +85,9 @@ import { setHeroTone, type HeroTone } from "@/lib/heroTone";
 const DWELL = 7000;
 const FADE = 0.9;
 
+/* SLIDE 2 FIRST, THEN SLIDE 3 — index 0 is the carousel's SECOND slide,
+   because slide one is SlideFlask and is not in this list. */
 const LIGHT_SLIDES: LightSlide[] = [
-  {
-    /* The mockup's warm peach: light at the upper left, deepening across to
-       the drinks. Outer stop capped at #f5dec6 — the reference runs to about
-       #efd2b4, where the orange-dark accent line drops to 2.85:1. */
-    ground:
-      "radial-gradient(125% 125% at 26% 12%, #fefaf5 0%, #faeadb 45%, #f5dec6 100%)",
-    lines: ["Tea, filter coffee,", "badam milk and", "hot chocolate."],
-    accent: ["Something for", "everyone."],
-    sub: "Give your team more to choose from, with fresh hot beverages made for every taste and delivered straight to your workplace.",
-    primary: { label: "See the menu", href: "#menu" },
-    secondary: { label: "Get pricing", href: "#pricing" },
-    image: {
-      src: "/img/hero-slide-drinks.webp",
-      alt: "Tea, filter coffee, badam milk and hot chocolate with whole spices",
-    },
-  },
   {
     /* the mockup's cool studio greige, with the light off the upper left */
     ground:
@@ -100,6 +108,41 @@ const LIGHT_SLIDES: LightSlide[] = [
        first — at 46% of 1834px the box is 843x900, so HEIGHT bound and the
        machine filled the viewport top to bottom however narrow the box got.
        Insetting it 9% each way is what actually makes it smaller. */
+  },
+  {
+    /* The mockup's warm peach: light at the upper left, deepening across to
+       the drinks. Outer stop capped at #f5dec6 — the reference runs to about
+       #efd2b4, where the orange-dark accent line drops to 2.85:1. */
+    ground:
+      "radial-gradient(125% 125% at 26% 12%, #fefaf5 0%, #faeadb 45%, #f5dec6 100%)",
+    /* THE CLIENT'S "SHORT & PREMIUM" WORDING, and short is why it is this one
+       rather than the longer draft that came with it.
+
+       A slide holds for DWELL — seven seconds — and then crossfades whether
+       or not it has been read. The long version ran a headline, a
+       sub-headline and a ~50-word body; at that length a reader gets through
+       maybe half of it before the machine slide replaces it, so the back half
+       is words nobody sees. It also needed a fourth field on LightSlide for
+       the sub-headline, which no other slide would use.
+
+       This version says the same thing in one paragraph and fits the shape
+       the type already has. The long draft is kept in the client's message if
+       it is ever wanted for the /menu page, where nothing is on a timer. */
+    lines: ["One Machine."],
+    accent: ["Every Favourite."],
+    sub: "Enjoy freshly prepared Tea, Filter Coffee, Badam Milk, and Hot Chocolate, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
+    primary: { label: "See the menu", href: "#menu" },
+    secondary: { label: "Get pricing", href: "#pricing" },
+    /* THE DRINKS PLATE STAYS, UNDER A HEADLINE THAT SAYS "MACHINE".
+       That pairing is deliberate and was chosen over the machine plate. The
+       sentence is about what comes OUT of the machine — four named drinks —
+       so the photograph showing those four is the one that carries it. The
+       machine plate would also have put the same picture on two consecutive
+       slides, and the hero set has only one of them. */
+    image: {
+      src: "/img/hero-slide-drinks.webp",
+      alt: "Tea, filter coffee, badam milk and hot chocolate with whole spices",
+    },
   },
 ];
 
