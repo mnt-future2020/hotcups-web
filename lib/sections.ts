@@ -47,6 +47,57 @@ export const SECTIONS = [
 ] as const;
 
 export const NAV = SECTIONS.filter((s) => s.nav);
+
+/**
+ * Nav items that are a PAGE rather than a place on the home page.
+ *
+ * The registry above describes the landing page, and for six of the seven nav
+ * items that is still the whole story: the link is a hash, the spy watches for
+ * the section, the underline follows. "The Service" now has a page of its own,
+ * so its link has to leave the document instead of scrolling inside it.
+ *
+ * A SEPARATE MAP RATHER THAN A FIELD ON SECTIONS, and the reason is the
+ * `as const` up there. Adding `href` to one entry and not the others gives the
+ * union a member the rest lack, so `item.href` stops type-checking at every
+ * call site — the fix would be `href: null` typed onto all thirteen, which is
+ * twelve lines of noise to describe one exception. This says the same thing in
+ * one line and takes one more when the next section earns a page.
+ *
+ * The section KEEPS its entry above. #service is still on the home page, still
+ * watched by the spy, and still the thing the underline lights while a reader
+ * scrolls past it — see the `on` test in Header. The page is an addition, not
+ * a replacement, and an old /#service link still lands somewhere real.
+ */
+export const NAV_HREF: Record<string, string> = {
+  service: "/service",
+  /* THE PANTRY GOES WITH IT, and that is why this entry is worth a note.
+     `pantry` is nav: false and NAV_FOR sends it here — the comment on it above
+     already calls it "the second half of The Menu rather than a destination of
+     its own". So /menu is both halves: the drinks from section 02 and the
+     pantry from section 03, on one page. There is no /pantry and there should
+     not be one, or that comment stops being true. */
+  menu: "/menu",
+  /* THE KEY AND THE PATH DIVERGE HERE, and it is the first entry where they
+     do. `service` and `menu` happen to be both the section id and the URL, so
+     this map looked like an identity function with extra steps. This one is
+     `industries` in the code and /who-we-serve on the wire.
+
+     The path follows the LABEL rather than the id because a URL is read by
+     people: "Who We Serve" is what the nav says, what the client calls it and
+     what a visitor is clicking. "Industries" is a word that appears nowhere in
+     the interface — it is an internal id, and the anchor #industries still is
+     one. Naming the route after it would have been consistent with the code
+     and opaque to everyone else. */
+  industries: "/who-we-serve",
+  /* `machines` is the id of section 06 and the path of the page, so this is
+     back to the identity the first two entries had. The page carries BOTH
+     machine sections: 06's three sizes and the custom build, and 05's
+     50-cup line. /#savings — section 05's own anchor, and still the id in
+     SECTIONS because the hero and the footer link to it — stays where it is,
+     because the calculator itself is a client component that belongs on the
+     home page rather than on a static route. The page links back to it. */
+  machines: "/machines",
+};
 export type SectionId = (typeof SECTIONS)[number]["id"];
 
 /**

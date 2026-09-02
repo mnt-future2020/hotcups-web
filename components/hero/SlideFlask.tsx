@@ -529,7 +529,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 <strong className="font-semibold text-cream">
                   {shown.toLocaleString("en-IN")}+
                 </strong>{" "}
-                cups served this month
+                cups served this day
               </span>
             </motion.p>
           </div>

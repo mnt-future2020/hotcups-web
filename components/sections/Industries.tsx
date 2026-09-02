@@ -424,10 +424,22 @@ export default function Industries() {
 
         {/* THE SUB SITS UNDER THE HEADING, NOT BESIDE IT.
             They shared a row while the headline was "Which one are you?" —
-            9.07 em, which fits in what is left over. The new one is 11.68 em,
-            701px at the 60px cap, against the 588px the row leaves once the
-            sub has taken its measure. Measured at seven widths: it does not
-            fit beside anything from 1366 up. Stacked, it has the whole 1128. */}
+            9.07 em, which fits in what is left over. Nothing since has: "Tell
+            us your organization." measured 11.68 em and the current line is
+            12.10 em, or 726px at the 60px cap, against the 588px the row
+            leaves once the sub has taken its measure. It does not fit beside
+            anything from 1366 up. Stacked, it has the whole 1128.
+
+            THE SPLIT IS FORCED, NOT CHOSEN. The h2 is capped at 19ch, which
+            is 12.80 em whatever the clamp resolves to — `ch` scales with the
+            font-size and so does the text, so the fit is the same ratio at
+            every width, and both lines were measured at one rect each rather
+            than assumed. 12.10 of 12.80 leaves 0.70 em spare on the long
+            line. Set as "Bringing Better Food Experiences" the first line
+            comes to about 15 em and wraps INSIDE its own overflow-hidden
+            mask, which is what the roll-up animation cannot survive — each
+            of those spans has to be exactly one line. Breaking after "Food"
+            is the only two-line split that fits. */}
         <h2 className="mt-4 max-w-[19ch] font-display text-[clamp(1.9rem,min(4.4vw,5.7svh),3.75rem)] font-extrabold leading-[1.08] tracking-[-0.03em] text-ink">
           <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
             <motion.span
@@ -436,7 +448,7 @@ export default function Industries() {
               transition={{ duration: 0.55, delay: 0.15, ease: EASE }}
               className="block"
             >
-              Tell us your organization.
+              Bringing Better Food
             </motion.span>
           </span>
           <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
@@ -448,7 +460,7 @@ export default function Industries() {
                  and at 60px extrabold the 3.0 large-text bar applies. */
               className="block text-orange-dark"
             >
-              We&rsquo;ll deliver to you.
+              Experiences to Your Team.
             </motion.span>
           </span>
         </h2>
@@ -817,8 +829,8 @@ export default function Industries() {
                                   moment the sweep finishes, so the flask
                                   reaches the end of the round and leaves a
                                   cup there. That is the sentence the section
-                                  is already making — "we'll deliver to you" —
-                                  played out at 13px.
+                                  is already making — a flask leaves us and a
+                                  cup reaches them — played out at 13px.
 
                                   The delay is `sweepDur`, the SAME value the
                                   width animation above is given. Hard-coding

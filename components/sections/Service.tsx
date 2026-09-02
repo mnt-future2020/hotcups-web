@@ -3,28 +3,35 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion, type Easing } from "motion/react";
-import DigitRoll from "@/components/ui/DigitRoll";
 
 /**
  * Section 01 — The Service.
  *
- * The right column carries the flask itself plus the three numbers a
- * customer actually needs — drop time, pickup time, cups per flask —
- * rather than a second paragraph of prose.
+ * The right column carries the flask itself plus the three facts a customer
+ * actually needs, rather than a second paragraph of prose.
+ *
+ * NO TIMES ANYWHERE IN THIS SECTION, at the client's direction. It used to
+ * be built on two: a headline reading "before 9:30" and "at 6" with both
+ * numerals rolling into place through DigitRoll, and a card whose first two
+ * rows were MORNING DROP and EVENING PICKUP. The service is described by
+ * what it does now — filled flasks arrive, empties leave — and the schedule
+ * is settled in conversation instead of promised on a landing page.
+ *
+ * That cost the heading its only colour, since the orange lived entirely on
+ * those two numerals. Line two now carries it instead, which is the same
+ * two-tone heading sections 03 and 04 already use.
  *
  * Entrance (fires at 20% in view):
  *   0.05s  eyebrow slides in, its rule drawing outward
  *   0.15s  heading line 1 clip-reveals upward
  *   0.24s  heading line 2 clip-reveals upward
  *   0.35s  sub fades up in the right column
- *   0.45s  "9:30" and "6" turn orange and roll
  *   0.55s  divider rule draws left to right
  *   0.75s  connecting line begins drawing, over 1.4s
  *   0.80s  dot 01 pops, card 01 lifts in
  *   1.25s  dot 02, card 02
  *   1.70s  dot 03, card 03
  *   2.15s  the line turns down at the right edge and carries on
- *   2.20s  closing line fades up
  *
  * The cards wait for the line to reach them — the line is the cause, the
  * card is the effect.
@@ -52,20 +59,23 @@ const SEG_RUN = 0.45;
 const STEPS = [
   {
     n: "01",
-    title: "Tell us the headcount",
-    body: "Team size, timings, and what your people drink. One call.",
+    title: "Tell us your headcount",
+    /* "timings" left this line with the times. What is asked for now is the
+       team and their taste; when the flasks come is a conversation, not a
+       field on a landing page. */
+    body: "Share your team size and what your people prefer. We’ll take care of the rest.",
     img: "/img/step-1.webp",
   },
   {
     n: "02",
-    title: "We deliver, twice a day",
-    body: "Sealed flasks at your pantry. Morning and afternoon, on your schedule.",
+    title: "We deliver to your pantry",
+    body: "Freshly prepared flasks, ready for your team to enjoy.",
     img: "/img/step-2.webp",
   },
   {
     n: "03",
     title: "We collect and refill",
-    body: "Empties go back with us. No washing, no storage, no pantry staff.",
+    body: "Empty flasks go back with us. No washing, no storage, no pantry staff.",
     img: "/img/step-3.webp",
   },
 ];
@@ -236,14 +246,27 @@ export default function Service() {
             <h2 className="mt-6 font-display text-[clamp(1.85rem,3.6vw,2.9rem)] font-extrabold leading-[1.14] tracking-[-0.03em] text-ink">
               <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                 <motion.span {...clipLine(0.15)} className="block">
-                  Flasks reach your pantry before{" "}
-                  <DigitRoll value="9:30" play={on} delay={0.45} />.
+                  Freshly filled flasks, delivered to your pantry.
                 </motion.span>
               </span>
               <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-                <motion.span {...clipLine(0.24)} className="block">
-                  We collect the empties at{" "}
-                  <DigitRoll value="6" play={on} delay={0.6} />.
+                {/* THE ACCENT MOVED HERE FROM THE NUMERALS.
+                    Orange used to enter this heading only through DigitRoll,
+                    which painted "9:30" and "6" and nothing else. With the
+                    times gone the heading was left entirely in ink — the one
+                    section on the page whose h2 had no second colour, which
+                    reads as a missing style rather than a plain one.
+
+                    orange-dark, not orange, and this ground is why: the
+                    section is bg-white, where orange measures 3.13:1 and
+                    orange-dark 4.08:1. The clamp tops out at 2.9rem extrabold
+                    so large-text 3.0 is the bar and both clear it — but only
+                    orange-dark also clears 4.5, which is what keeps the line
+                    legal if the clamp is ever lowered. DigitRoll's own file
+                    reaches the same conclusion for a figure on a light
+                    ground; it simply was not passed the prop here. */}
+                <motion.span {...clipLine(0.24)} className="block text-orange-dark">
+                  We collect the empties and refill.
                 </motion.span>
               </span>
             </h2>
@@ -252,7 +275,7 @@ export default function Service() {
               {...reveal(0.35)}
               className="mt-6 max-w-[42ch] font-sans text-[1.0625rem] leading-[1.6] text-ink-soft"
             >
-              Two deliveries a day, on your timings. Nothing to install,
+              A hassle-free pantry solution for your team. Nothing to install,
               nothing to clean.
             </motion.p>
 
@@ -299,21 +322,53 @@ export default function Service() {
               />
             </motion.div>
 
-            {/* hard numbers, not another paragraph */}
+            {/* hard facts, not another paragraph.
+
+                TWO OF THE THREE ROWS WERE TIMES — "Morning drop / before
+                9:30" and "Evening pickup / 6:00" — and both are gone with
+                the rest of the schedule, and "Per flask / 40+ cups" has since
+                gone too at the client's direction. Two rows are what is left.
+
+                THE CARD IS 46px SHORTER FOR IT, AND THAT IS FINE HERE.
+                Three rows measured 176px; two measure about 130. From lg up
+                the card is positioned `bottom-2`, so it is anchored by its
+                FOOT — losing a row pulls its top edge down rather than
+                shifting the whole thing, and the flask cut-out above it does
+                not move at all. Below lg it is in flow at -mt-10 and simply
+                takes less room. Neither case moves anything but itself.
+
+                What replaced the times had to be short. The dd is extrabold
+                at text-base in a 62% column, and the pair it had to beat was
+                "MORNING DROP / before 9:30" at 23 characters across; both
+                rows come in under that and were measured at one line each.
+
+                tabular-nums is now inert — there is not a digit left in the
+                card. It is kept rather than swept out because it costs
+                nothing and is exactly what a numeric row would want if one
+                is ever added back. */}
             <motion.dl
               {...reveal(0.7)}
               className="relative -mt-10 rounded-[var(--radius-card)] border border-line bg-white/95 p-5 backdrop-blur-sm lg:absolute lg:bottom-2 lg:left-0 lg:w-[62%]"
               style={{ boxShadow: "var(--shadow-2)" }}
             >
               {[
-                ["Morning drop", "before 9:30"],
-                ["Evening pickup", "6:00"],
-                ["Per flask", "40+ cups"],
-              ].map(([k, v], i) => (
+                ["Delivered", "To your pantry"],
+                ["Pantry staff", "None"],
+              ].map(([k, v], i, rows) => (
                 <div
                   key={k}
+                  /* THE RULE IS DERIVED, AND IT HAD TO BECOME SO.
+                     This read `i < 2`, which was correct for exactly three
+                     rows: it drew a rule under the first two and left the
+                     last one clean. At two rows the same test is true for
+                     BOTH, so removing "Per flask" would have left a hairline
+                     hanging under the final row with nothing beneath it —
+                     a divider dividing the card from its own padding.
+
+                     `rows.length - 1` says what was always meant: every row
+                     but the last. Add a row back and it follows. */
                   className={`flex items-baseline justify-between gap-4 py-2.5 ${
-                    i < 2 ? "border-b border-line/70" : ""
+                    i < rows.length - 1 ? "border-b border-line/70" : ""
                   }`}
                 >
                   <dt className="font-sans text-[0.8rem] font-medium uppercase tracking-[0.1em] text-mute">
@@ -488,14 +543,23 @@ export default function Service() {
 
         </div>
 
-        {/* ---------------- closing ---------------- */}
-        <motion.p
-          {...reveal(2.2)}
-          className="text-center font-display text-xl font-bold tracking-[-0.02em] text-mute md:text-[1.6rem]"
-          style={{ marginTop: "clamp(1.25rem, 3.5vh, 3rem)" }}
-        >
-          All you pick is what goes in them.
-        </motion.p>
+        {/* ---------------- closing ----------------
+            THERE IS NO CLOSING LINE ANY MORE, at the client's direction.
+            "All you pick is what goes in them." sat here, centred, in mute,
+            arriving last at 2.2s.
+
+            IT TOOK ITS SPACING WITH IT, WHICH IS THE POINT TO WATCH. The
+            line carried marginTop: clamp(1.25rem, 3.5vh, 3rem), so the three
+            cards now run straight into the section's own paddingBottom of
+            clamp(2rem, 4.5vh, 4.5rem). That is still the larger of the two
+            at every viewport height, so the cards are not tight against the
+            edge — and the section is min-h-svh with justify-center, so on
+            anything tall the whole block simply re-centres and the loss is
+            shared top and bottom rather than taken off the bottom.
+
+            Nothing else depended on it: `reveal` is still the cards' own
+            entrance, and 2.2s was the last beat in the section, so no
+            timing downstream of it had to move. */}
       </div>
     </section>
   );
