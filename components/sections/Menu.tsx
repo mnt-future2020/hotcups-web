@@ -99,6 +99,15 @@ const CATEGORIES = [
     key: "milk",
     name: "Milk",
     count: "5 options",
+    /* REBUILT FROM app/milks.png, which is the client's transparent export at
+       1448x1086. The plate that shipped before it stood 691px tall in its
+       800x1000 frame against tea's 598 and coffee's 604 — 69% of the frame
+       where those two fill 60%, and the largest area of the four by a clear
+       margin, so it read as oversized next to its own row. The replacement is
+       trimmed to its alpha bbox and scaled to a 601px content height, the mean
+       of the two it sits between, then bottom-aligned at 96% like the rest of
+       the set. Rebuilding it at another size means going back to that source
+       rather than upscaling this. */
     img: "/img/menu-milk.webp",
     alt: "A tall milk beverage with almonds and cardamom",
     wash: "#E7CFA6",

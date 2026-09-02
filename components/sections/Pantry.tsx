@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
-import Image from "next/image";
+import { useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 /**
@@ -250,8 +249,11 @@ function routeD(pts: { x: number; y: number }[], tension = 0.26) {
    at ly 4 — the image top is ABOVE the label, so the derivation alone would
    draw the stub upwards and the polyline would double back on itself. Two
    units below the label is the floor, which is what that stop drew before. */
-const imgTop = (s: Stop) => s.iy - (s.iw * s.h) / s.w / 2;
-const leaderFrom = (s: Stop) => Math.max(s.ly + 2, imgTop(s) - 0.8);
+/* `imgTop` and `leaderFrom` stood here. They derived a leader's starting
+   height from the photograph's own box — iy for the centre, iw scaled by the
+   file's real aspect for the half-height — so a leader began just inside the
+   top edge of the thing it pointed away from. With no photographs and no
+   leaders there is nothing left for either to measure. */
 
 const ROUTE = [ENTRY, ...STOPS.map((s) => ({ x: s.px, y: s.py })), EXIT];
 const ROUTE_D = routeD(ROUTE);
@@ -534,81 +536,14 @@ function Round({
             The route still reads as a round with five things on it, because
             the five things are on it. */}
 
-        {STOPS.map((s, i) => (
-          <g
-            key={s.key}
-            /* THE DIM IS A CSS TRANSITION AND NOT A motion ANIMATION, WHICH IS
-               A FIX RATHER THAN A STYLE CHOICE. The polyline's opacity used to
-               carry the hover dim inside the same `animate` that carries its
-               entrance — and one element gets ONE transition, so the dim
-               inherited the entrance's `delay: arriveAt(i)`. That is 1.1s on
-               the first stop and 2.85s on the last: hover a label and its
-               neighbours faded a beat and a half later, which reads as the
-               page lagging rather than as a response.
+        {/* ---- NO LEADERS, NO TERMINAL DOTS ----
 
-               Hoisting it to the group lets motion own the entrance and CSS
-               own the state change, so each runs on its own clock. */
-            style={{
-              opacity: lit !== null && lit !== i ? 0.32 : 1,
-              transition: "opacity 0.3s linear",
-            }}
-          >
-            {/* the leader: up out of the food, then across to its label. An L
-                rather than a diagonal — a diagonal reads as a pointer, an L
-                reads as a callout, and the reference is a callout.
-
-                SOLID, AND DARKER. It was a 1-1 dash in `mute`, which at 0.28
-                units is about two pixels of line and two of gap — at the size
-                this renders, a dotted hairline over a busy doodle plate reads
-                as a printing artefact rather than as a line. The mockup draws
-                it solid and dark; `ink-soft` is the site's own token nearest
-                to what it uses, and solid at 0.22 is thinner in ink than the
-                dashed 0.28 was while being far easier to follow.
-
-                IT RUNS TO lx EXACTLY, not to lx minus a gap. The dot below is
-                what now occupies that point, so the line ends underneath it
-                and the label clears the pair with its own padding. */}
-            <motion.polyline
-              points={`${s.ix} ${leaderFrom(s)} ${s.ix} ${s.ly} ${s.lx} ${s.ly}`}
-              fill="none"
-              stroke="var(--color-ink-soft)"
-              strokeWidth="0.22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={reduced ? false : { pathLength: 0, opacity: 0 }}
-              animate={{
-                pathLength: on || reduced ? 1 : 0,
-                opacity: on || reduced ? 1 : 0,
-              }}
-              transition={{ duration: 0.45, delay: arriveAt(i) + 0.1, ease: EASE }}
-            />
-
-            {/* the terminal dot, where the leader hands off to the words.
-
-                It is the one orange mark outside the route itself, and that is
-                deliberate: it ties five grey callouts back to the orange round
-                they belong to. orange-dark rather than orange — measured on
-                this section's own ground (#f8e7d2 under the scrim) orange is
-                2.71:1 and orange-dark is 3.54:1, and a non-text mark owes 3.0.
-
-                It arrives AFTER its leader has drawn (0.1 + 0.45 = 0.55) so it
-                lands as the line reaches it rather than waiting at the end of
-                a line that has not got there yet. */}
-            <motion.circle
-              cx={s.lx}
-              cy={s.ly}
-              r="0.8"
-              fill="var(--color-orange-dark)"
-              initial={reduced ? false : { scale: 0, opacity: 0 }}
-              animate={{
-                scale: on || reduced ? 1 : 0,
-                opacity: on || reduced ? 1 : 0,
-              }}
-              transition={{ duration: 0.35, delay: arriveAt(i) + 0.55, ease: EASE }}
-              style={{ transformOrigin: `${s.lx}px ${s.ly}px` }}
-            />
-          </g>
-        ))}
+            Both existed to join a photograph to a name set some way off it.
+            The names have moved ONTO the round, into the slots the food
+            occupied, so there is no gap left to bridge — a leader would be a
+            line from a point on the curve to a box already standing on that
+            point. See the note in StopItem for why the boxes had to move
+            rather than the leaders stay. */}
       </svg>
 
       {/* ---- THE HUB IS GONE, at the client's direction ----
@@ -649,6 +584,114 @@ function Round({
   );
 }
 
+/* ---------------------------------------------------------------
+   THE GLYPHS.
+
+   The photographs came off and the boxes were bare, which made five
+   identical rectangles that could only be told apart by reading them. These
+   put the difference back without putting the photographs back.
+
+   THEY ARE DRAWN, NOT PHOTOGRAPHED, AND THAT IS THE POINT. The plate behind
+   this section is the client's own line art — biscuits, a bowl of fruit, a
+   flask, a mug, all outline at a constant weight. Five photographs sat on top
+   of that as a second, louder medium; five drawings belong to it. It is also
+   the one thing no other section on the site does: 02 photographs its drinks,
+   04 photographs its workplaces, 06 photographs its machines. This is the
+   only one that draws.
+
+   ONE STROKE, NO FILLS. `currentColor` so a glyph inherits its box's colour
+   and shifts to orange with it on hover, one shared stroke width so the five
+   read as a set, and round caps and joins because the plate's line art has
+   them. 1.4 at a ~24px render is close to the plate's own weight at the size
+   it is displayed.
+
+   A 32-unit box for all five, so swapping one out later means matching one
+   number rather than re-measuring the row.
+   --------------------------------------------------------------- */
+const GLYPH = {
+  viewBox: "0 0 32 32",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.4,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+function Glyph({ name, className }: { name: string; className?: string }) {
+  /* aria-hidden throughout: the box already says the category in words, so a
+     labelled glyph would have a screen reader announce it twice. */
+  const common = { ...GLYPH, className, "aria-hidden": true as const };
+
+  switch (name) {
+    /* a stack of three biscuits seen from the side, with two holes pricked in
+       the top one — the detail that stops it reading as a stack of coins */
+    case "snacks":
+      return (
+        <svg {...common}>
+          <ellipse cx="16" cy="9.5" rx="9" ry="3.3" />
+          <path d="M7 9.5v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3V9.5" />
+          <path d="M7 15.2v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3v-3.4" />
+          <path d="M7 20.9v3.4c0 1.8 4 3.3 9 3.3s9-1.5 9-3.3v-3.4" />
+          <path d="M13.2 8.8h.01M18.9 9.9h.01" />
+        </svg>
+      );
+
+    /* a vada — a ring, with steam over it. The steam is what carries "Hot",
+       and the ring is what stops it being any other hot thing. */
+    case "hot":
+      return (
+        <svg {...common}>
+          <circle cx="16" cy="20.5" r="7.8" />
+          <circle cx="16" cy="20.5" r="2.5" />
+          <path d="M11.2 9.4c0-1.6 1.5-1.9 1.5-3.5" />
+          <path d="M16 8.8c0-1.8 1.7-2.1 1.7-3.8" />
+          <path d="M20.8 9.4c0-1.6 1.5-1.9 1.5-3.5" />
+        </svg>
+      );
+
+    /* a leaf. It is the one glyph that is not a dish, deliberately: the label
+       says "Healthy Choices", and the photograph under that label was
+       deep-fried banana chips. A leaf claims the category without claiming
+       the contradiction. */
+    case "healthy":
+      return (
+        <svg {...common}>
+          <path d="M6.5 25.5C6.5 14 14 6.5 25.5 6.5c0 11.5-7.5 19-19 19Z" />
+          <path d="M25.5 6.5 11 21" />
+        </svg>
+      );
+
+    /* a samosa: triangle, bowed base, seam running off the apex.
+
+       THE SEAM IS DIAGONAL BECAUSE A CENTRED ONE IS A WARNING SIGN. The first
+       version ran it straight down the middle — `M16 5v20.9` — and a triangle
+       with a vertical bar through it is the exclamation glyph every alert on
+       the web uses. Rendered at 24px it read as a caution icon sitting in a
+       box that says "Team Favourites", which is the opposite of the intended
+       feeling. Taking the seam off-axis breaks that read instantly, and it is
+       also where a samosa's fold actually is. */
+    case "favourites":
+      return (
+        <svg {...common}>
+          <path d="M16 5 27.5 25c-7.2 2.1-16.3 2.1-23 0L16 5Z" />
+          <path d="M16 5.2 10.2 24.6" />
+        </svg>
+      );
+
+    /* a cup with steam — the only stop that is a drink rather than a bite */
+    case "beverages":
+    default:
+      return (
+        <svg {...common}>
+          <path d="M6.5 13.5h14.8v5.8a6 6 0 0 1-6 6h-2.8a6 6 0 0 1-6-6v-5.8Z" />
+          <path d="M21.3 15.6h2.4a3 3 0 0 1 0 6h-2.4" />
+          <path d="M11.6 9.6c0-1.5 1.4-1.8 1.4-3.3" />
+          <path d="M16.4 9.2c0-1.7 1.6-2 1.6-3.7" />
+        </svg>
+      );
+  }
+}
+
 function StopItem({
   stop,
   index,
@@ -668,160 +711,90 @@ function StopItem({
   const dim = lit !== null && !isLit;
   const at = arriveAt(index);
 
-  /* every item on its own clock. Deterministic from the index, never random —
-     a random duration differs between the server render and the client and
-     hydrates wrong. The negative delay starts them already out of phase. */
-  const dur = (6.6 + index * 0.8).toFixed(1);
-  const lag = (-index * 1.4).toFixed(1);
-
   return (
     <li>
-      {/* the food */}
+      {/* ---- THE BOX, STANDING WHERE THE FOOD STOOD ----
+
+          The photographs are gone at the client's direction, and the name has
+          taken the slot rather than staying out at its old label anchor. That
+          is the whole reason this still reads as a round: the curve is drawn
+          through px/py, the food sat 5-10 units off it at ix/iy, and a box in
+          that same place is a thing sitting ON the route exactly as the food
+          was.
+
+          IT WAS BUILT THE OTHER WAY FIRST AND IT DID NOT WORK. Leaving the
+          boxes at lx/ly and keeping the leaders turns the five slots the food
+          vacated into five holes, loops the curve through empty space, and
+          makes every leader a long line crossing the round to reach a box.
+          The boxes have to take the food's place or the drawing has nothing
+          in it.
+
+          px/py — THE ROUTE POINT ITSELF, not ix/iy where the food stood.
+          That difference is small in the table and large on screen. The food
+          sat 5-10 units OFF the curve, and at the size a photograph rendered
+          that offset was invisible: the plate simply overlapped the line. A
+          box is a fraction of that size, so the same offset leaves a visible
+          gap between the curve and the thing that is supposed to be standing
+          on it — measured on the first pass, the top box floated clear of the
+          line with the curve passing underneath it.
+
+          Centred on px/py instead, the curve enters one edge of each box and
+          leaves the other. They read as stations on a route rather than as
+          five labels scattered near a line.
+
+          ix/iy and lx/ly both stay in the table. Neither is read now; both
+          record where the photographs and their callouts were, and restoring
+          the photographs means restoring them.
+
+          Centred on its point, so a box that grows with its text grows both
+          ways and stays on the route instead of drifting off one side. */}
       <motion.div
-        className="absolute -translate-x-1/2 -translate-y-1/2"
+        onMouseEnter={() => setLit(index)}
+        onMouseLeave={() => setLit(null)}
+        onFocus={() => setLit(index)}
+        onBlur={() => setLit(null)}
+        tabIndex={0}
+        className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-default rounded-[0.7rem] border px-4 py-2.5 text-center font-display text-[clamp(0.72rem,0.85vw,0.98rem)] font-semibold leading-[1.3] tracking-[-0.005em] outline-none backdrop-blur-[2px] transition-[background-color,border-color,color,box-shadow] duration-300 focus-visible:ring-2 focus-visible:ring-orange/50 ${
+          isLit
+            ? "border-orange-dark bg-cream text-orange-dark shadow-[0_6px_18px_-8px_rgba(58,20,14,0.45)]"
+            : "border-line bg-cream/92 text-ink"
+        }`}
         style={{
-          left: `${stop.ix}%`,
-          top: `${stop.iy}%`,
-          width: `${stop.iw}%`,
-          opacity: dim ? 0.42 : 1,
-          transition: "opacity 0.3s linear",
-        }}
-        initial={reduced ? false : { opacity: 0, scale: 0.78 }}
-        animate={{
-          opacity: on || reduced ? (dim ? 0.42 : 1) : 0,
-          scale: on || reduced ? 1 : 0.78,
-        }}
-        transition={{ duration: 0.6, delay: at, ease: EASE }}
-      >
-        <div
-          className="relative w-full"
-          style={{ aspectRatio: `${stop.w} / ${stop.h}` }}
-        >
-          {/* the shadow answers the float — a float over a fixed shadow reads
-              as a sticker sliding, not as an object with air under it. It
-              carries its own centring inside the keyframe, because a keyframe
-              on `transform` has to be that element's only writer. */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-[6%] left-1/2 h-[8%] w-[54%] rounded-[50%] bg-[#6b4324] blur-[6px]"
-            style={
-              reduced
-                ? { transform: "translateX(-50%)", opacity: 0.22 }
-                : { animation: `pantry-shadow ${dur}s ease-in-out ${lag}s infinite` }
-            }
-          />
-          <div
-            style={
-              reduced
-                ? undefined
-                : ({
-                    animation: `pantry-float ${dur}s ease-in-out ${lag}s infinite`,
-                    ["--rise" as string]: `${5 + (index % 3)}px`,
-                  } as CSSProperties)
-            }
-          >
-            <div
-              className={`relative transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isLit ? "scale-[1.07]" : ""
-              }`}
-              style={{ aspectRatio: `${stop.w} / ${stop.h}` }}
-            >
-              <Image
-                src={stop.src}
-                /* the photograph, not the label above it — the two do not
-                   agree and the alt has to describe what is actually there */
-                alt={stop.alt}
-                fill
-                sizes="(max-width: 1024px) 26vw, 190px"
-                className="object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ---- the name ----
-
-          THE NUMBER IS GONE. "01" through "05" in orange sat above each name.
-          The mockup has no numbers, and dropping them costs nothing the
-          drawing was not already doing better: a numbered list claims an
-          ORDER, and the order here is the route — which is drawn, animates in
-          sequence, and starts at a pill that says WE PREPARE. The numerals
-          were a second, weaker telling of that, and they were the reason each
-          label needed two type sizes and two colours to itself.
-
-          The name inherits the slot. It is Title Case at 600 rather than
-          uppercase at 800 with 0.06em of tracking, because these are now
-          phrases rather than tags — "Beverages for Every Break" set in spaced
-          capitals is a different and much wider object than "MURUKKU" was.
-
-          THE OFFSET IS THE `translate` PROPERTY AND IT HAS TO BE.
-          This element's own file already records why: motion owns `transform`
-          on anything it animates, so a `transform` written in `style` here is
-          silently dropped — which is exactly what was happening to the old
-          `translateY(-0.35em)`, sitting alongside an animated `x`. Tailwind
-          v4's split saves it: `translate` is a standalone CSS property that
-          motion never writes, and it composes with motion's transform rather
-          than fighting it.
-
-          The font-size is set on THIS element rather than on the <p> so those
-          em units resolve against the label's own size at every breakpoint. A
-          size on the child would leave them resolving against the inherited
-          16px and the offsets would drift as the clamp moved. */}
-      <div
-        className="absolute"
-        style={{
-          left: `${stop.lx}%`,
-          top: `${stop.ly}%`,
-          /* the dim rides here, on a plain CSS transition, for the same reason
-             the leader's does — see the note in Round. On the motion element
-             it inherited `delay: at + 0.18` and answered a hover up to three
-             seconds late. */
+          left: `${stop.px}%`,
+          top: `${stop.py}%`,
+          /* the dim rides on a plain CSS transition rather than inside
+             motion's `animate`: there it inherited the entrance's own delay
+             and answered a hover up to three seconds late */
           opacity: dim ? 0.4 : 1,
           transition: "opacity 0.3s linear",
         }}
+        initial={reduced ? false : { opacity: 0, scale: 0.86 }}
+        animate={{
+          opacity: on || reduced ? (dim ? 0.4 : 1) : 0,
+          scale: on || reduced ? 1 : 0.86,
+        }}
+        transition={{ duration: 0.5, delay: at, ease: EASE }}
       >
-        <motion.div
-          onMouseEnter={() => setLit(index)}
-          onMouseLeave={() => setLit(null)}
-          onFocus={() => setLit(index)}
-          onBlur={() => setLit(null)}
-          tabIndex={0}
-          className="cursor-default rounded font-display text-[clamp(0.7rem,0.82vw,0.95rem)] leading-[1.32] outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
-          style={{
-            /* RIGHT: clear of the dot, and line one centred ON the leader —
-               0.66em is half of the 1.32 line-height, so the first line's
-               middle lands on the line the eye just followed.
-
-               LEFT: there is one, and it hangs BELOW instead. Its leader runs
-               INWARD from x 5 towards the food at x 23, so text set level with
-               that line would be struck through by it for its whole width.
-               Under the line, starting at the dot, is what the mockup draws
-               and the only placement that does not collide. */
-            translate: stop.side === "right" ? "0.9em -0.66em" : "0 0.5em",
-          }}
-          initial={reduced ? false : { opacity: 0, x: stop.side === "right" ? -6 : 6 }}
-          animate={{
-            opacity: on || reduced ? 1 : 0,
-            x: on || reduced ? 0 : stop.side === "right" ? -6 : 6,
-          }}
-          transition={{ duration: 0.5, delay: at + 0.18, ease: EASE }}
-        >
-          <p
-            className={`whitespace-nowrap font-semibold tracking-[-0.005em] transition-colors duration-300 ${
-              isLit ? "text-orange-dark" : "text-ink"
-            }`}
-          >
-            {stop.name[0]}
-            {stop.name[1] && (
-              <>
-                <br />
-                {stop.name[1]}
-              </>
-            )}
-          </p>
-        </motion.div>
-      </div>
+        {/* The glyph carries the colour shift on hover and the label stays
+            ink, so the box brightens without the words changing weight. It is
+            the drawing that responds, which is the right way round — the text
+            is what has to stay readable. */}
+        <Glyph
+          name={stop.key}
+          className={`mx-auto mb-1.5 block h-[clamp(19px,2.1vw,26px)] w-[clamp(19px,2.1vw,26px)] transition-colors duration-300 ${
+            isLit ? "text-orange-dark" : "text-orange-dark/65"
+          }`}
+        />
+        <span className="whitespace-nowrap">
+          {stop.name[0]}
+          {stop.name[1] && (
+            <>
+              <br />
+              {stop.name[1]}
+            </>
+          )}
+        </span>
+      </motion.div>
     </li>
   );
 }
