@@ -110,8 +110,12 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 type Variety = {
   name: string;
   real?: true;
-  /** a photograph, where one exists on disk for THIS drink */
+  /** a picture, where one exists on disk for THIS drink */
   img?: string;
+  /** true when `img` is a SCENE photograph that should fill the tile.
+      False/absent means a cut-out plate, which is centred inside it instead —
+      see the note on the tile for why one frame has to hold both. */
+  cover?: true;
   /** the drink's own colour, for the glass mark that stands in until it does */
   tint?: string;
 };
@@ -123,8 +127,16 @@ const DRINKS = [
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
     varieties: [
-      { name: "Masala Chai", real: true, img: "/img/menu-tea.webp" },
-      { name: "Ginger Tea", real: true, tint: "#C98B4B" },
+      /* THE CLIENT'S OWN PHOTOGRAPHS, and the first two of their kind here.
+         Both arrived as 1402x1122 opaque scenes — a glass on a wooden table
+         with the spices around it — not the cut-outs every other drink on
+         this site is. They cannot be keyed: the ground is a photographed
+         table, not a flat colour, so there is nothing to remove. Framed as
+         tiles instead, cropped 4:3 on the drink and cut to 720x540.
+
+         Masala Chai gave up the category plate to take its own picture. */
+      { name: "Masala Chai", real: true, img: "/img/variety-masala-chai.webp", cover: true },
+      { name: "Ginger Tea", real: true, img: "/img/variety-ginger-tea.webp", cover: true },
       { name: "Green Tea", real: true, tint: "#A8BE7A" },
       { name: "Cardamom Tea", tint: "#D2A96A" },
       { name: "Lemon Tea", tint: "#E0B94E" },
@@ -581,29 +593,48 @@ export default function MenuView() {
                           ? { duration: 0 }
                           : { duration: 0.4, delay: j * 0.05, ease: EASE }
                       }
-                      className="group/v flex flex-col items-center gap-3 rounded-[0.9rem] border border-cream/10 bg-cream/[0.03] px-3 py-4 transition-colors duration-300 hover:border-orange/45 hover:bg-cream/[0.06]"
+                      className="group/v overflow-hidden rounded-[0.9rem] border border-cream/10 bg-cream/[0.03] transition-colors duration-300 hover:border-orange/45 hover:bg-cream/[0.06]"
                     >
-                      {/* overflow-hidden IS FOR THE PHOTOGRAPHS, NOT THE MARKS.
-                          The plates are 800x1000 with the drink standing from
-                          35.9% to 96% — the row needs that headroom so four
-                          glasses of different heights share one baseline, but
-                          dropped into a 54px box it renders the glass at about
-                          32px against a drawn mark's 48, and the one real
-                          photograph in the grid looked the smallest thing in
-                          it. scale-150 from the bottom edge cancels the
-                          headroom: content bottom lands at 6% of the box and
-                          its top at 96%, which is the mark's own 82% plus a
-                          little. The sides overflow and are clipped, which
-                          costs the outer edge of the tea leaves and nothing
-                          that identifies the drink. */}
-                      <div className="relative h-[54px] w-full overflow-hidden">
+                      {/* ═══ ONE TILE, THREE KINDS OF PICTURE ═══
+
+                          The grid has to hold three things that arrive in
+                          different shapes, and it holds them in one 4:3 frame
+                          so the cards stay a single object rather than three
+                          designs sharing a row:
+
+                            cover   a SCENE photograph — the client's own, a
+                                    glass on a wooden table. It fills the tile
+                                    edge to edge, because a scene cropped
+                                    small and floated in the middle stops
+                                    being a scene.
+                            plate   a CUT-OUT on transparency, the kind the
+                                    rest of this site is built from. It sits
+                                    INSIDE the tile with air around it, on the
+                                    tile's own ground, because a cut-out
+                                    stretched to the edges would be cropped
+                                    into a fragment of a glass.
+                            mark    the drawn stand-in, same placement as a
+                                    plate.
+
+                          The cut-outs are 800x1000 with the drink standing
+                          from 35.9% to 96% — headroom the category row needs
+                          so four glasses of different heights share one
+                          baseline, and dead space here. object-bottom plus a
+                          little scale pulls the drink down into the frame
+                          instead of leaving it floating high with a third of
+                          the tile empty above it. */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-b from-cream/[0.07] to-transparent">
                         {v.img ? (
                           <Image
                             src={v.img}
                             alt=""
                             fill
-                            sizes="120px"
-                            className="origin-bottom scale-150 object-contain object-bottom transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-[1.58]"
+                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
+                            className={
+                              v.cover
+                                ? "object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-[1.06]"
+                                : "origin-bottom scale-[1.18] object-contain object-bottom p-2 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-[1.24]"
+                            }
                           />
                         ) : (
                           /* text-cream/40 IS NOT DECORATION, IT IS THE FIX.
@@ -615,11 +646,11 @@ export default function MenuView() {
                              colour stated, not merely a light context. */
                           <GlassMark
                             tint={v.tint ?? "#C98B4B"}
-                            className="h-full w-full text-cream/40 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-105"
+                            className="absolute inset-0 m-auto h-[78%] w-full text-cream/40 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-105"
                           />
                         )}
                       </div>
-                      <span className="text-center font-sans text-[0.9rem] leading-tight text-cream/85 transition-colors duration-300 group-hover/v:text-cream">
+                      <span className="block px-3 py-3 text-center font-sans text-[0.9rem] leading-tight text-cream/85 transition-colors duration-300 group-hover/v:text-cream">
                         {v.name}
                       </span>
                     </motion.li>
