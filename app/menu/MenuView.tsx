@@ -99,14 +99,15 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    and malt is a 1358x1159 CUT-OUT WITH AN ALPHA CHANNEL, the only variety
    tile whose background is the card rather than a table.
 
-   Four entries instead use a cut-out PLATE this site already had, drawn
-   contained rather than cover: Hot Milk, Badam Milk, Masala Buttermilk and
-   Rose Sarbath.
+   Three entries instead use a cut-out PLATE this site already had, drawn
+   contained rather than cover: Badam Milk, Masala Buttermilk and Rose
+   Sarbath. Those three are the reason a tile can hold either kind.
 
-   menu-specialty.webp is the only plate still unused, and it stays that
-   way — nothing on this list is hot chocolate any more. menu-milk.webp
-   came back into use on Hot Milk when it was asked for by name, with the
-   caveat recorded on that entry: the almonds are still in the picture.
+   TWO PLATES ARE UNUSED. menu-specialty.webp, because nothing on this list
+   is hot chocolate any more, and menu-milk.webp, which had Hot Milk for
+   one commit and lost it to a scene. Both stay on disk. Note that
+   menu-milk.webp is now stale against its source: app/milks.png was
+   overwritten with the photograph that replaced it.
 
    WHAT A `tint` WAS, AND WHY IT STAYS: the colour the drink actually is,
    drawn into a glass mark. Nothing uses one today — every name found a
@@ -206,13 +207,18 @@ const DRINKS = [
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
     varieties: [
       { name: "Badam Milk", real: true, img: "/img/menu-badam.webp" },
-      /* THE ALMONDS ARE STILL IN THIS PICTURE and Badam Milk is the tile
-         directly before it. Asked for by name, so it is in — but the plate
-         has whole almonds and two leaves beside the glass, and they cannot
-         be cropped off without slicing the front almond, which overlaps the
-         glass. The milk itself is plain white and is the right drink; the
-         garnish is the thing to check with the client. */
-      { name: "Hot Milk", img: "/img/menu-milk.webp" },
+      /* REPLACED, AND IT FIXED BOTH COMPLAINTS AT ONCE. This entry used to
+         be menu-milk.webp, the old cut-out plate, which had whole almonds
+         beside the glass — badam garnish one tile along from Badam Milk —
+         and which drew contained, so it sat small on a dark tile while its
+         neighbours were full-bleed scenes. The replacement has no almonds
+         and is an opaque scene on a wooden board, so it matches. It also
+         arrived already 4:3 at 1448x1086 and only needed cropping in.
+
+         menu-milk.webp is now unused. It stays on disk — it is a correct
+         plate and the fourth card may want one again — but it is stale
+         against app/milks.png, which was overwritten with this photograph. */
+      { name: "Hot Milk", img: "/img/variety-hot-milk.webp", cover: true },
       { name: "Turmeric Milk", img: "/img/variety-turmeric-milk.webp", cover: true },
       /* Rose arrived portrait, 1122x1402, and a 4:3 window cannot hold a
          tall glass. Cropped from the top so the rose petals and pistachio
