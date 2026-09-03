@@ -141,7 +141,7 @@ const DRINKS = [
       /* the source is app/cardomomtea.png — the client's spelling, kept as
          the filename it arrived under so it can be found again */
       { name: "Cardamom Tea", img: "/img/variety-cardamom-tea.webp", cover: true },
-      { name: "Lemon Tea", tint: "#E0B94E" },
+      { name: "Lemon Tea", img: "/img/variety-lemon-tea.webp", cover: true },
       { name: "Black Tea", tint: "#8A5A32" },
       { name: "Sulaimani", tint: "#C87F3C" },
       { name: "Herbal Tea", tint: "#B9A96A" },
