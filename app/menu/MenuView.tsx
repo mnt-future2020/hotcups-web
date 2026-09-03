@@ -67,8 +67,8 @@ const DRINKS = [
   {
     name: "Seasonal",
     count: "2 specials",
-    img: "/img/menu-sarbath.webp",
-    alt: "Rose sarbath over ice with lemon, mint and basil seeds",
+    img: "/img/menu-buttermilk.webp",
+    alt: "Masala buttermilk with coriander, cumin and a slice of cucumber",
   },
 ];
 
@@ -233,7 +233,7 @@ export default function MenuView() {
               {...rPour(0.42)}
               className="mx-auto mt-6 max-w-[46ch] font-sans text-[clamp(1.05rem,1.35vw,1.22rem)] leading-[1.6] text-cream/70"
             >
-              Tea, filter coffee, badam milk, sarbath and more.
+              Tea, filter coffee, badam milk, buttermilk and more.
             </motion.p>
           </div>
 

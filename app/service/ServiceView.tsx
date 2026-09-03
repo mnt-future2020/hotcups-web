@@ -79,7 +79,7 @@ const DRINKS = [
   { name: "Tea", count: "8 blends", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
   { name: "Coffee", count: "6 roasts", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
   { name: "Milk", count: "5 options", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
-  { name: "Seasonal", count: "2 specials", img: "/img/menu-sarbath.webp", alt: "Rose sarbath over ice with lemon, mint and basil seeds" },
+  { name: "Seasonal", count: "2 specials", img: "/img/menu-buttermilk.webp", alt: "Masala buttermilk with coriander, cumin and a slice of cucumber" },
 ];
 
 const PANTRY = [
@@ -541,7 +541,7 @@ export default function ServiceView() {
             {...rPour(0.4)}
             className="mt-5 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/70"
           >
-            Tea, filter coffee, badam milk, sarbath and more.
+            Tea, filter coffee, badam milk, buttermilk and more.
           </motion.p>
 
           <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-7">
