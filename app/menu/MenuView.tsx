@@ -91,12 +91,14 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
    WHERE THEY COME FROM. The client's own photographs are opaque 1402x1122
    scenes — a cup on a wooden table with the spices around it — cropped 4:3
-   on the drink and cut to 720x540 tiles, and they carry `cover`. Three
-   entries instead use a CUT-OUT plate this site already had:
-   Badam Milk, Masala Buttermilk and Rose Sarbath. menu-milk.webp and
-   menu-specialty.webp stay unused — the milk plate has almonds beside it
-   and reads as badam milk, already its own entry with a different picture,
-   and nothing on this list is hot chocolate any more.
+   on the drink and cut to 720x540 tiles, and they carry `cover`. Four
+   entries instead use a CUT-OUT plate this site already had: Hot Milk,
+   Badam Milk, Masala Buttermilk and Rose Sarbath.
+
+   menu-specialty.webp is the only plate still unused, and it stays that
+   way — nothing on this list is hot chocolate any more. menu-milk.webp
+   came back into use on Hot Milk when it was asked for by name, with the
+   caveat recorded on that entry: the almonds are still in the picture.
 
    WHAT A `tint` IS, FOR THE ONES STILL WAITING: the colour the drink
    actually is, drawn into a glass mark. It is a deliberate choice over the
@@ -108,8 +110,8 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    A tint is also not a claim — it is how the drink looks, and a rose milk
    is pink whoever pours it. Drop a photograph in `img` and the mark gives
    way to it in the same tile at the same size, so the grid does not move
-   when the artwork lands. That swap has now happened twelve times and the
-   layout has not shifted once.
+   when the artwork lands. That swap has now happened thirteen times and
+   the layout has not shifted once.
 
    FIVE OF THE SIX COFFEES ARE THE SAME CUP. The client's coffee photographs
    are one mug shot repeatedly with a different liquid in it, so Milk Coffee,
@@ -191,7 +193,13 @@ const DRINKS = [
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
     varieties: [
       { name: "Badam Milk", real: true, img: "/img/menu-badam.webp" },
-      { name: "Hot Milk", tint: "#F2EADB" },
+      /* THE ALMONDS ARE STILL IN THIS PICTURE and Badam Milk is the tile
+         directly before it. Asked for by name, so it is in — but the plate
+         has whole almonds and two leaves beside the glass, and they cannot
+         be cropped off without slicing the front almond, which overlaps the
+         glass. The milk itself is plain white and is the right drink; the
+         garnish is the thing to check with the client. */
+      { name: "Hot Milk", img: "/img/menu-milk.webp" },
       { name: "Turmeric Milk", tint: "#E3B84A" },
       { name: "Rose Milk", tint: "#E9A0B0" },
       { name: "Malted Milk", tint: "#B98B5E" },
