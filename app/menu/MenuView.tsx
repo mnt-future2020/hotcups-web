@@ -85,33 +85,46 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    a malt drink is "Malted Milk" here rather than the label on the tin.
 
    ---------------------------------------------------------------
-   THE PICTURES ARE ARRIVING, CATEGORY BY CATEGORY. Do not trust a count
-   written here — read the table. An entry with `img` has one; an entry with
-   `tint` is still waiting. Milk is the last category with any left.
+   EVERY ENTRY NOW HAS A PICTURE. All twenty-one, across all four
+   categories. Do not trust a count written here even so — read the table:
+   an entry with `img` has one, an entry with `tint` is waiting, and if the
+   client's real list adds a drink it will arrive with a tint and this
+   paragraph will be wrong again.
 
-   WHERE THEY COME FROM. The client's own photographs are opaque 1402x1122
-   scenes — a cup on a wooden table with the spices around it — cropped 4:3
-   on the drink and cut to 720x540 tiles, and they carry `cover`. Four
-   entries instead use a CUT-OUT plate this site already had: Hot Milk,
-   Badam Milk, Masala Buttermilk and Rose Sarbath.
+   WHERE THEY COME FROM. Most are the client's own photographs, cropped 4:3
+   on the drink and cut to 720x540 tiles, and they carry `cover`. The tea
+   and coffee sets are opaque 1402x1122 scenes — a cup on a wooden table
+   with the spices around it. The three milks that came last are not that
+   uniform: turmeric is square at 1254x1254, rose is portrait at 1122x1402,
+   and malt is a 1358x1159 CUT-OUT WITH AN ALPHA CHANNEL, the only variety
+   tile whose background is the card rather than a table.
+
+   Four entries instead use a cut-out PLATE this site already had, drawn
+   contained rather than cover: Hot Milk, Badam Milk, Masala Buttermilk and
+   Rose Sarbath.
 
    menu-specialty.webp is the only plate still unused, and it stays that
    way — nothing on this list is hot chocolate any more. menu-milk.webp
    came back into use on Hot Milk when it was asked for by name, with the
    caveat recorded on that entry: the almonds are still in the picture.
 
-   WHAT A `tint` IS, FOR THE ONES STILL WAITING: the colour the drink
-   actually is, drawn into a glass mark. It is a deliberate choice over the
-   two alternatives. Repeating the category plate down its own column would
-   put the same glass of chai beside eight different names, which is worse
-   than no picture because it asserts something false about seven of them;
-   an empty slot makes a grid with holes in it.
+   WHAT A `tint` WAS, AND WHY IT STAYS: the colour the drink actually is,
+   drawn into a glass mark. Nothing uses one today — every name found a
+   photograph — but GlassMark and the `tint` field are deliberately still
+   here, because the next drink the client names will arrive without a
+   picture and this is what it gets in the meantime.
 
-   A tint is also not a claim — it is how the drink looks, and a rose milk
-   is pink whoever pours it. Drop a photograph in `img` and the mark gives
-   way to it in the same tile at the same size, so the grid does not move
-   when the artwork lands. That swap has now happened thirteen times and
-   the layout has not shifted once.
+   It was a deliberate choice over the two alternatives. Repeating the
+   category plate down its own column would put the same glass of chai
+   beside eight different names, which is worse than no picture because it
+   asserts something false about seven of them; an empty slot makes a grid
+   with holes in it. A tint is also not a claim — it is how the drink
+   looks, and a rose milk is pink whoever pours it.
+
+   Drop a photograph in `img` and the mark gives way to it in the same tile
+   at the same size, so the grid does not move when the artwork lands. That
+   swap happened sixteen times over two days and the layout never shifted
+   once, which is the whole reason the tile was built that way.
 
    FIVE OF THE SIX COFFEES ARE THE SAME CUP. The client's coffee photographs
    are one mug shot repeatedly with a different liquid in it, so Milk Coffee,
@@ -200,9 +213,25 @@ const DRINKS = [
          glass. The milk itself is plain white and is the right drink; the
          garnish is the thing to check with the client. */
       { name: "Hot Milk", img: "/img/menu-milk.webp" },
-      { name: "Turmeric Milk", tint: "#E3B84A" },
-      { name: "Rose Milk", tint: "#E9A0B0" },
-      { name: "Malted Milk", tint: "#B98B5E" },
+      { name: "Turmeric Milk", img: "/img/variety-turmeric-milk.webp", cover: true },
+      /* Rose arrived portrait, 1122x1402, and a 4:3 window cannot hold a
+         tall glass. Cropped from the top so the rose petals and pistachio
+         survive — they are what names the drink — which costs the base of
+         the glass and the coaster. */
+      { name: "Rose Milk", img: "/img/variety-rose-milk.webp", cover: true },
+      /* THIS ONE HAS A TIN IN IT, and four lines above this list is the note
+         that a malt drink is "Malted Milk" here RATHER THAN THE LABEL ON THE
+         TIN. The label is a generic prop — "MALTED MILK / NUTRITIOUS &
+         DELICIOUS" — not a real brand, so it does not put a brand name back
+         on the site, but it is a fabricated package and it is the only tile
+         on the page carrying readable packaging. It is also unavoidable at
+         this framing: the tin sits behind the mug, and every crop that
+         excludes it slices the mug. Kept whole, flagged for the client.
+
+         Also the only variety photograph with an ALPHA CHANNEL — it is a
+         cut-out arrangement, so the tile's own gradient shows through
+         behind it instead of a wooden table. */
+      { name: "Malted Milk", img: "/img/variety-malted-milk.webp", cover: true },
     ] as Variety[],
   },
   {
