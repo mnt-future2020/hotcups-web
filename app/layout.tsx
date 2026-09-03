@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Caveat, Manrope } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -26,6 +26,31 @@ const manrope = Manrope({
   display: "swap",
 });
 
+/**
+ * THE SECOND FACE, AND IT EARNS ITS REQUEST IN ONE PLACE.
+ *
+ * Section 03's mockup annotates the pantry rail in handwriting — "We prepare"
+ * at the top of the route and "We deliver" at the bottom. Manrope cannot do
+ * that; it does not even ship italics (see above), so the nearest thing in the
+ * one-family setup would have been small caps pretending to be a margin note.
+ *
+ * FOUR WORDS ON ONE SECTION IS THE WHOLE USAGE. That is deliberately narrow,
+ * and it is the reason this is acceptable at all: the marks are the only two
+ * places on the site where a human hand is meant to be visible, and a
+ * handwriting face is the entire point of them. If a third use ever appears,
+ * that is the moment to ask whether the face is doing work or decorating.
+ *
+ * Latin subset only, self-hosted by next/font like Manrope — no request
+ * leaves for Google at runtime. `display: swap` means the marks render in the
+ * fallback first; they are aria-hidden decoration sitting in empty cream, so
+ * the reflow lands on nothing.
+ */
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Hotcups — Recharges you. Twice a day.",
   description:
@@ -38,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={manrope.variable}>
+    <html lang="en" className={`${manrope.variable} ${caveat.variable}`}>
       <body>
         <a
           href="#main"

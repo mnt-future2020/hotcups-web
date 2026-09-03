@@ -52,6 +52,14 @@
   --font-display: var(--font-manrope), "Segoe UI", system-ui, sans-serif;
   --font-sans: var(--font-manrope), "Segoe UI", system-ui, sans-serif;
 
+  /* The handwriting, used by section 03's two rail annotations and nowhere
+     else — see app/layout.tsx for why a second face exists at all. The
+     fallback is the system's own casual face rather than the sans stack,
+     because the mark is doing a HANDWRITTEN job: falling back to Manrope
+     would render "We prepare" as a second, smaller UI label sitting beside
+     the list, which is the one thing it must not look like. */
+  --font-hand: var(--font-caveat), "Segoe Script", "Bradley Hand", cursive;
+
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
 }

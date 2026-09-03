@@ -40,10 +40,17 @@ import MenuView from "./MenuView";
  *     deep-fried banana chips most of all. See the banner on STOPS in
  *     Pantry.tsx; that mismatch travels here unchanged.
  *
- * THE SITE STILL DISAGREES WITH ITSELF ABOUT THE FOURTH DRINK.
- * Section 02 pours sarbath; the hero slide, Industries' MENU list and the
- * Ticker all still say hot chocolate. This page follows section 02, because
- * section 02 is the menu. The other three are the ones to fix.
+ * THE SITE STILL DISAGREES WITH ITSELF ABOUT THE FOURTH DRINK, AND THE GAP
+ * HAS NOW WIDENED TWICE. Section 02 poured hot chocolate, then a rose
+ * sarbath, and now masala buttermilk. Three places were never updated with
+ * it and still say hot chocolate:
+ *
+ *     components/hero/Hero.tsx      slide copy and its alt text
+ *     components/sections/Industries.tsx   the MENU list
+ *     components/ui/Ticker.tsx      the scrolling drink names
+ *
+ * This page follows section 02, because section 02 is the menu. Those three
+ * are the ones to fix, and they are now two drinks behind rather than one.
  *
  * ---------------------------------------------------------------
  * THIS FILE IS A SHELL. `metadata` cannot be exported from a "use client"

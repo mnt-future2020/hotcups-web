@@ -78,8 +78,8 @@ const STEPS = [
 const DRINKS = [
   { name: "Tea", count: "8 blends", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
   { name: "Coffee", count: "6 roasts", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
-  { name: "Milk", count: "5 options", img: "/img/menu-milk.webp", alt: "A tall milk beverage with almonds and cardamom" },
-  { name: "Seasonal", count: "2 specials", img: "/img/menu-sarbath.webp", alt: "Rose sarbath over ice with lemon, mint and basil seeds" },
+  { name: "Milk", count: "5 options", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
+  { name: "Seasonal", count: "2 specials", img: "/img/menu-buttermilk.webp", alt: "Masala buttermilk with coriander, cumin and a slice of cucumber" },
 ];
 
 const PANTRY = [
@@ -307,8 +307,12 @@ export default function ServiceView() {
                 {...rHero(0.45)}
                 className="mt-6 max-w-[46ch] font-sans text-[clamp(1.05rem,1.35vw,1.22rem)] leading-[1.6] text-ink-soft"
               >
-                A hassle-free pantry solution for your team. Nothing to
-                install, nothing to clean.
+                {/* the same sentence section 01 carries — see the note there.
+                    If one changes, both do, or the home page and this page
+                    describe the service differently. */}
+                We bring the filled flasks and take the empties away. No
+                machine to install, nothing to wash, and no pantry staff to
+                manage.
               </motion.p>
 
               <motion.div
@@ -482,12 +486,16 @@ export default function ServiceView() {
 
           <motion.dl
             {...rHow(0.75)}
-            className="mt-14 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line sm:grid-cols-2"
+            /* sm:grid-cols-2 IS GONE WITH THE SECOND ROW. One cell in a
+               two-column grid is a half-width card with a hole beside it;
+               a single column makes it the full width of the stack, which is
+               what the row stacks elsewhere on this page already do. */
+            className="mt-14 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line"
           >
-            {[
-              ["Delivered", "To your pantry"],
-              ["Pantry staff", "None"],
-            ].map(([k, v]) => (
+            {/* PANTRY STAFF / None has gone — the hero paragraph on this page
+                ends "and no pantry staff to manage", so it was the same claim
+                twice. See the fuller note in Service.tsx. */}
+            {[["Delivered", "To your pantry"]].map(([k, v]) => (
               <div key={k} className="bg-white px-6 py-5">
                 <dt className="font-sans text-[0.8rem] font-medium uppercase tracking-[0.1em] text-mute">
                   {k}
@@ -533,7 +541,7 @@ export default function ServiceView() {
             {...rPour(0.4)}
             className="mt-5 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/70"
           >
-            Tea, filter coffee, badam milk, sarbath and more.
+            Tea, filter coffee, badam milk, buttermilk and more.
           </motion.p>
 
           <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-7">

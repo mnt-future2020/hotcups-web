@@ -99,53 +99,132 @@ const CATEGORIES = [
     key: "milk",
     name: "Milk",
     count: "5 options",
-    /* REBUILT FROM app/milks.png, which is the client's transparent export at
-       1448x1086. The plate that shipped before it stood 691px tall in its
-       800x1000 frame against tea's 598 and coffee's 604 — 69% of the frame
-       where those two fill 60%, and the largest area of the four by a clear
-       margin, so it read as oversized next to its own row. The replacement is
-       trimmed to its alpha bbox and scaled to a 601px content height, the mean
-       of the two it sits between, then bottom-aligned at 96% like the rest of
-       the set. Rebuilding it at another size means going back to that source
-       rather than upscaling this. */
-    img: "/img/menu-milk.webp",
-    alt: "A tall milk beverage with almonds and cardamom",
-    wash: "#E7CFA6",
-    rim: 30,
-    cx: 66,
-    mouth: 51,
+    /* REBUILT FROM app/Badam.png at the client's direction — a glass of
+       saffron badam milk, replacing the plain milk-and-almonds plate. The
+       source is a clean 1312x1199 export with a real alpha channel, so
+       nothing had to be keyed; it is trimmed to its alpha bbox and scaled to
+       a 601px content height, the mean of tea's 598 and coffee's 604, then
+       centred and bottom-aligned at 96% like the rest of the set. Rebuilding
+       it at another size means going back to that source rather than
+       upscaling this. app/milks.png, which the previous plate came from, is
+       still on disk.
+
+       IT IS A NEW FILE, NOT A REPLACED ONE, AND THE REASON IS THE IMAGE
+       OPTIMIZER. The badam plate was first written straight over
+       menu-milk.webp, which is correct on disk and still did not reach the
+       browser: `next dev` caches optimizer output IN MEMORY, keyed by url,
+       width, quality and OUTPUT FORMAT, and nothing invalidates that key
+       when the source file underneath it changes. Measured on the running
+       server, the same request returned the badam as JPEG and the old milk
+       as WebP — both reporting a cache HIT — because no request carrying a
+       wildcard Accept header had ever been made, so the JPEG generated
+       fresh, while every width the page itself had already loaded as WebP
+       stayed stale. A width that had never been requested at all returned
+       MISS, and returned the badam.
+
+       (Do not write that wildcard header out in full anywhere in this file.
+       It contains the characters that close a block comment, which ends the
+       comment mid-sentence and turns the rest of this table into syntax
+       errors. It did exactly that once already.)
+
+       Restarting the dev server clears it. A new filename is a new cache
+       key, which fixes it without needing to. The plate that was there is
+       restored to its committed bytes and left on disk unreferenced, the
+       same way menu-specialty.webp was when the sarbath replaced it.
+
+       IT IS THE FIRST PLATE IN THE ROW WITH NO SIDE GARNISH, which changes
+       every number below. The other three are a vessel plus leaves or beans
+       spread out beside it, so their content runs 92% of the frame wide and
+       the glass itself sits well inside that. Here the content IS the glass:
+       486px wide against the old plate's 728. Same glass height, narrower
+       plate, and cx lands at dead centre for the first time.
+
+       rim / cx / mouth ARE MEASURED OFF THIS PHOTOGRAPH, and the last set
+       had gone stale — proof that they cannot be left alone when the picture
+       changes. The old entry still read rim: 30 from before that plate was
+       resized from 691px to 601px of content, which moved the glass top from
+       26.9% down to 35.9% and left the steam base hanging 6 points ABOVE the
+       rim it was supposed to sit on.
+
+       rim IS 55, WHICH LOOKS LOW AND IS NOT. The glass is squat and shot
+       from a high angle, so the milk surface is a wide open ellipse rather
+       than a sliver: its centre — found from the saffron rosette floating on
+       it — is 31.7% down the content, which is 55% down the frame. The steam
+       base lands on the garnish, which is exactly where the liquid is.
+
+       mouth IS THE LIQUID, NOT THE GLASS. Walking in along the surface row,
+       the wall and its specular highlight run to x 290 and the saturated
+       milk starts at 300; the same on the right at 1015 against an outer
+       edge of 1081. That is 50% of the frame against the outer glass's 59.
+       CardSteam spreads the plume to mouth * 1.9, so taking the outer figure
+       would have pushed wisps 113% of the card wide, into its neighbours.
+
+       wash IS THE DRINK'S OWN LIT BAND, PULLED DOWN TO 208. Sampled straight,
+       the top quartile of this liquid means #F8E289 at luminance 222, above
+       the 148-210 the other three occupy — badam milk is simply the palest
+       thing in the row, and the ground behind it is espresso. Scaling that
+       colour to 208 keeps the saffron hue and lands it at the pale end where
+       the milk card already sat. */
+    img: "/img/menu-badam.webp",
+    alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
+    wash: "#E8D480",
+    rim: 55,
+    cx: 50,
+    mouth: 50,
+    /* CardSteam's own note calls variant 2 "a tall glass of warm badam milk
+       — few, wide, slow and faint". That was written about the drink this
+       card is named for rather than the one it was showing. It is now the
+       drink in the photograph. */
     steam: true,
   },
   {
     /* THE ONE COLD DRINK, and everything odd about this entry follows from
-       that. It was a mug of hot chocolate; it is now a rose sarbath, at the
-       client's direction. /img/menu-specialty.webp is unreferenced from here
-       on but left on disk.
+       that. It has been a mug of hot chocolate and a rose sarbath; it is now
+       masala buttermilk, from app/buttermilk.png at the client's direction.
+       /img/menu-specialty.webp and /img/menu-sarbath.webp are both
+       unreferenced from here on and both left on disk.
 
-       THE SOURCE WAS SHOT ON A WET WHITE TABLE, which the other three were
-       not — they are clean cut-outs floating on the section's espresso. Its
-       alpha channel was already correct, but the opaque subject included the
-       white puddle the glass stands in, and on this ground that read as a milky
-       haze under one drink and nothing under the other three.
+       IT UNDOES A PIECE OF BAKED-IN DAMAGE, WHICH IS WORTH RECORDING. The
+       sarbath was shot on a wet white table, and the puddle could not be
+       keyed: measured, it ran sat 0.01-0.19 at luminance 141-240 while the
+       ICE CUBES ran sat 0.02 at 226-242, so any key that removed the surface
+       took the ice and the glass base with it. The fix was to blend the wet
+       table TOWARDS the ground instead of erasing it — which baked #240a06,
+       this section's own espresso, into the pixels of that file. It carried a
+       standing warning: change the section's background and one drink shows a
+       brown smear at its base.
 
-       It could not be keyed out: measured, the puddle runs sat 0.01-0.19 at
-       luminance 141-240 and the ICE CUBES run sat 0.02 at luminance 226-242.
-       They occupy the same range, so any colour key that removed the surface
-       removed the ice and the glass base with it. What worked instead was
-       blending the wet surface TOWARDS the ground rather than erasing it —
-       low-saturation pixels below y1150 fade to espresso-deep, saturated
-       ones (lemon, mint, the drink) are held back — so it now reads as the
-       shadow the glass sits in. See the build note in the commit.
+       The buttermilk source needs none of that. It is a clean 1370x1148
+       export with a real alpha channel, so nothing is keyed, nothing is
+       blended, and no ground colour is baked in. The section's background is
+       free to change again.
 
-       THAT BAKES #240a06 INTO THE FILE. If this section's ground ever stops
-       being espresso-deep, this one image will show a brown smear at its
-       base and has to be rebuilt from app/sarbath.png.
+       IT IS SCALED BY THE GLASS, NOT BY THE CONTENT, and it is the first
+       plate here that had to be. The cucumber wheel and the coriander sprig
+       sit ABOVE the rim and off to the right, so the content bbox is 1117
+       tall where the vessel is 1024 — scaling the bbox to the row's 601
+       would have drawn a glass about a tenth short of its neighbours. Scaled
+       by the glass instead, its top lands at 35.9% of the frame, which is
+       where tea, coffee and badam all sit to the decimal. Its mouth comes to
+       59.4% against badam's 59: the two squat tumblers now match.
 
-       rim / cx / mouth were measured off the rose liquid in the finished
-       800x1000 frame, not guessed: the glass spans 31% of the frame against
-       tea's 52%, because a highball is narrow. `wash` is the mean of the
-       drink's own lit quartile (#EC817E, luminance 161) which lands inside
-       the range the other three already occupy (148-210). */
+       AND IT IS THE GLASS THAT IS CENTRED, NOT THE PLATE. The other three
+       centre their whole content, garnish included, because that garnish sits
+       beside the vessel and balances it. This one's hangs off a single
+       corner, so centring the content would push the glass left of the label
+       naming it. cx is therefore an honest 50 rather than a correction.
+
+       rim IS RECORDED BUT NOT READ — steam is false below, so CardSteam never
+       mounts and never asks for it. It is measured anyway, off the coriander
+       and cumin floating on the surface, so that turning steam on is a
+       one-word change rather than a re-measurement.
+
+       wash IS THE PALEST AND THE ONLY NEUTRAL ONE. Buttermilk is white; its
+       lit band means #E8E8DD at luminance 231, and scaled to 208 that is
+       #D1D1C7 — inside the 148-210 the others occupy, but with barely any
+       hue. That is honest rather than a mistake: this is the one drink in the
+       row that is not a warm colour, and inventing a tint to match the other
+       three would be a lie about what is in the glass. */
     key: "seasonal",
     /* "Seasonal", not "Specialty", at the client's direction — and the count
        under it could then no longer say "seasonal" too. The row's pattern is
@@ -156,15 +235,17 @@ const CATEGORIES = [
        this one string. */
     name: "Seasonal",
     count: "2 specials",
-    img: "/img/menu-sarbath.webp",
-    alt: "Rose sarbath over ice with lemon, mint and basil seeds",
-    wash: "#EC817E",
-    rim: 35,
-    cx: 56,
-    mouth: 31,
-    /* NO PLUME. This section is built on steam and this drink is served over
-       ice — a visible plume off a glass of sarbath is not a stylistic choice,
-       it is wrong about the drink. CardSteam is simply not mounted for it.
+    img: "/img/menu-buttermilk.webp",
+    alt: "Masala buttermilk with coriander, cumin and a slice of cucumber",
+    wash: "#D1D1C7",
+    rim: 49,
+    cx: 50,
+    mouth: 59,
+    /* NO PLUME, AND THE REASON SURVIVED THE DRINK CHANGING. This section is
+       built on steam and buttermilk is served cold, exactly as the sarbath
+       before it was served over ice — a visible plume off either one is not a
+       stylistic choice, it is wrong about the drink. CardSteam is simply not
+       mounted for it.
 
        VARIANTS[3] in CardSteam is now unreachable. It is left in place
        because `variant` is the card's index, so deleting the entry would
@@ -185,9 +266,11 @@ const NAMED = [
   { label: "filter coffee", sep: ", " },
   { label: "badam milk", sep: ", " },
   /* follows the fourth glass, and has to: each name lights up when its own
-     card is hovered, so leaving "hot chocolate" here would light those two
-     words while a sarbath came forward. */
-  { label: "sarbath", sep: " and " },
+     card is hovered, so leaving a stale name here lights the wrong two words
+     while a different drink comes forward. It has said "hot chocolate" and
+     "sarbath" in front of this same slot; both were wrong the moment the
+     photograph under them changed and neither was caught by a type. */
+  { label: "buttermilk", sep: " and " },
 ];
 
 export default function Menu() {
