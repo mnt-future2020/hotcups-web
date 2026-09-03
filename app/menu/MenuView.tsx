@@ -85,27 +85,36 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    a malt drink is "Malted Milk" here rather than the label on the tin.
 
    ---------------------------------------------------------------
-   AND SIXTEEN OF THE TWENTY-ONE HAVE NO PHOTOGRAPH.
+   THE PICTURES ARE ARRIVING, CATEGORY BY CATEGORY. Do not trust a count
+   written here — read the table. An entry with `img` has one; an entry with
+   `tint` is still waiting. Tea and Seasonal are complete; Coffee and Milk
+   are not.
 
-   Seven drink plates exist on disk and five of them ARE a named variety
-   here, so those five carry `img`. menu-milk.webp and menu-specialty.webp
-   are the other two and neither is used: the milk plate has almonds beside
-   it, which reads as badam milk — already its own entry two rows away with
-   a different picture — and nothing on this list is hot chocolate any more.
-   Both stay on disk.
+   WHERE THEY COME FROM. The client's own photographs are opaque 1402x1122
+   scenes — a cup on a wooden table with the spices around it — cropped 4:3
+   on the drink and cut to 720x540 tiles, and they carry `cover`. Four
+   entries instead use a CUT-OUT plate this site already had: Filter Coffee,
+   Badam Milk, Masala Buttermilk and Rose Sarbath. menu-milk.webp and
+   menu-specialty.webp stay unused — the milk plate has almonds beside it
+   and reads as badam milk, already its own entry with a different picture,
+   and nothing on this list is hot chocolate any more.
 
-   The remaining sixteen carry `tint` instead: the colour the drink actually
-   is, drawn into a glass mark rather than faked with a photograph of
-   something else. That is a deliberate choice over the two alternatives.
-   Repeating the category plate down its own column would put the same glass
-   of chai beside eight different names, which is worse than no picture
-   because it asserts something false about seven of them. Leaving the slot
-   empty makes a grid with holes in it.
+   WHAT A `tint` IS, FOR THE ONES STILL WAITING: the colour the drink
+   actually is, drawn into a glass mark. It is a deliberate choice over the
+   two alternatives. Repeating the category plate down its own column would
+   put the same glass of chai beside eight different names, which is worse
+   than no picture because it asserts something false about seven of them;
+   an empty slot makes a grid with holes in it.
 
-   A tint is not a claim — it is how the drink looks, and a rose milk is
-   pink whoever pours it. Drop a photograph in `img` and the mark gives way
-   to it; the two render in the same box at the same size, so the grid does
-   not move when one arrives.
+   A tint is also not a claim — it is how the drink looks, and a rose milk
+   is pink whoever pours it. Drop a photograph in `img` and the mark gives
+   way to it in the same tile at the same size, so the grid does not move
+   when the artwork lands. That swap has now happened seven times and the
+   layout has not shifted once.
+
+   AND A PHOTOGRAPH DOES NOT CONFIRM A NAME. Having a picture of a cardamom
+   tea does not make it a drink Hotcups pours. The banner above still
+   stands for every name marked without `real`.
    =============================================================== */
 type Variety = {
   name: string;
@@ -142,9 +151,9 @@ const DRINKS = [
          the filename it arrived under so it can be found again */
       { name: "Cardamom Tea", img: "/img/variety-cardamom-tea.webp", cover: true },
       { name: "Lemon Tea", img: "/img/variety-lemon-tea.webp", cover: true },
-      { name: "Black Tea", tint: "#8A5A32" },
-      { name: "Sulaimani", tint: "#C87F3C" },
-      { name: "Herbal Tea", tint: "#B9A96A" },
+      { name: "Black Tea", img: "/img/variety-black-tea.webp", cover: true },
+      { name: "Sulaimani", img: "/img/variety-sulaimani.webp", cover: true },
+      { name: "Herbal Tea", img: "/img/variety-herbal-tea.webp", cover: true },
     ] as Variety[],
   },
   {
