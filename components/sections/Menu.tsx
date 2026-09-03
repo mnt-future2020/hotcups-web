@@ -109,10 +109,28 @@ const CATEGORIES = [
        upscaling this. app/milks.png, which the previous plate came from, is
        still on disk.
 
-       THE FILENAME STILL SAYS milk, AND THAT IS DELIBERATE. The card is the
-       Milk category — "5 options" — and this photograph is one of them
-       standing for the rest. Renaming the file would mean touching three
-       call sites for no gain.
+       IT IS A NEW FILE, NOT A REPLACED ONE, AND THE REASON IS THE IMAGE
+       OPTIMIZER. The badam plate was first written straight over
+       menu-milk.webp, which is correct on disk and still did not reach the
+       browser: `next dev` caches optimizer output IN MEMORY, keyed by url,
+       width, quality and OUTPUT FORMAT, and nothing invalidates that key
+       when the source file underneath it changes. Measured on the running
+       server, the same request returned the badam as JPEG and the old milk
+       as WebP — both reporting a cache HIT — because no request carrying a
+       wildcard Accept header had ever been made, so the JPEG generated
+       fresh, while every width the page itself had already loaded as WebP
+       stayed stale. A width that had never been requested at all returned
+       MISS, and returned the badam.
+
+       (Do not write that wildcard header out in full anywhere in this file.
+       It contains the characters that close a block comment, which ends the
+       comment mid-sentence and turns the rest of this table into syntax
+       errors. It did exactly that once already.)
+
+       Restarting the dev server clears it. A new filename is a new cache
+       key, which fixes it without needing to. The plate that was there is
+       restored to its committed bytes and left on disk unreferenced, the
+       same way menu-specialty.webp was when the sarbath replaced it.
 
        IT IS THE FIRST PLATE IN THE ROW WITH NO SIDE GARNISH, which changes
        every number below. The other three are a vessel plus leaves or beans
@@ -147,7 +165,7 @@ const CATEGORIES = [
        thing in the row, and the ground behind it is espresso. Scaling that
        colour to 208 keeps the saffron hue and lands it at the pale end where
        the milk card already sat. */
-    img: "/img/menu-milk.webp",
+    img: "/img/menu-badam.webp",
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
     wash: "#E8D480",
     rim: 55,

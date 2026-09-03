@@ -78,7 +78,7 @@ const STEPS = [
 const DRINKS = [
   { name: "Tea", count: "8 blends", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
   { name: "Coffee", count: "6 roasts", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
-  { name: "Milk", count: "5 options", img: "/img/menu-milk.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
+  { name: "Milk", count: "5 options", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
   { name: "Seasonal", count: "2 specials", img: "/img/menu-sarbath.webp", alt: "Rose sarbath over ice with lemon, mint and basil seeds" },
 ];
 
