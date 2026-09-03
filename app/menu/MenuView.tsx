@@ -137,8 +137,10 @@ const DRINKS = [
          Masala Chai gave up the category plate to take its own picture. */
       { name: "Masala Chai", real: true, img: "/img/variety-masala-chai.webp", cover: true },
       { name: "Ginger Tea", real: true, img: "/img/variety-ginger-tea.webp", cover: true },
-      { name: "Green Tea", real: true, tint: "#A8BE7A" },
-      { name: "Cardamom Tea", tint: "#D2A96A" },
+      { name: "Green Tea", real: true, img: "/img/variety-green-tea.webp", cover: true },
+      /* the source is app/cardomomtea.png — the client's spelling, kept as
+         the filename it arrived under so it can be found again */
+      { name: "Cardamom Tea", img: "/img/variety-cardamom-tea.webp", cover: true },
       { name: "Lemon Tea", tint: "#E0B94E" },
       { name: "Black Tea", tint: "#8A5A32" },
       { name: "Sulaimani", tint: "#C87F3C" },
