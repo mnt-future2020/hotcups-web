@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
@@ -45,30 +45,106 @@ import { MAIL_HREF, PHONE_LABEL, TEL_HREF, WA_HREF } from "@/lib/contact";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+/* ===============================================================
+   !!  THIRTEEN OF THESE TWENTY-ONE DRINK NAMES ARE INVENTED.  !!
+   !!  DO NOT PUBLISH UNTIL THE CLIENT SUPPLIES THE REAL LIST.  !!
+   ===============================================================
+   The cards were asked to open and show what is in each category. Nothing
+   on this site has ever listed one. Section 02, /service and this page all
+   published the COUNTS — "8 blends", "6 roasts", "5 options" — and page.tsx
+   already records that those carry no provenance either, and that only
+   "2 specials" was ever confirmed. So the counts promised twenty-one drinks
+   that were never named anywhere, and opening a card is what finally asks
+   the question out loud.
+
+   EIGHT NAMES ARE REAL, in the weak sense that this site already publishes
+   them and has for as long as the repo goes back. They are marked
+   `real: true` below and they came from:
+
+     components/ui/Ticker.tsx   Masala Chai, Green Tea, Ginger Tea,
+                                Filter Coffee, Premium Coffee, Badam Milk
+     components/sections/Menu.tsx  Masala Buttermilk — the photograph on the
+                                fourth card — and Rose Sarbath, which was
+                                that photograph until today and whose plate
+                                is still on disk.
+
+   THE OTHER THIRTEEN WERE WRITTEN TO FILL THE SHAPE. They are ordinary
+   South Indian workplace drinks and none of them is a wild guess, but no
+   one has confirmed that Hotcups pours a single one. Replacing them is one
+   array; that is the whole reason the list lives here rather than in JSX.
+
+   THE LENGTHS ARE NOT FREE CHOICES. Each list is exactly as long as the
+   count that was already published — 8, 6, 5, 2 — and `count` is now
+   DERIVED from the list rather than typed beside it, so the number on the
+   card and the number of names behind it cannot drift apart again. If the
+   client's real list has seven teas, the card will say seven blends by
+   itself, and section 02 and /service are then the two places that have to
+   be corrected to match.
+
+   NO BRAND NAMES. The client had the machine makers taken off the site;
+   a malt drink is "Malted Milk" here rather than the label on the tin.
+   =============================================================== */
+type Variety = { name: string; real?: true };
+
 const DRINKS = [
   {
     name: "Tea",
-    count: "8 blends",
+    noun: "blends",
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
+    varieties: [
+      { name: "Masala Chai", real: true },
+      { name: "Ginger Tea", real: true },
+      { name: "Green Tea", real: true },
+      { name: "Cardamom Tea" },
+      { name: "Lemon Tea" },
+      { name: "Black Tea" },
+      { name: "Sulaimani" },
+      { name: "Herbal Tea" },
+    ] as Variety[],
   },
   {
     name: "Coffee",
-    count: "6 roasts",
+    /* "roasts" is the site's own noun and it is a slightly odd fit: a roast
+       is a bean, and what a workplace actually orders is a cup. The names
+       below are cups. Changing the noun means changing it in section 02 and
+       /service too, so it is left alone until someone decides. */
+    noun: "roasts",
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
+    varieties: [
+      { name: "Filter Coffee", real: true },
+      { name: "Premium Coffee", real: true },
+      { name: "Black Coffee" },
+      { name: "Milk Coffee" },
+      { name: "Strong Filter" },
+      { name: "Light Roast" },
+    ] as Variety[],
   },
   {
     name: "Milk",
-    count: "5 options",
+    noun: "options",
     img: "/img/menu-badam.webp",
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
+    varieties: [
+      { name: "Badam Milk", real: true },
+      { name: "Hot Milk" },
+      { name: "Turmeric Milk" },
+      { name: "Rose Milk" },
+      { name: "Malted Milk" },
+    ] as Variety[],
   },
   {
     name: "Seasonal",
-    count: "2 specials",
+    noun: "specials",
     img: "/img/menu-buttermilk.webp",
     alt: "Masala buttermilk with coriander, cumin and a slice of cucumber",
+    /* THE ONLY CATEGORY THAT IS FULLY GROUNDED, and the only count that was
+       ever confirmed. Both names are drinks this site has photographed. */
+    varieties: [
+      { name: "Masala Buttermilk", real: true },
+      { name: "Rose Sarbath", real: true },
+    ] as Variety[],
   },
 ];
 
@@ -100,6 +176,17 @@ const PANTRY = [
   },
 ];
 
+/* THE COUNT IS DERIVED, NOT TYPED. It used to be a string sitting beside the
+   name — "8 blends" — with nothing behind it. Now that the names exist, the
+   card counts them, so the two can never disagree. See the banner on DRINKS
+   for why that matters more here than it looks. */
+const countOf = (d: { noun: string; varieties: Variety[] }) =>
+  `${d.varieties.length} ${d.noun}`;
+
+/* one panel serves all four cards, so every card's aria-controls points at
+   this same id — see the note where it is rendered */
+const PANEL_ID = "menu-varieties";
+
 /* deterministic per index — see the note on the glasses above */
 const DRIFT = [10, -6, 8, -9];
 
@@ -129,6 +216,17 @@ export default function MenuView() {
   const rPour = useReveal(pour.on, pour.reduced);
   const rPantry = useReveal(pantry.on, pantry.reduced);
   const rAsk = useReveal(ask.on, ask.reduced);
+
+  /* WHICH CATEGORY IS OPEN, or null for none — and null is the honest
+     starting state rather than "Tea is selected". Opening one by default
+     would push the pantry section down on first paint for a reader who
+     never asked, and it would make the row look like it had a current
+     selection when what it has is four equal categories.
+
+     Clicking the open card closes it, so the control is a toggle in both
+     directions. A card that only ever opens leaves no way back to the
+     resting state except reloading. */
+  const [open, setOpen] = useState<number | null>(null);
 
   /* GSAP's two targets. The glass refs are the INNER wrappers — motion owns
      the <li>'s own transform for the entrance, so GSAP is given a different
@@ -241,37 +339,158 @@ export default function MenuView() {
             ref={drinksRowRef}
             className="mt-14 grid grid-cols-2 gap-x-5 gap-y-12 lg:grid-cols-4 lg:gap-x-7"
           >
-            {DRINKS.map((d, i) => (
-              <motion.li
-                key={d.name}
-                {...rPour(0.5 + i * 0.1, 26)}
-                className="flex flex-col"
-              >
-                {/* GSAP writes THIS node's y; motion writes the <li>'s. Two
-                    engines, two elements, one visual result. */}
-                <div
-                  ref={(el) => {
-                    glassRefs.current[i] = el;
-                  }}
-                  className="relative aspect-[4/5] w-full"
+            {DRINKS.map((d, i) => {
+              const isOpen = open === i;
+              const dim = open !== null && !isOpen;
+
+              return (
+                <motion.li
+                  key={d.name}
+                  {...rPour(0.5 + i * 0.1, 26)}
+                  className="flex flex-col"
                 >
-                  <Image
-                    src={d.img}
-                    alt={d.alt}
-                    fill
-                    sizes="(max-width: 1024px) 44vw, 22vw"
-                    className="object-contain object-bottom"
-                  />
-                </div>
-                <p className="mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] text-cream md:text-[1.5rem]">
-                  {d.name}
-                </p>
-                <p className="mt-1 text-center font-sans text-[0.92rem] text-cream/60">
-                  {d.count}
-                </p>
-              </motion.li>
-            ))}
+                  {/* THE CARD IS A BUTTON NOW, and the dim lives on IT rather
+                      than on the <li>. The <li> is what motion animates on
+                      entrance, so an opacity written there would inherit the
+                      entrance's own delay and answer a click up to a second
+                      late — the same trap the pantry's hover-dim fell into.
+                      A CSS transition on the child answers immediately.
+
+                      type="button" matters: this sits inside no form, but an
+                      unqualified <button> defaults to submit and a stray
+                      Enter would try to navigate. */}
+                  <button
+                    type="button"
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                    aria-controls={PANEL_ID}
+                    className={`group flex w-full cursor-pointer flex-col rounded-[var(--radius-card)] outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/60 ${
+                      dim ? "opacity-45" : "opacity-100"
+                    }`}
+                  >
+                    {/* GSAP writes THIS node's y; motion writes the <li>'s.
+                        Two engines, two elements, one visual result — which
+                        is why the hover lift below is on the TEXT and the
+                        ring, never on this div. A third writer here would
+                        silently lose to whichever ran last. */}
+                    <div
+                      ref={(el) => {
+                        glassRefs.current[i] = el;
+                      }}
+                      className="relative aspect-[4/5] w-full"
+                    >
+                      <Image
+                        src={d.img}
+                        alt={d.alt}
+                        fill
+                        sizes="(max-width: 1024px) 44vw, 22vw"
+                        className="object-contain object-bottom"
+                      />
+                    </div>
+                    <p
+                      className={`mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] transition-colors duration-300 md:text-[1.5rem] ${
+                        isOpen ? "text-orange" : "text-cream group-hover:text-orange"
+                      }`}
+                    >
+                      {d.name}
+                    </p>
+                    <span className="mt-1 flex items-center justify-center gap-1.5 font-sans text-[0.92rem] text-cream/60 transition-colors duration-300 group-hover:text-cream/85">
+                      {countOf(d)}
+                      {/* the chevron IS the affordance. Without it a card that
+                          opens looks identical to one that does not, and the
+                          only hint is the cursor — which a touch screen has
+                          no way to show. */}
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 12 12"
+                        className={`h-3 w-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2.5 4.5 6 8l3.5-3.5" />
+                      </svg>
+                    </span>
+                  </button>
+                </motion.li>
+              );
+            })}
           </ul>
+
+          {/* ═══ what is in the category, under the whole row ═══
+
+              ONE PANEL BELOW THE ROW, NOT FOUR INSIDE IT. The row is a grid —
+              four across above lg, two across below it — and a panel opening
+              inside a grid cell either squashes itself into a quarter of the
+              width or shoves the cards beside it out of line. Under the row
+              it gets the full measure at every breakpoint, and on a phone,
+              where the cards are two-up, it still lands directly beneath the
+              pair rather than halfway up the grid.
+
+              HEIGHT IS ANIMATED TO "auto", WHICH MOTION RESOLVES. The lists
+              are 2 to 8 names long, so a fixed height would clip the teas or
+              leave a hole under the seasonals. overflow-hidden on the
+              animated element is what makes the collapse read as a shutter
+              rather than a fade. */}
+          <motion.div
+            id={PANEL_ID}
+            initial={false}
+            animate={{
+              height: open === null ? 0 : "auto",
+              opacity: open === null ? 0 : 1,
+            }}
+            transition={
+              pour.reduced
+                ? { duration: 0 }
+                : { duration: 0.45, ease: EASE }
+            }
+            className="overflow-hidden"
+          >
+            {open !== null && (
+              <div className="mt-10 rounded-[var(--radius-card)] border border-cream/12 bg-cream/[0.04] px-6 py-7 sm:px-8">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h2 className="font-display text-[1.15rem] font-extrabold tracking-[-0.02em] text-cream">
+                    {DRINKS[open].name}
+                  </h2>
+                  <span className="font-sans text-[0.92rem] text-cream/55">
+                    {countOf(DRINKS[open])}
+                  </span>
+                </div>
+
+                {/* the names stagger in as their own list, keyed on the open
+                    index so switching categories replays it instead of
+                    cross-fading two different lists in place */}
+                <ul
+                  key={open}
+                  className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4"
+                >
+                  {DRINKS[open].varieties.map((v, j) => (
+                    <motion.li
+                      key={v.name}
+                      initial={pour.reduced ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={
+                        pour.reduced
+                          ? { duration: 0 }
+                          : { duration: 0.35, delay: j * 0.045, ease: EASE }
+                      }
+                      className="flex items-center gap-2.5 font-sans text-[0.98rem] text-cream/80"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange"
+                      />
+                      {v.name}
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </motion.div>
         </div>
       </section>
 
