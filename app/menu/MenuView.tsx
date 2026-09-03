@@ -83,8 +83,38 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
    NO BRAND NAMES. The client had the machine makers taken off the site;
    a malt drink is "Malted Milk" here rather than the label on the tin.
+
+   ---------------------------------------------------------------
+   AND SIXTEEN OF THE TWENTY-ONE HAVE NO PHOTOGRAPH.
+
+   Seven drink plates exist on disk and five of them ARE a named variety
+   here, so those five carry `img`. menu-milk.webp and menu-specialty.webp
+   are the other two and neither is used: the milk plate has almonds beside
+   it, which reads as badam milk — already its own entry two rows away with
+   a different picture — and nothing on this list is hot chocolate any more.
+   Both stay on disk.
+
+   The remaining sixteen carry `tint` instead: the colour the drink actually
+   is, drawn into a glass mark rather than faked with a photograph of
+   something else. That is a deliberate choice over the two alternatives.
+   Repeating the category plate down its own column would put the same glass
+   of chai beside eight different names, which is worse than no picture
+   because it asserts something false about seven of them. Leaving the slot
+   empty makes a grid with holes in it.
+
+   A tint is not a claim — it is how the drink looks, and a rose milk is
+   pink whoever pours it. Drop a photograph in `img` and the mark gives way
+   to it; the two render in the same box at the same size, so the grid does
+   not move when one arrives.
    =============================================================== */
-type Variety = { name: string; real?: true };
+type Variety = {
+  name: string;
+  real?: true;
+  /** a photograph, where one exists on disk for THIS drink */
+  img?: string;
+  /** the drink's own colour, for the glass mark that stands in until it does */
+  tint?: string;
+};
 
 const DRINKS = [
   {
@@ -93,14 +123,14 @@ const DRINKS = [
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
     varieties: [
-      { name: "Masala Chai", real: true },
-      { name: "Ginger Tea", real: true },
-      { name: "Green Tea", real: true },
-      { name: "Cardamom Tea" },
-      { name: "Lemon Tea" },
-      { name: "Black Tea" },
-      { name: "Sulaimani" },
-      { name: "Herbal Tea" },
+      { name: "Masala Chai", real: true, img: "/img/menu-tea.webp" },
+      { name: "Ginger Tea", real: true, tint: "#C98B4B" },
+      { name: "Green Tea", real: true, tint: "#A8BE7A" },
+      { name: "Cardamom Tea", tint: "#D2A96A" },
+      { name: "Lemon Tea", tint: "#E0B94E" },
+      { name: "Black Tea", tint: "#8A5A32" },
+      { name: "Sulaimani", tint: "#C87F3C" },
+      { name: "Herbal Tea", tint: "#B9A96A" },
     ] as Variety[],
   },
   {
@@ -113,12 +143,12 @@ const DRINKS = [
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
     varieties: [
-      { name: "Filter Coffee", real: true },
-      { name: "Premium Coffee", real: true },
-      { name: "Black Coffee" },
-      { name: "Milk Coffee" },
-      { name: "Strong Filter" },
-      { name: "Light Roast" },
+      { name: "Filter Coffee", real: true, img: "/img/menu-coffee.webp" },
+      { name: "Premium Coffee", real: true, tint: "#8A5A34" },
+      { name: "Black Coffee", tint: "#4A2E1E" },
+      { name: "Milk Coffee", tint: "#C09468" },
+      { name: "Strong Filter", tint: "#6E4325" },
+      { name: "Light Roast", tint: "#A9754A" },
     ] as Variety[],
   },
   {
@@ -127,11 +157,11 @@ const DRINKS = [
     img: "/img/menu-badam.webp",
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
     varieties: [
-      { name: "Badam Milk", real: true },
-      { name: "Hot Milk" },
-      { name: "Turmeric Milk" },
-      { name: "Rose Milk" },
-      { name: "Malted Milk" },
+      { name: "Badam Milk", real: true, img: "/img/menu-badam.webp" },
+      { name: "Hot Milk", tint: "#F2EADB" },
+      { name: "Turmeric Milk", tint: "#E3B84A" },
+      { name: "Rose Milk", tint: "#E9A0B0" },
+      { name: "Malted Milk", tint: "#B98B5E" },
     ] as Variety[],
   },
   {
@@ -142,8 +172,11 @@ const DRINKS = [
     /* THE ONLY CATEGORY THAT IS FULLY GROUNDED, and the only count that was
        ever confirmed. Both names are drinks this site has photographed. */
     varieties: [
-      { name: "Masala Buttermilk", real: true },
-      { name: "Rose Sarbath", real: true },
+      { name: "Masala Buttermilk", real: true, img: "/img/menu-buttermilk.webp" },
+      /* menu-sarbath.webp comes back into use here. It was left on disk this
+         morning when the buttermilk took the fourth card; it is still the
+         photograph of this drink, and this is still a seasonal special. */
+      { name: "Rose Sarbath", real: true, img: "/img/menu-sarbath.webp" },
     ] as Variety[],
   },
 ];
@@ -186,6 +219,64 @@ const countOf = (d: { noun: string; varieties: Variety[] }) =>
 /* one panel serves all four cards, so every card's aria-controls points at
    this same id — see the note where it is rendered */
 const PANEL_ID = "menu-varieties";
+
+/* THE STAND-IN FOR A DRINK WITH NO PHOTOGRAPH.
+
+   A tapered tumbler filled to a little over half with the drink's own colour.
+   It is drawn rather than photographed on purpose — see the banner on DRINKS
+   — and it is drawn to the SAME height as the photographs beside it, so a
+   real picture arriving later changes what is in the slot and not the shape
+   of the grid.
+
+   THE GLASS IS ONE PATH AND THE LIQUID IS ANOTHER, sharing the same two
+   edges. The taper runs from x8-x32 at the rim to x10.6-x29.4 at the base
+   over 39.4 units, which is a slope of 0.066; the liquid's own top corners
+   are that slope evaluated at y18, not eyeballed, so the fill meets the
+   walls exactly at every size instead of leaving a hairline of ground down
+   one side.
+
+   THE SURFACE IS ITS OWN ELLIPSE, slightly lighter than the body. Without it
+   the fill reads as a flat coloured block behind glass; with it the liquid
+   has a top, which is the whole difference between a drink and a swatch.
+
+   The outline takes currentColor so the caller owns it, and every drop of
+   colour that IS the drink comes in through `tint`. */
+function GlassMark({ tint, className }: { tint: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 40 48"
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      preserveAspectRatio="xMidYMax meet"
+    >
+      {/* the liquid, then its surface, then the glass over both */}
+      <path
+        d="M8.79 18 H31.21 L29.4 43 Q29.4 45.4 27 45.4 H13 Q10.6 45.4 10.6 43 Z"
+        fill={tint}
+        opacity="0.92"
+      />
+      <ellipse cx="20" cy="18" rx="11.21" ry="2.1" fill={tint} />
+      <ellipse cx="20" cy="18" rx="11.21" ry="2.1" fill="#fff" opacity="0.22" />
+      <path
+        d="M8 6 H32 L29.4 43 Q29.4 45.4 27 45.4 H13 Q10.6 45.4 10.6 43 Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        opacity="0.5"
+      />
+      <ellipse
+        cx="20"
+        cy="6"
+        rx="12"
+        ry="2.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity="0.5"
+      />
+    </svg>
+  );
+}
 
 /* deterministic per index — see the note on the glasses above */
 const DRIFT = [10, -6, 8, -9];
@@ -461,30 +552,76 @@ export default function MenuView() {
                   </span>
                 </div>
 
-                {/* the names stagger in as their own list, keyed on the open
-                    index so switching categories replays it instead of
-                    cross-fading two different lists in place */}
+                {/* THE VARIETIES ARE CARDS, NOT A BULLET LIST. Each carries a
+                    picture of the drink where one exists and a glass mark in
+                    the drink's own colour where one does not — see the banner
+                    on DRINKS for why those sixteen are marks rather than
+                    borrowed photographs.
+
+                    ONE BOX, TWO KINDS OF CONTENT, IDENTICAL SIZE. The image
+                    slot is a fixed height with object-contain inside it and
+                    the mark is drawn to the same height, so a photograph
+                    arriving later drops into a slot that already has its
+                    shape. The grid does not reflow when the artwork lands.
+
+                    keyed on the open index so switching categories replays
+                    the stagger instead of cross-fading two different lists
+                    in place. */}
                 <ul
                   key={open}
-                  className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4"
+                  className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
                 >
                   {DRINKS[open].varieties.map((v, j) => (
                     <motion.li
                       key={v.name}
-                      initial={pour.reduced ? false : { opacity: 0, y: 8 }}
+                      initial={pour.reduced ? false : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={
                         pour.reduced
                           ? { duration: 0 }
-                          : { duration: 0.35, delay: j * 0.045, ease: EASE }
+                          : { duration: 0.4, delay: j * 0.05, ease: EASE }
                       }
-                      className="flex items-center gap-2.5 font-sans text-[0.98rem] text-cream/80"
+                      className="group/v flex flex-col items-center gap-3 rounded-[0.9rem] border border-cream/10 bg-cream/[0.03] px-3 py-4 transition-colors duration-300 hover:border-orange/45 hover:bg-cream/[0.06]"
                     >
-                      <span
-                        aria-hidden="true"
-                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange"
-                      />
-                      {v.name}
+                      {/* overflow-hidden IS FOR THE PHOTOGRAPHS, NOT THE MARKS.
+                          The plates are 800x1000 with the drink standing from
+                          35.9% to 96% — the row needs that headroom so four
+                          glasses of different heights share one baseline, but
+                          dropped into a 54px box it renders the glass at about
+                          32px against a drawn mark's 48, and the one real
+                          photograph in the grid looked the smallest thing in
+                          it. scale-150 from the bottom edge cancels the
+                          headroom: content bottom lands at 6% of the box and
+                          its top at 96%, which is the mark's own 82% plus a
+                          little. The sides overflow and are clipped, which
+                          costs the outer edge of the tea leaves and nothing
+                          that identifies the drink. */}
+                      <div className="relative h-[54px] w-full overflow-hidden">
+                        {v.img ? (
+                          <Image
+                            src={v.img}
+                            alt=""
+                            fill
+                            sizes="120px"
+                            className="origin-bottom scale-150 object-contain object-bottom transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-[1.58]"
+                          />
+                        ) : (
+                          /* text-cream/40 IS NOT DECORATION, IT IS THE FIX.
+                             The mark's outline is stroked with currentColor
+                             so the caller owns it — and with no colour set
+                             here it inherited the body's dark ink, which on
+                             an espresso ground drew the rim as a black band
+                             across the top of every glass. It needs a light
+                             colour stated, not merely a light context. */
+                          <GlassMark
+                            tint={v.tint ?? "#C98B4B"}
+                            className="h-full w-full text-cream/40 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/v:scale-105"
+                          />
+                        )}
+                      </div>
+                      <span className="text-center font-sans text-[0.9rem] leading-tight text-cream/85 transition-colors duration-300 group-hover/v:text-cream">
+                        {v.name}
+                      </span>
                     </motion.li>
                   ))}
                 </ul>
