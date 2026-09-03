@@ -62,7 +62,7 @@ const DRINKS = [
     name: "Milk",
     count: "5 options",
     img: "/img/menu-milk.webp",
-    alt: "A tall milk beverage with almonds and cardamom",
+    alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
   },
   {
     name: "Seasonal",

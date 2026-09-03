@@ -99,21 +99,64 @@ const CATEGORIES = [
     key: "milk",
     name: "Milk",
     count: "5 options",
-    /* REBUILT FROM app/milks.png, which is the client's transparent export at
-       1448x1086. The plate that shipped before it stood 691px tall in its
-       800x1000 frame against tea's 598 and coffee's 604 — 69% of the frame
-       where those two fill 60%, and the largest area of the four by a clear
-       margin, so it read as oversized next to its own row. The replacement is
-       trimmed to its alpha bbox and scaled to a 601px content height, the mean
-       of the two it sits between, then bottom-aligned at 96% like the rest of
-       the set. Rebuilding it at another size means going back to that source
-       rather than upscaling this. */
+    /* REBUILT FROM app/Badam.png at the client's direction — a glass of
+       saffron badam milk, replacing the plain milk-and-almonds plate. The
+       source is a clean 1312x1199 export with a real alpha channel, so
+       nothing had to be keyed; it is trimmed to its alpha bbox and scaled to
+       a 601px content height, the mean of tea's 598 and coffee's 604, then
+       centred and bottom-aligned at 96% like the rest of the set. Rebuilding
+       it at another size means going back to that source rather than
+       upscaling this. app/milks.png, which the previous plate came from, is
+       still on disk.
+
+       THE FILENAME STILL SAYS milk, AND THAT IS DELIBERATE. The card is the
+       Milk category — "5 options" — and this photograph is one of them
+       standing for the rest. Renaming the file would mean touching three
+       call sites for no gain.
+
+       IT IS THE FIRST PLATE IN THE ROW WITH NO SIDE GARNISH, which changes
+       every number below. The other three are a vessel plus leaves or beans
+       spread out beside it, so their content runs 92% of the frame wide and
+       the glass itself sits well inside that. Here the content IS the glass:
+       486px wide against the old plate's 728. Same glass height, narrower
+       plate, and cx lands at dead centre for the first time.
+
+       rim / cx / mouth ARE MEASURED OFF THIS PHOTOGRAPH, and the last set
+       had gone stale — proof that they cannot be left alone when the picture
+       changes. The old entry still read rim: 30 from before that plate was
+       resized from 691px to 601px of content, which moved the glass top from
+       26.9% down to 35.9% and left the steam base hanging 6 points ABOVE the
+       rim it was supposed to sit on.
+
+       rim IS 55, WHICH LOOKS LOW AND IS NOT. The glass is squat and shot
+       from a high angle, so the milk surface is a wide open ellipse rather
+       than a sliver: its centre — found from the saffron rosette floating on
+       it — is 31.7% down the content, which is 55% down the frame. The steam
+       base lands on the garnish, which is exactly where the liquid is.
+
+       mouth IS THE LIQUID, NOT THE GLASS. Walking in along the surface row,
+       the wall and its specular highlight run to x 290 and the saturated
+       milk starts at 300; the same on the right at 1015 against an outer
+       edge of 1081. That is 50% of the frame against the outer glass's 59.
+       CardSteam spreads the plume to mouth * 1.9, so taking the outer figure
+       would have pushed wisps 113% of the card wide, into its neighbours.
+
+       wash IS THE DRINK'S OWN LIT BAND, PULLED DOWN TO 208. Sampled straight,
+       the top quartile of this liquid means #F8E289 at luminance 222, above
+       the 148-210 the other three occupy — badam milk is simply the palest
+       thing in the row, and the ground behind it is espresso. Scaling that
+       colour to 208 keeps the saffron hue and lands it at the pale end where
+       the milk card already sat. */
     img: "/img/menu-milk.webp",
-    alt: "A tall milk beverage with almonds and cardamom",
-    wash: "#E7CFA6",
-    rim: 30,
-    cx: 66,
-    mouth: 51,
+    alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
+    wash: "#E8D480",
+    rim: 55,
+    cx: 50,
+    mouth: 50,
+    /* CardSteam's own note calls variant 2 "a tall glass of warm badam milk
+       — few, wide, slow and faint". That was written about the drink this
+       card is named for rather than the one it was showing. It is now the
+       drink in the photograph. */
     steam: true,
   },
   {
