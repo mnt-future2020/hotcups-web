@@ -87,13 +87,12 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    ---------------------------------------------------------------
    THE PICTURES ARE ARRIVING, CATEGORY BY CATEGORY. Do not trust a count
    written here — read the table. An entry with `img` has one; an entry with
-   `tint` is still waiting. Tea and Seasonal are complete; Coffee and Milk
-   are not.
+   `tint` is still waiting. Milk is the last category with any left.
 
    WHERE THEY COME FROM. The client's own photographs are opaque 1402x1122
    scenes — a cup on a wooden table with the spices around it — cropped 4:3
-   on the drink and cut to 720x540 tiles, and they carry `cover`. Four
-   entries instead use a CUT-OUT plate this site already had: Filter Coffee,
+   on the drink and cut to 720x540 tiles, and they carry `cover`. Three
+   entries instead use a CUT-OUT plate this site already had:
    Badam Milk, Masala Buttermilk and Rose Sarbath. menu-milk.webp and
    menu-specialty.webp stay unused — the milk plate has almonds beside it
    and reads as badam milk, already its own entry with a different picture,
@@ -109,8 +108,15 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    A tint is also not a claim — it is how the drink looks, and a rose milk
    is pink whoever pours it. Drop a photograph in `img` and the mark gives
    way to it in the same tile at the same size, so the grid does not move
-   when the artwork lands. That swap has now happened seven times and the
+   when the artwork lands. That swap has now happened twelve times and the
    layout has not shifted once.
+
+   FIVE OF THE SIX COFFEES ARE THE SAME CUP. The client's coffee photographs
+   are one mug shot repeatedly with a different liquid in it, so Milk Coffee,
+   Strong Filter and Light Roast are near-identical tiles and the row reads
+   as one drink named three times. Black Coffee and Premium are distinct.
+   That is the photography, not the layout, and it is worth saying to the
+   client before this page is shown to anyone.
 
    AND A PHOTOGRAPH DOES NOT CONFIRM A NAME. Having a picture of a cardamom
    tea does not make it a drink Hotcups pours. The banner above still
@@ -166,12 +172,16 @@ const DRINKS = [
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
     varieties: [
-      { name: "Filter Coffee", real: true, img: "/img/menu-coffee.webp" },
-      { name: "Premium Coffee", real: true, tint: "#8A5A34" },
-      { name: "Black Coffee", tint: "#4A2E1E" },
-      { name: "Milk Coffee", tint: "#C09468" },
-      { name: "Strong Filter", tint: "#6E4325" },
-      { name: "Light Roast", tint: "#A9754A" },
+      /* Filter Coffee moved off the cut-out plate and onto its own scene when
+         that photograph arrived. The plate is still the CARD's picture above,
+         where a cut-out is what the design wants; down here every other tile
+         is a scene, and one plate among five would have been the odd one. */
+      { name: "Filter Coffee", real: true, img: "/img/variety-filter-coffee.webp", cover: true },
+      { name: "Premium Coffee", real: true, img: "/img/variety-premium-coffee.webp", cover: true },
+      { name: "Black Coffee", img: "/img/variety-black-coffee.webp", cover: true },
+      { name: "Milk Coffee", img: "/img/variety-milk-coffee.webp", cover: true },
+      { name: "Strong Filter", img: "/img/variety-strong-filter.webp", cover: true },
+      { name: "Light Roast", img: "/img/variety-light-roast.webp", cover: true },
     ] as Variety[],
   },
   {
