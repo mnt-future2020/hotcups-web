@@ -135,12 +135,19 @@ const RAIL_D = routeD(RAIL_PTS, 0.45);
 
 /* the beat sheet. The rail takes DRAW seconds top to bottom, and an entry
    arrives when the line is level with it — its band's midpoint over the
-   number of bands, rather than a hand-typed number. Six bands: five entries
-   and the delivery mark under them. Reorder ITEMS and the timing follows;
-   type the delays in and the second edit desynchronises it. */
+   number of bands, rather than a hand-typed number. Reorder ITEMS and the
+   timing follows; type the delays in and the second edit desynchronises it.
+
+   FIVE BANDS, NOT SIX. There was a sixth while the WE DELIVER button stood
+   under the list: the rail ran past the end of the entries to reach it, so
+   the entries occupied only five-sixths of the draw. With the button gone
+   the rail spans exactly the five, and a sixth band would leave the last
+   entry arriving before the line got to it — the failure mode this
+   derivation exists to prevent, which is why the count is ITEMS.length and
+   never a typed number. */
 const T_RAIL = 0.5;
 const DRAW = 1.9;
-const BANDS = ITEMS.length + 1;
+const BANDS = ITEMS.length;
 const arriveAt = (i: number) => T_RAIL + (DRAW * (i + 0.5)) / BANDS;
 const T_EXIT = T_RAIL + DRAW;
 
@@ -426,46 +433,31 @@ function List({ on, reduced }: { on: boolean; reduced: boolean }) {
         ))}
       </ul>
 
-      {/* ---- the bottom end of the route ---- */}
-      <motion.div
-        initial={reduced ? false : { opacity: 0, scale: 0.9 }}
-        animate={{
-          opacity: on || reduced ? 1 : 0,
-          scale: on || reduced ? 1 : 0.9,
-        }}
-        transition={{ duration: 0.5, delay: T_EXIT, ease: EASE }}
-        /* ml-[29%] SITS IT UNDER THE RAIL'S EXIT rather than under the list.
-           In the mockup the mark straddles the gutter — the dashed line runs
-           out of the bottom of the rail and into its left edge — so it is
-           anchored to the rail's geometry, not the column's. */
-        className="mt-[clamp(1.75rem,4vh,2.75rem)] lg:ml-[29%]"
-      >
-        <a
-          /* !!  THE MOCKUP DRAWS THIS AS A BUTTON AND GIVES IT NOWHERE TO GO.
-                 IT POINTS AT /service, WHICH IS A DECISION, NOT THE MOCKUP.  !!
+      {/* ---- THE WE DELIVER BUTTON HAS GONE, at the client's direction ----
 
-             On the old round this was a `<span aria-hidden>` — the exit pill
-             of a diagram, decoration with an arrow on it. The mockup keeps the
-             arrow and gives it the site's own button chrome, at which point
-             leaving it inert stops being a diagram convention and becomes a
-             control that does nothing when clicked.
+          A rounded pill reading WE DELIVER with an arrow stood here, under
+          the list and straddling the gutter where the rail runs out. It was
+          struck through on the marked-up screenshot.
 
-             /service is the page that IS this sentence: "We bring the filled
-             flasks and take the empties away." Retargeting it is one line if
-             the client meant something else — but a dead button is the one
-             option that could not be defended. */
-          href="/service"
-          className="group inline-flex items-center gap-2.5 rounded-full border border-orange-dark/50 px-[clamp(1.25rem,2vw,1.9rem)] py-[clamp(0.7rem,1.2vh,0.95rem)] font-display text-[clamp(0.68rem,0.8vw,0.8rem)] font-extrabold uppercase leading-none tracking-[0.14em] text-orange-deep transition-colors duration-300 hover:border-orange hover:text-orange-dark focus-visible:border-orange"
-        >
-          We deliver
-          <span
-            aria-hidden="true"
-            className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
-          >
-            &rarr;
-          </span>
-        </a>
-      </motion.div>
+          IT WAS ALWAYS THE AWKWARD ELEMENT, AND THIS FILE SAID SO. The mockup
+          drew it with the site's own button chrome and gave it nowhere to go,
+          so it was pointed at /service under protest — the note that stood
+          here recorded that a dead button was the one option that could not
+          be defended. Deleting it settles the same problem more cleanly. The
+          section keeps one call to action, the pantry menu, and the route's
+          bottom end is the handwriting alone, exactly as its top end already
+          was.
+
+          TWO THINGS MOVED WITH IT.
+            - The rail no longer runs past the last entry to reach a pill, so
+              the beat sheet lost its sixth band. See arriveAt.
+            - The "We deliver" arrow pointed AT the button. It now points at
+              the end of the dashed line, which is what the "We prepare"
+              arrow does at the top.
+
+          T_EXIT SURVIVES AND IS STILL READ — it is when the rail finishes
+          drawing, and both bottom marks are timed off it. It is no longer
+          when anything is delivered. */}
     </div>
   );
 }
@@ -603,15 +595,24 @@ function Rail({ on, reduced }: { on: boolean; reduced: boolean }) {
           words a sighted reader is meant to read, at a size and a weight that
           would need 4.5 if they were content. The darker token is free.
 
-          THE SECOND MARK NAMES THE BUTTON BESIDE IT. "We deliver" in hand,
-          with an arrow pointing at a control that says WE DELIVER, is the
-          mockup's own arrangement — the handwriting is a caption ON the mark
-          rather than a second copy of it. */}
+          THE TWO ARE NOW SYMMETRICAL, WHICH THEY WERE NOT AT FIRST. "We
+          deliver" used to caption a WE DELIVER button standing beside it —
+          the mockup's own arrangement, and an odd one, since the handwriting
+          and the control said the same two words a centimetre apart. The
+          button has gone. Each mark is a hand naming one end of the dashed
+          line and nothing else. */}
       <motion.span
         initial={reduced ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: on || reduced ? 1 : 0, y: on || reduced ? 0 : 8 }}
         transition={{ duration: 0.6, delay: T_RAIL, ease: EASE }}
-        className="absolute left-[3%] top-[13%] font-hand text-[clamp(1.15rem,1.6vw,1.5rem)] leading-none text-orange-deep"
+        /* UP AND RIGHT, at the client's direction — it was left-3% / top-13%.
+           Down there it sat level with the gap between the first and second
+           entries and hard against the copy column, so it read as a note
+           about the middle of the list rather than about where the route
+           starts. top-1% puts it level with the first heading, which is the
+           thing it is annotating, and left-8% keeps its tail clear of the
+           arrow that follows it. */
+        className="absolute left-[8%] top-[1%] font-hand text-[clamp(1.15rem,1.6vw,1.5rem)] leading-none text-orange-deep"
       >
         We prepare
       </motion.span>
@@ -622,7 +623,13 @@ function Rail({ on, reduced }: { on: boolean; reduced: boolean }) {
           scale: on || reduced ? 1 : 0.9,
         }}
         transition={{ duration: 0.5, delay: T_RAIL + 0.25, ease: EASE }}
-        className="absolute left-[24%] top-[16%] block w-[clamp(34px,3.4vw,52px)] text-orange-deep"
+        /* IT FOLLOWS THE HANDWRITING, AND THE LANDING IS MEASURED.
+           Its head sits at 55/60 across and 43/52 down its own box, so from
+           left-42% / top-3% it arrives at about 52% / 7% of the rail. The
+           curve at that height is at viewBox x 23.7, which is 59% — so the
+           head stops roughly 18px short of the line rather than touching it,
+           which is what a drawn arrow should do. */
+        className="absolute left-[42%] top-[3%] block w-[clamp(34px,3.4vw,52px)] text-orange-deep"
       >
         <Squiggle variant="down" />
       </motion.span>
