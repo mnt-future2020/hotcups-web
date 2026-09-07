@@ -485,63 +485,72 @@ export default function MenuView() {
               const isOpen = open === i;
               const dim = open !== null && !isOpen;
 
-              return (
-                <motion.li
-                  key={d.name}
-                  {...rPour(0.5 + i * 0.1, 26)}
-                  className="flex flex-col"
-                >
-                  {/* THE CARD IS A BUTTON NOW, and the dim lives on IT rather
-                      than on the <li>. The <li> is what motion animates on
-                      entrance, so an opacity written there would inherit the
-                      entrance's own delay and answer a click up to a second
-                      late — the same trap the pantry's hover-dim fell into.
-                      A CSS transition on the child answers immediately.
+              /* A CATEGORY WITH ONE DRINK IN IT HAS NOTHING TO OPEN.
 
-                      type="button" matters: this sits inside no form, but an
-                      unqualified <button> defaults to submit and a stray
-                      Enter would try to navigate. */}
-                  <button
-                    type="button"
-                    onClick={() => setOpen(isOpen ? null : i)}
-                    aria-expanded={isOpen}
-                    aria-controls={PANEL_ID}
-                    className={`group flex w-full cursor-pointer flex-col rounded-[var(--radius-card)] outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/60 ${
-                      dim ? "opacity-45" : "opacity-100"
+                 Since the menu was cut, Tea, Coffee and Milk hold one variety
+                 each, and the panel they opened showed that single drink's
+                 photograph a second time, under the same name, beside the
+                 same count already printed on the card. Three of the four
+                 cards were a control whose whole result was to repeat what
+                 the reader had just clicked.
+
+                 Only Seasonal, at two, holds anything the row does not
+                 already say — so only Seasonal is a button. This is derived
+                 from varieties.length, not a list of names, so a category
+                 that grows back to two becomes clickable on its own. */
+              const expandable = d.varieties.length > 1;
+
+              /* THE FACE IS IDENTICAL EITHER WAY — only the wrapper changes.
+                 A card that cannot open must not be a <button>: a button
+                 announces itself to a screen reader as an action, takes a tab
+                 stop, and shows a pointer cursor, and all three would promise
+                 an answer that never comes. */
+              const face = (
+                <>
+                  {/* GSAP writes THIS node's y; motion writes the <li>'s.
+                      Two engines, two elements, one visual result — which
+                      is why the hover lift below is on the TEXT and the
+                      ring, never on this div. A third writer here would
+                      silently lose to whichever ran last. */}
+                  <div
+                    ref={(el) => {
+                      glassRefs.current[i] = el;
+                    }}
+                    className="relative aspect-[4/5] w-full"
+                  >
+                    <Image
+                      src={d.img}
+                      alt={d.alt}
+                      fill
+                      sizes="(max-width: 1024px) 44vw, 22vw"
+                      className="object-contain object-bottom"
+                    />
+                  </div>
+                  <p
+                    className={`mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] transition-colors duration-300 md:text-[1.5rem] ${
+                      isOpen
+                        ? "text-orange"
+                        : expandable
+                          ? "text-cream group-hover:text-orange"
+                          : "text-cream"
                     }`}
                   >
-                    {/* GSAP writes THIS node's y; motion writes the <li>'s.
-                        Two engines, two elements, one visual result — which
-                        is why the hover lift below is on the TEXT and the
-                        ring, never on this div. A third writer here would
-                        silently lose to whichever ran last. */}
-                    <div
-                      ref={(el) => {
-                        glassRefs.current[i] = el;
-                      }}
-                      className="relative aspect-[4/5] w-full"
-                    >
-                      <Image
-                        src={d.img}
-                        alt={d.alt}
-                        fill
-                        sizes="(max-width: 1024px) 44vw, 22vw"
-                        className="object-contain object-bottom"
-                      />
-                    </div>
-                    <p
-                      className={`mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] transition-colors duration-300 md:text-[1.5rem] ${
-                        isOpen ? "text-orange" : "text-cream group-hover:text-orange"
-                      }`}
-                    >
-                      {d.name}
-                    </p>
-                    <span className="mt-1 flex items-center justify-center gap-1.5 font-sans text-[0.92rem] text-cream/60 transition-colors duration-300 group-hover:text-cream/85">
-                      {countOf(d)}
-                      {/* the chevron IS the affordance. Without it a card that
-                          opens looks identical to one that does not, and the
-                          only hint is the cursor — which a touch screen has
-                          no way to show. */}
+                    {d.name}
+                  </p>
+                  <span
+                    className={`mt-1 flex items-center justify-center gap-1.5 font-sans text-[0.92rem] text-cream/60 transition-colors duration-300 ${
+                      expandable ? "group-hover:text-cream/85" : ""
+                    }`}
+                  >
+                    {countOf(d)}
+                    {/* THE CHEVRON IS THE AFFORDANCE, which is exactly why it
+                        is gone from the three that no longer open. Without it
+                        a card that opens looks identical to one that does
+                        not, and the only hint is the cursor — which a touch
+                        screen has no way to show. Left on a card that does
+                        nothing, it would be the same lie pointing the other
+                        way. */}
+                    {expandable && (
                       <svg
                         aria-hidden="true"
                         viewBox="0 0 12 12"
@@ -556,8 +565,49 @@ export default function MenuView() {
                       >
                         <path d="M2.5 4.5 6 8l3.5-3.5" />
                       </svg>
-                    </span>
-                  </button>
+                    )}
+                  </span>
+                </>
+              );
+
+              return (
+                <motion.li
+                  key={d.name}
+                  {...rPour(0.5 + i * 0.1, 26)}
+                  className="flex flex-col"
+                >
+                  {/* THE DIM LIVES ON THE WRAPPER rather than on the <li>. The
+                      <li> is what motion animates on entrance, so an opacity
+                      written there would inherit the entrance's own delay and
+                      answer a click up to a second late — the same trap the
+                      pantry's hover-dim fell into. A CSS transition on the
+                      child answers immediately.
+
+                      type="button" matters on the one that is a button: it
+                      sits inside no form, but an unqualified <button>
+                      defaults to submit and a stray Enter would try to
+                      navigate. */}
+                  {expandable ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      aria-controls={PANEL_ID}
+                      className={`group flex w-full cursor-pointer flex-col rounded-[var(--radius-card)] outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/60 ${
+                        dim ? "opacity-45" : "opacity-100"
+                      }`}
+                    >
+                      {face}
+                    </button>
+                  ) : (
+                    <div
+                      className={`flex w-full flex-col rounded-[var(--radius-card)] transition-opacity duration-300 ${
+                        dim ? "opacity-45" : "opacity-100"
+                      }`}
+                    >
+                      {face}
+                    </div>
+                  )}
                 </motion.li>
               );
             })}
@@ -573,9 +623,10 @@ export default function MenuView() {
               where the cards are two-up, it still lands directly beneath the
               pair rather than halfway up the grid.
 
-              HEIGHT IS ANIMATED TO "auto", WHICH MOTION RESOLVES. The lists
-              are 2 to 8 names long, so a fixed height would clip the teas or
-              leave a hole under the seasonals. overflow-hidden on the
+              HEIGHT IS ANIMATED TO "auto", WHICH MOTION RESOLVES. Only
+              Seasonal opens now and it holds two, but the panel stays
+              measured rather than fixed — a category that grows must not
+              need this number found again. overflow-hidden on the
               animated element is what makes the collapse read as a shutter
               rather than a fade. */}
           <motion.div
