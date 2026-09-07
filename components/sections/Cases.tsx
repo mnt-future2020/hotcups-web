@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
@@ -93,6 +93,61 @@ export default function Cases() {
   const inView = useInView(ref, { amount: 0.2, once: true });
   const on = inView || Boolean(reduced);
 
+  /* ---------------------------------------------------------------
+     THE MOBILE CAROUSEL IS A SCROLL CONTAINER, NOT A TRANSLATED TRACK.
+
+     Below sm the three stories were a tall stack — a 3:4 card is most of a
+     phone screen on its own, so the second and third were work to reach.
+     They are a horizontal snap carousel there now, and the same grid from
+     sm up.
+
+     WHY scroll-snap RATHER THAN THE TRANSLATED TRACK Blog.tsx uses: that
+     pattern needs the card markup written TWICE, once in the track and
+     once in the grid. This card is ~130 lines of clip-path curtain,
+     counter-scale, two scrims and four delayed beats. Two copies would
+     drift the first time either was touched, and both would ship to every
+     phone. This is one DOM and two layouts, with no JavaScript in the
+     scrolling itself — the finger drives it, momentum and all.
+
+     IT DOES NOT AUTO-ADVANCE, deliberately. WCAG 2.2.2 wants a pause
+     mechanism for anything moving on its own past five seconds, and
+     Ticker.tsx already records that hover is not one a touch user has. A
+     carousel the reader drives needs no such escape hatch.
+
+     The dots only report and jump: scroll position IS the state, so they
+     cannot disagree with what is on screen.
+     --------------------------------------------------------------- */
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+
+  /* nearest child to the scroll offset, rather than dividing by a card
+     width — the card is a percentage and the gap is a rem, so there is no
+     one number to divide by that stays right across phone widths */
+  const onScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    let best = 0;
+    let bestD = Infinity;
+    Array.from(el.children).forEach((kid, i) => {
+      const d = Math.abs((kid as HTMLElement).offsetLeft - el.scrollLeft);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    setActive(best);
+  };
+
+  const go = (i: number) => {
+    const el = trackRef.current;
+    const kid = el?.children[i] as HTMLElement | undefined;
+    if (!el || !kid) return;
+    el.scrollTo({
+      left: kid.offsetLeft,
+      behavior: reduced ? "auto" : "smooth",
+    });
+  };
+
   const reveal = (delay: number, y = 18) =>
     reduced
       ? {}
@@ -167,13 +222,36 @@ export default function Cases() {
         </h2>
 
         {/* ---------------- the three stories ---------------- */}
-        <div className="mt-[clamp(2rem,4vw,3.25rem)] grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {/* ONE CONTAINER, TWO LAYOUTS. Below sm it is a snap scroller; from
+            sm it is the grid it always was, with the scroll properties all
+            turned back off so nothing lingers.
+
+            `relative` is load-bearing rather than decorative: offsetLeft is
+            measured against the offsetParent, and onScroll compares it to
+            this element's scrollLeft. Without it the children measure
+            against some ancestor and every dot reads card one.
+
+            py-2 is focus-ring room. overflow-x:auto makes overflow-y compute
+            to auto as well, so a ring drawn at outline-offset-4 on the card
+            inside would be clipped without it. The scrollbar itself is
+            hidden — on a phone it is an overlay that covers the bottom of
+            the artwork, and the peeking next card is the affordance. */}
+        <div
+          ref={trackRef}
+          onScroll={onScroll}
+          className="mt-[clamp(2rem,4vw,3.25rem)] flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:snap-none sm:grid-cols-2 sm:overflow-visible sm:py-0 lg:grid-cols-3 lg:gap-6">
           {STORIES.map((story, i) => {
             /* four beats per card, cards 0.12s apart */
             const at = 0.35 + i * 0.12;
 
             return (
-              <article key={story.key}>
+              /* 85% leaves a sliver of the next card showing, which is what
+                 tells a thumb there is more to the right. w-auto at sm hands
+                 the sizing back to the grid. */
+              <article
+                key={story.key}
+                className="w-[85%] shrink-0 snap-start sm:w-auto sm:shrink"
+              >
                 <Link
                   href={HREF}
                   className="group block rounded-[var(--radius-card)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange"
@@ -303,6 +381,35 @@ export default function Cases() {
               </article>
             );
           })}
+        </div>
+
+        {/* DOTS, PHONE ONLY. They are a jump control and a position readout,
+            nothing more — `active` is derived from where the scroller
+            actually is, so they cannot claim a card that is not on screen.
+
+            The tap target is 24px square while the mark inside is 6px: the
+            dot is what you see, the button is what you hit. aria-current
+            carries the state rather than colour alone. */}
+        <div className="mt-5 flex items-center justify-center gap-2 sm:hidden">
+          {STORIES.map((story, i) => (
+            <button
+              key={story.key}
+              type="button"
+              onClick={() => go(i)}
+              aria-label={`Show story ${i + 1} of ${STORIES.length}`}
+              aria-current={i === active ? "true" : undefined}
+              className="group grid h-6 w-6 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
+            >
+              <span
+                aria-hidden="true"
+                className={`block h-1.5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  i === active
+                    ? "w-6 bg-orange"
+                    : "w-1.5 bg-ink/25 group-hover:bg-ink/50"
+                }`}
+              />
+            </button>
+          ))}
         </div>
       </div>
     </section>
