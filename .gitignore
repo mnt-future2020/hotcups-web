@@ -77,3 +77,12 @@ next-env.d.ts
 /public/img/tiffin-lid.png
 /public/img/tiffin-tier.png
 /public/img/vada.png
+
+# Playwright MCP scratch — screenshots and console logs from browser checks.
+.playwright-mcp/
+
+# The source PNG for /who-we-serve's hero portrait, same reasoning as the
+# block above: 1494KB, superseded by public/img/who-hero-woman.webp at 71KB,
+# and it sat at the root of public/ where it would have been served as well
+# as stored. Kept on disk next to the webp it produced.
+/public/woman.png
