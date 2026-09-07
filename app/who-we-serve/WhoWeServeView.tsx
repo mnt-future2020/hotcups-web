@@ -387,10 +387,10 @@ export default function WhoWeServeView() {
               <motion.li
                 key={p.key}
                 {...rSix(0.45 + i * 0.08, 24)}
-                className="group relative flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)]"
+                className="group relative flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)] focus-within:-translate-y-2 focus-within:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)]"
               >
-                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream-deep/80 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream-deep/80 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
                 {/* THE FRAME NEVER MOVES. It clips, and the wrapper inside it
                     is the thing GSAP travels — so the card's height, and every
                     line of text under it, stays exactly where it was. */}
@@ -400,7 +400,7 @@ export default function WhoWeServeView() {
                       photoRefs.current[i] = el;
                     }}
                     /* 9% of headroom top and bottom against a ±4% travel */
-                    className="absolute inset-x-0 -top-[9%] -bottom-[9%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                    className="absolute inset-x-0 -top-[9%] -bottom-[9%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 group-focus-within:scale-105"
                   >
                     <Image
                       src={p.src}
@@ -410,7 +410,7 @@ export default function WhoWeServeView() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-espresso-deep/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-espresso-deep/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
                 </div>
 
                 <div className="relative flex flex-1 flex-col px-6 py-5">
@@ -421,20 +421,92 @@ export default function WhoWeServeView() {
                   {/* NO CAPTION AND NO FACT — five of section 04's six are
                       invented. See page.tsx. */}
 
-                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 opacity-0 transition-all duration-300 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
+                  {/* THESE TWO LINKS USED TO BE opacity-0 UNTIL group-hover,
+                      WHICH WAS THREE PROBLEMS RATHER THAN ONE EFFECT.
+
+                        1. ON A TOUCH SCREEN THERE IS NO HOVER, so twelve links
+                           — two on each of the six cards — were invisible on
+                           every phone while still holding their space and
+                           still sitting in the tab order. The only actions on
+                           this section were unreachable on the device most of
+                           its readers use.
+                        2. TABBING LANDED ON SOMETHING NOBODY COULD SEE. A
+                           focused link at opacity 0 is a focus ring on blank
+                           cream; the fix is focus-visibility, not a hover.
+                        3. AT REST EVERY CARD HELD A BLOCK OF EMPTY SPACE where
+                           the invisible row was, so a name sat at the top of a
+                           tall blank panel and the card read as unfinished.
+                           That space is exactly what the fact line would have
+                           filled if five of the six were not invented.
+
+                      They are visible at rest now and hover EMPHASISES rather
+                      than reveals: the mail link is already the card's one
+                      orange thing, and the arrow slides on hover or keyboard
+                      focus. The row always occupied this space, so the card
+                      is 4px shorter only because its top margin tightened
+                      from mt-5 to mt-4 now that it has something to sit
+                      against — 385px to 381px, measured. */}
+                  {/* TWO UNDERLINED LINKS SIDE BY SIDE WAS THE PROBLEM WITH
+                      THE FIRST PASS. Both were text, both were underlined and
+                      both sat at the same weight, so the row read as one
+                      cluttered strip with no hierarchy and no rhythm — and the
+                      underlines fought the name above them.
+
+                      They are now a PRIMARY and a SECONDARY of different
+                      kinds. The mail link keeps the words and loses its
+                      resting underline, so at rest the card carries exactly
+                      one orange line of text; the underline comes back on
+                      hover and focus, where it means something. WhatsApp
+                      becomes the ring-and-glyph button the FOOTER already
+                      uses for its social links, pushed to the right edge by
+                      ml-auto so the row has two ends instead of a huddle.
+
+                      The hairline above them is what makes the panel read as
+                      a card rather than a caption: name, rule, actions. */}
+                  <div className="mt-4 flex items-center gap-3 border-t border-line/70 pt-4">
                     <a
                       href={mailHref(WORKPLACE_ASK[p.key])}
-                      className="font-sans text-[0.9rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
+                      className="group/ask inline-flex items-center gap-1.5 font-sans text-[0.9rem] font-semibold text-orange-deep decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark hover:underline focus-visible:text-orange-dark focus-visible:underline"
                     >
                       Get pricing for {WORKPLACE_FOR[p.key]}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/ask:translate-x-1"
+                      >
+                        &rarr;
+                      </span>
                     </a>
+
+                    {/* 40px rather than the footer's 44: this sits inside a
+                        card next to a line of 0.9rem text, and 44 made the
+                        ring the loudest thing in the panel. Still a comfortable
+                        target, and the only one on the card that is not text.
+
+                        THE GLYPH IS A PLAIN MESSAGE BUBBLE, NOT THE WHATSAPP
+                        LOGO. Every mark in Footer.tsx is simplified geometry
+                        rather than a brand's own artwork, and this file's
+                        siblings carry a NO BRAND NAMES note for the same
+                        reason. The destination is named in aria-label, so
+                        nothing is lost to a screen reader. */}
                     <a
                       href={waHref(WORKPLACE_ASK[p.key])}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-sans text-[0.9rem] font-semibold text-ink-soft underline decoration-line decoration-2 underline-offset-4 transition-colors duration-300 hover:text-ink"
+                      aria-label={`WhatsApp us about ${WORKPLACE_ASK[p.key]}`}
+                      className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-orange-dark hover:text-orange-dark focus-visible:-translate-y-0.5 focus-visible:border-orange-dark focus-visible:text-orange-dark"
                     >
-                      WhatsApp
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        className="h-[19px] w-[19px] shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 11.6a8.4 8.4 0 0 1-12.3 7.5L3.4 20.6l1.5-5.2A8.4 8.4 0 1 1 21 11.6Z" />
+                      </svg>
                     </a>
                   </div>
                 </div>
