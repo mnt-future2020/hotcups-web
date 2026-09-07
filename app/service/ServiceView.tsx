@@ -76,9 +76,11 @@ const STEPS = [
 ];
 
 const DRINKS = [
-  { name: "Tea", count: "8 blends", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
-  { name: "Coffee", count: "6 roasts", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
-  { name: "Milk", count: "5 options", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
+  /* "1 blend" — the client cut Tea to plain tea only. Section 02 and /menu
+     carry the same number; /menu derives it from its list of names. */
+  { name: "Tea", count: "1 blend", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
+  { name: "Coffee", count: "1 roast", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
+  { name: "Milk", count: "1 option", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
   { name: "Seasonal", count: "2 specials", img: "/img/menu-buttermilk.webp", alt: "Masala buttermilk with coriander, cumin and a slice of cucumber" },
 ];
 
@@ -347,7 +349,7 @@ export default function ServiceView() {
               {/* GSAP OWNS THIS WRAPPER'S TRANSFORM — see the effect. motion
                   animates the INNER element's clip-path instead, so the two
                   never write the same property on the same node. */}
-              <div ref={flaskRef} className="relative mx-auto w-[70%] max-w-[320px] lg:mr-0 lg:w-full">
+              <div ref={flaskRef} className="relative mx-auto w-[72%] max-w-[300px] lg:mr-0" style={{ maxHeight: "42vh" }}>
                 <motion.span
                   aria-hidden="true"
                   initial={hero.reduced ? undefined : { scale: 0.82, opacity: 0 }}
@@ -359,7 +361,7 @@ export default function ServiceView() {
                         : { scale: 0.82, opacity: 0 }
                   }
                   transition={{ duration: 1, delay: 0.3, ease: EASE }}
-                  className="absolute left-1/2 top-[6%] aspect-square w-[74%] -translate-x-1/2 rounded-full bg-cream-deep"
+                  className="absolute left-1/2 top-6 aspect-square w-[74%] -translate-x-1/2 rounded-full bg-cream-deep"
                 />
                 <motion.div
                   initial={
@@ -380,9 +382,10 @@ export default function ServiceView() {
                     alt="A Hotcups delivery partner in uniform holding a sealed steel flask"
                     width={760}
                     height={1261}
-                    sizes="(max-width: 1024px) 66vw, 320px"
+                    sizes="(max-width: 1024px) 66vw, 280px"
                     priority
                     className="h-auto w-full"
+                    style={{ maxHeight: "42vh", objectFit: "contain" }}
                   />
                 </motion.div>
               </div>
