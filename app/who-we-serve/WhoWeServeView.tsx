@@ -535,26 +535,51 @@ export default function WhoWeServeView() {
             </span>
           </h2>
 
-          <div className="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line md:grid-cols-3">
+          {/* MATCHED TO THE HOME PAGE'S CARD, WHICH THIS WAS NOT.
+              These three used to be one slab: a bordered box subdivided by
+              gap-px hairlines over a bg-line ground, so the columns read as
+              cells of a table rather than three things you could choose
+              between. That treatment appears exactly twice in the codebase —
+              here and on /service — and NOWHERE on the home page, which was
+              the whole complaint.
+
+              The home page's card is Blog.tsx's: white on the section's
+              cream, a line border, shadow-1 lifting to shadow-2, and a 1.5px
+              rise on hover AND focus. The class string is copied from it
+              rather than approximated, so the two cannot drift into being
+              nearly-the-same.
+
+              THE WHOLE CARD IS THE LINK NOW, also as Blog does it. Each
+              column already pointed at exactly one page, so the card had a
+              small text target inside a large dead rectangle. The old CTA
+              stays as a SPAN — an <a> inside an <a> is invalid, and the
+              affordance is what was wanted, not a second link.
+
+              motion drives the entrance on the outer div and Tailwind's
+              -translate-y drives the lift on the inner Link: different
+              elements, and different properties even if they were not. */}
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {COLUMNS.map((c, i) => (
-              <motion.div
-                key={c.head}
-                {...rRound(0.3 + i * 0.12, 20)}
-                className="group relative flex flex-col bg-cream px-7 py-8 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:shadow-[0_12px_32px_-8px_rgba(58,20,14,0.18)]"
-              >
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange/0 via-orange/70 to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <h3 className="font-display text-[1.25rem] font-extrabold tracking-[-0.02em] text-ink transition-colors duration-300 group-hover:text-orange-dark">
-                  {c.head}
-                </h3>
-                <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
-                  {c.body}
-                </p>
+              <motion.div key={c.head} {...rRound(0.3 + i * 0.12, 20)}>
                 <Link
                   href={c.href}
-                  className="mt-5 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-all duration-300 hover:text-orange-dark hover:gap-3"
+                  className="group flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-white p-7 shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
                 >
-                  {c.cta}
-                  <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                  <h3 className="font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
+                    {c.head}
+                  </h3>
+                  <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
+                    {c.body}
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep">
+                    {c.cta}
+                    <span
+                      aria-hidden="true"
+                      className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
+                    >
+                      &rarr;
+                    </span>
+                  </span>
                 </Link>
               </motion.div>
             ))}
