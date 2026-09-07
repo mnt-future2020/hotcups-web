@@ -708,9 +708,65 @@ export default function ServiceView() {
       </section>
 
       {/* ═══════════════ when a machine is the answer ═══════════════ */}
-      <section ref={scale.ref} className="section-y bg-cream">
+      {/* THE DOODLE PLATE, from app/123img.png — 1191KB of PNG encoded to
+          44KB of WebP at the same 1959x803. Same construction as the plates
+          on /machines and /who-we-serve: one backgroundImage holding a flat
+          scrim over the art, backgroundColor underneath so the section is
+          never bare while the image loads.
+
+          THE SCRIM IS 0.32 AND IT IS THE LIGHTEST OF THE FOUR, because this
+          artwork is the lightest — mean luminance 243 against the cream
+          plate's 234 and the two dark ones' 40 and 34.
+
+          IT IS ALSO MEASURED WHERE THE TEXT IS, NOT WHERE THE PICTURE IS
+          DARKEST. The darkest pixel anywhere in the image is rgb(200,110,43),
+          but it sits in a corner doodle with nothing over it. Inside the
+          copy column — x 18-52%, which is where the eyebrow, the heading and
+          both paragraphs run — the darkest is rgb(202,134,75), and against
+          that:
+
+            scrim 0.00   ink 6.25   ink-soft 3.35
+            scrim 0.25   ink 8.31   ink-soft 4.46
+            scrim 0.35   ink 9.28   ink-soft 4.98
+
+          The body copy is ink-soft and needs 4.5, so 0.32 is the floor
+          rather than a preference — it lands ink-soft at about 4.8 and
+          leaves the artwork as legible as it can be. The three capacity
+          cards are white and sit over the plate, so nothing inside them is
+          affected. */}
+      <section
+        ref={scale.ref}
+        className="section-y"
+        style={{
+          backgroundColor: "#fff7f0",
+          backgroundImage:
+            "linear-gradient(rgba(255,247,240,0.32), rgba(255,247,240,0.32)), url(/img/scale-doodles.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
+        }}
+      >
         <div className="shell">
-          <motion.span {...rScale(0.05, 0)} className="eyebrow block">
+          {/* SET INLINE, because .eyebrow in globals.css is UNLAYERED and
+              beats any Tailwind text utility — utilities live in @layer
+              utilities and unlayered CSS wins over a layer regardless of
+              specificity. globals.css documents the same mechanism on
+              .stepper-field:focus-visible.
+
+              It has to move: the eyebrow's default mute measures between
+              1.12:1 and 2.31:1 over this artwork depending on scrim, the
+              worst of any text on any of these plates, because mute is a
+              warm grey and the doodle lines are warm orange. ink-soft is
+              about 4.8:1 at the scrim used here.
+
+              The underlying bug is site-wide — five eyebrows ask for a
+              colour and silently get mute — and is deliberately left alone,
+              since fixing it touches every eyebrow on the site. */}
+          <motion.span
+            {...rScale(0.05, 0)}
+            className="eyebrow block"
+            style={{ color: "var(--color-ink-soft)" }}
+          >
             Flasks or a machine
           </motion.span>
           <h2 className="mt-4 max-w-[24ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
