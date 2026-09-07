@@ -318,20 +318,65 @@ export default function MachinesView() {
       </section>
 
       {/* ═══════════════ when a machine is the answer ═══════════════ */}
+      {/* THE DOODLE PLATE, from app/imgg.png — 1283KB of PNG encoded to 37KB
+          of WebP at the same 2172x724. It is the dark sibling of the cream
+          plate on /who-we-serve: light line art on espresso, clustered at
+          the edges with the middle left clear.
+
+          THE RADIAL IS NOW THE SCRIM RATHER THAN THE GROUND. It used to be
+          an opaque `background`; the same three stops are here with alpha,
+          sitting over the artwork, so the section keeps the exact depth ramp
+          it had and the doodles read through it. Weakest at 70% 30% — the
+          right side, where the machine photograph sits and no text does —
+          and strongest at the edges, which is where the copy is.
+
+          THE ALPHAS ARE MEASURED, and light text on a dark ground inverts
+          the usual problem: the danger is a BRIGHT doodle behind bright
+          type. The brightest pixel in this artwork is rgb(226,177,137), and
+          against it:
+
+            scrim 0.30   cream 3.20   cream/70 2.36
+            scrim 0.60   cream 6.27   cream/70 4.03
+            scrim 0.72   cream 8.42   cream/70 5.10
+
+          The body copy is text-cream/70, so 0.72 is the floor for it — that
+          is where the outer stops start rather than a round number. */}
       <section
         ref={which.ref}
         className="section-y overflow-x-clip"
         style={{
-          background:
-            "radial-gradient(140% 100% at 70% 30%, #4a3d38 0%, #3a2e28 55%, #241c18 100%)",
+          backgroundColor: "#241c18",
+          backgroundImage:
+            "radial-gradient(140% 100% at 70% 30%, rgba(74,61,56,0.72) 0%, rgba(58,46,40,0.80) 55%, rgba(36,28,24,0.88) 100%), url(/img/which-doodles.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
         }}
       >
         <div className="shell">
           <div className="grid items-center gap-y-8 lg:grid-cols-12 lg:gap-x-12">
             <div className="lg:col-span-7">
+              {/* text-cream/50 NEVER APPLIED, and it was failing before this
+                  plate went in. .eyebrow in globals.css sets
+                  color: var(--color-mute) and is UNLAYERED, so it beats any
+                  Tailwind text utility — utilities live in @layer utilities
+                  and unlayered CSS wins over a layer regardless of
+                  specificity. This eyebrow has been rendering mute, #8b7a6f,
+                  on an espresso ground: 2.8:1, which fails.
+
+                  Set inline so it actually takes, and at 70% rather than the
+                  50% the class asked for, because 50% measures 3.9:1 over
+                  this ground and small text needs 4.5. cream at 70% is
+                  6.0:1. The class stays as a record of the intent.
+
+                  The underlying bug is site-wide — five eyebrows ask for a
+                  colour and silently get mute — and fixing it means moving
+                  that one rule into @layer components, which touches every
+                  eyebrow on the site. Not done here on purpose. */}
               <motion.span
                 {...rWhich(0.05, 0)}
                 className="eyebrow block text-cream/50"
+                style={{ color: "rgb(255 247 240 / 0.7)" }}
               >
                 <span className="text-orange">05</span> — Which one you need
               </motion.span>
