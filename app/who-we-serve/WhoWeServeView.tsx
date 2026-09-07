@@ -535,9 +535,62 @@ export default function WhoWeServeView() {
       </section>
 
       {/* ═══════════════ what every one of them gets ═══════════════ */}
-      <section ref={round.ref} className="section-y bg-cream-deep">
+      {/* THE DOODLE PLATE, from app/bgimg.png — 1224KB of PNG encoded to
+          49KB of WebP at the same 1888x833. Same construction Pantry.tsx
+          uses for its plate: one backgroundImage holding a flat scrim over
+          the art, with backgroundColor underneath so the section is never
+          bare while the image is still loading.
+
+          THE SCRIM IS 0.70, MEASURED RATHER THAN PICKED. This artwork is
+          darker than the pantry plate it resembles — darkest pixel at
+          luminance 132 against 149, darkest 1% at 174 against 200 — so a
+          lighter scrim would put MORE ink on screen here than that section
+          has. Against the darkest pixel in the image, rgb(186,117,64):
+
+            text-ink       11.46:1
+            text-ink-soft   6.14:1
+            mute            2.52:1   <- see the eyebrow
+
+          The three cards over it are white, so nothing inside them is
+          affected; only the eyebrow and the headline sit on the plate
+          directly, and the headline is text-ink. */}
+      <section
+        ref={round.ref}
+        className="section-y"
+        style={{
+          backgroundColor: "#f8e7d2",
+          backgroundImage:
+            "linear-gradient(rgba(248,231,210,0.70), rgba(248,231,210,0.70)), url(/img/round-doodles.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
+        }}
+      >
         <div className="shell">
-          <motion.span {...rRound(0.05, 0)} className="eyebrow block">
+          {/* THE COLOUR IS SET INLINE, AND IT HAS TO BE. .eyebrow in
+              globals.css sets color: var(--color-mute) and is UNLAYERED,
+              while Tailwind's utilities live in @layer utilities — unlayered
+              CSS beats any layer regardless of specificity, so `text-ink-soft`
+              on this element would be ignored. The note on
+              .stepper-field:focus-visible in globals.css describes the same
+              mechanism.
+
+              That is a real bug and it is not mine to fix here: five
+              eyebrows across the site already ask for a colour and silently
+              get mute, two of them on DARK grounds. Fixing it properly means
+              moving that one rule into @layer components, which changes
+              every eyebrow on the site and was explicitly rewound once. So
+              this section solves its own problem locally and leaves that
+              decision alone.
+
+              mute measures 2.52:1 over the darkest pixel of the plate behind
+              it — under the 4.5 body floor and under the 3.0 large-text one.
+              ink-soft is 6.14:1 on the same pixel. */}
+          <motion.span
+            {...rRound(0.05, 0)}
+            className="eyebrow block"
+            style={{ color: "var(--color-ink-soft)" }}
+          >
             The same round
           </motion.span>
           <h2 className="mt-4 max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
