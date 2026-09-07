@@ -73,24 +73,42 @@ const PLACES: { key: WorkplaceKey; name: string; src: string }[] = [
 
 const BANDS = ["Under 100", "100 – 200", "200 – 500"];
 
+/* EACH ONE GAINED A PICTURE, which is the half of the home page's card
+   that was still missing. Swapping the box for Blog.tsx's card made these
+   the right SHAPE, but Blog's card is a photograph over text and these were
+   text alone, so three white rectangles of prose still did not look like
+   anything on the home page.
+
+   NOTHING NEW WAS SHOT AND NOTHING WAS CROPPED. All three already exist in
+   public/img and all three are cut-outs with a real alpha channel, which is
+   why they are drawn CONTAINED on a tinted panel rather than cover like
+   Blog's scenes — a cut-out under object-cover crops the subject and fills
+   the frame with its own transparent margin.
+
+   They are also each already the subject of the page they point at:
+   rig-flasks is the flask row, hero-slide-drinks is the drinks the hero
+   names, section4-machine is the unit section 06 sells. */
 const COLUMNS = [
   {
     head: "Freshly filled flasks",
     body: "Delivered to your pantry. We collect the empties and refill — nothing to install, nothing to clean.",
     href: "/service",
     cta: "How the service works",
+    img: "/img/rig-flasks.webp",
   },
   {
     head: "Tea, coffee, milk, seasonal",
     body: "Everyone drinks something different. The pantry rides along on the same delivery.",
     href: "/menu",
     cta: "See the menu",
+    img: "/img/hero-slide-drinks.webp",
   },
   {
     head: "Or a machine on site",
     body: "Above 50 cups a day, a machine is the better fit. Three sizes, rent or buy.",
     href: "/machines",
     cta: "See the machines",
+    img: "/img/section4-machine.webp",
   },
 ];
 
@@ -563,23 +581,41 @@ export default function WhoWeServeView() {
               <motion.div key={c.head} {...rRound(0.3 + i * 0.12, 20)}>
                 <Link
                   href={c.href}
-                  className="group flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-white p-7 shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
+                  className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
                 >
-                  <h3 className="font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
-                    {c.head}
-                  </h3>
-                  <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
-                    {c.body}
-                  </p>
-                  <span className="mt-6 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep">
-                    {c.cta}
-                    <span
-                      aria-hidden="true"
-                      className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
-                    >
-                      &rarr;
+                  {/* alt="" ON PURPOSE. The whole card is one link and its
+                      accessible name already comes from the heading and the
+                      CTA under it; describing the picture as well would make
+                      a screen reader read the same card twice. The image is
+                      decoration of a labelled thing, which is the case the
+                      empty alt exists for. */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-deep">
+                    <Image
+                      src={c.img}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 92vw, 30vw"
+                      className="object-contain p-6 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                    />
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-7">
+                    <h3 className="font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
+                      {c.head}
+                    </h3>
+                    <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
+                      {c.body}
+                    </p>
+                    <span className="mt-6 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep">
+                      {c.cta}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
+                      >
+                        &rarr;
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </Link>
               </motion.div>
             ))}
