@@ -576,27 +576,35 @@ export default function MachinesView() {
           THE RADIAL IS THE SCRIM, NOT THE GROUND, same as the section above:
           the original three stops with alpha, over the artwork.
 
-          THE ALPHAS ARE HIGH — 0.85 AT THE CENTRE — AND THAT IS THE
-          MEASUREMENT, NOT TIMIDITY. Two things on this section are close to
-          the floor before any picture is added:
+          THE ALPHAS WERE 0.85/0.89/0.93 AND CAME DOWN TO 0.68/0.74/0.82 SO
+          THE ARTWORK READS. The first set was measured against a single
+          worst case — the brightest pixel anywhere in the image, assumed to
+          be behind the tightest text — and that turned out to be too blunt.
+          Measured per BAND instead, against where each thing actually sits:
 
-            the ORANGE headline is large text, so it needs 3.0:1
-            the LINK ROW was text-cream/55, small text, needing 4.5:1
+            headline  top 30%    brightest rgb(192,109,59)
+            buttons   30-62%     brightest rgb(164,92,54)
+            links     62-100%    brightest rgb(211,106,44)
 
-          Against the brightest pixel in this artwork, rgb(211,106,44), a
-          light scrim puts orange at 2.46:1 and cream/55 at 3.39:1 — both
-          failing. And cream/55 was ALREADY only 4.61:1 on the bare radial,
-          so there is no scrim strength that adds a brighter layer under it
-          and keeps it passing. At 0.85 the composite reads orange 3.22:1 and
-          cream/70 5.57:1, which is why the two faint greys below moved to
-          /70 in the same change. */}
+          The glow is at the BOTTOM and the radial is centred at 30% 100%,
+          so the headline sits under the OUTER stop — the strongest scrim —
+          while the brightest artwork sits under the weakest. Pairing each
+          band with the alpha it actually gets:
+
+            orange headline, 0.82 over rgb(192,109,59)   5.03:1  (needs 3.0)
+            cream/70 links,  0.68 over rgb(211,106,44)   4.63:1  (needs 4.5)
+
+          0.68 is the floor for the link row and the reason it is not lower.
+          The two faint greys below moved from /60 and /55 to /70 for the
+          same measurement — /55 was already only 4.61:1 on the BARE radial,
+          before any picture went behind it. */}
       <section
         ref={ask.ref}
         className="section-y overflow-x-clip"
         style={{
           backgroundColor: "#240a06",
           backgroundImage:
-            "radial-gradient(120% 80% at 30% 100%, rgba(92,35,21,0.85) 0%, rgba(58,20,14,0.89) 45%, rgba(36,10,6,0.93) 100%), url(/img/ask-doodles.webp)",
+            "radial-gradient(120% 80% at 30% 100%, rgba(92,35,21,0.68) 0%, rgba(58,20,14,0.74) 45%, rgba(36,10,6,0.82) 100%), url(/img/ask-doodles.webp)",
           backgroundSize: "cover, cover",
           backgroundPosition: "center, center",
           backgroundRepeat: "no-repeat, no-repeat",
