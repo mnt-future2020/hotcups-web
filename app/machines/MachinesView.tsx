@@ -165,6 +165,8 @@ export default function MachinesView() {
         ref={offer.ref}
         className="relative overflow-x-clip bg-steel-pale"
         style={{
+          background:
+            "radial-gradient(120% 80% at 20% 10%, #f5f0ea 0%, #ede4da 45%, #e4d8cc 100%)",
           paddingTop: "calc(var(--header-h) + clamp(2rem, 6vh, 4.5rem))",
           paddingBottom: "clamp(2.5rem, 6vh, 4.5rem)",
         }}
@@ -226,32 +228,47 @@ export default function MachinesView() {
           </motion.p>
 
           <ul className="mt-12 grid gap-5 md:grid-cols-3 md:gap-6">
+            {/* RESTORED TO motion.li BELOW. It had been changed to a plain
+                <li> while still being spread with rOffer(), which returns
+                motion props — so `initial`, `animate` and `transition` were
+                handed to React as DOM attributes and shipped in the HTML on
+                all three cards, inert. The staggered entrance was dead.
+                Verified in the DOM before changing it back. */}
             {RIGS.map((r, i) => (
               <motion.li
                 key={r.key}
                 {...rOffer(0.55 + i * 0.13, 26)}
-                className="flex flex-col rounded-[var(--radius-card)] bg-white px-5 pb-6 pt-7 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5"
-                style={{ boxShadow: "var(--shadow-1)" }}
+                className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_-12px_rgba(43,47,51,0.35)]"
               >
-                {/* GSAP writes THIS node's y; motion writes the <li>'s for the
-                    entrance and CSS the hover lift. Three effects, three
-                    elements, none of them contending for one transform. */}
-                <div
-                  ref={(el) => {
-                    rigRefs.current[i] = el;
-                  }}
-                  className="relative mx-auto h-[clamp(150px,20vw,230px)] w-full"
-                >
-                  <Image
-                    src={r.src}
-                    alt={`A beverage machine for ${
-                      r.from == null ? "under" : `${r.from} to`
-                    } ${r.cap} cups a day`}
-                    fill
-                    sizes="(max-width: 768px) 80vw, 28vw"
-                    className="object-contain"
-                    style={{ aspectRatio: String(r.aspect) }}
-                  />
+                <div className="px-5 pt-7">
+                  {/* GSAP writes THIS node's y; motion writes the <li>'s for the
+                      entrance and CSS the hover lift. Three effects, three
+                      elements, none of them contending for one transform —
+                      and Tailwind's -translate-y writes the standalone
+                      `translate` property, which motion never touches.
+
+                      THE REF WAS DELETED AT THE SAME TIME AS motion.li ABOVE,
+                      which left rigRefs.current empty and the per-unit drift
+                      in the effect above iterating nothing. Both dead
+                      animations came from the same edit. */}
+                  <div
+                    ref={(el) => {
+                      rigRefs.current[i] = el;
+                    }}
+                    className="relative mx-auto h-[clamp(150px,20vw,230px)] w-full"
+                  >
+                    <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-b from-orange/[0.06] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    <Image
+                      src={r.src}
+                      alt={`A beverage machine for ${
+                        r.from == null ? "under" : `${r.from} to`
+                      } ${r.cap} cups a day`}
+                      fill
+                      sizes="(max-width: 768px) 80vw, 28vw"
+                      className="object-contain"
+                      style={{ aspectRatio: String(r.aspect) }}
+                    />
+                  </div>
                 </div>
 
                 <motion.span
@@ -266,12 +283,25 @@ export default function MachinesView() {
                   className="mt-6 block h-px w-full origin-left bg-line"
                 />
 
+                {/* THE CAPACITY IS THE ONLY THING ON THIS CARD BESIDES THE
+                    PHOTOGRAPH, so it gets a foot of its own rather than
+                    floating under a rule on the same white as the picture.
+                    The card is overflow-hidden and this block runs edge to
+                    edge, so the tint stops at the rounded corner and the
+                    three cards read as built rather than captioned. */}
                 <motion.p
                   {...rOffer(0.9 + i * 0.13, 10)}
-                  className="mt-5 text-center font-display text-[1.6rem] font-extrabold tracking-[-0.02em] text-orange-dark md:text-[1.8rem]"
+                  className="mt-0 bg-steel-pale/60 px-5 py-5 text-center font-display text-[1.6rem] font-extrabold tracking-[-0.02em] text-orange-dark transition-colors duration-500 group-hover:bg-steel-pale md:text-[1.8rem]"
                 >
                   {r.from == null ? (
                     <>
+                      {/* THE "<" WAS aria-hidden WITH NOTHING REPLACING IT,
+                          so a screen reader read this card as "100 cups /
+                          day" — the opposite end of the band it means. The
+                          glyph stays hidden because "less than" is not how
+                          it should be read either; the word goes in beside
+                          it instead. */}
+                      <span className="sr-only">Under </span>
                       <span aria-hidden="true">&lt;</span> {r.cap}
                     </>
                   ) : (
@@ -288,7 +318,14 @@ export default function MachinesView() {
       </section>
 
       {/* ═══════════════ when a machine is the answer ═══════════════ */}
-      <section ref={which.ref} className="section-y overflow-x-clip bg-steel">
+      <section
+        ref={which.ref}
+        className="section-y overflow-x-clip"
+        style={{
+          background:
+            "radial-gradient(140% 100% at 70% 30%, #4a3d38 0%, #3a2e28 55%, #241c18 100%)",
+        }}
+      >
         <div className="shell">
           <div className="grid items-center gap-y-8 lg:grid-cols-12 lg:gap-x-12">
             <div className="lg:col-span-7">
@@ -314,14 +351,14 @@ export default function MachinesView() {
 
               <motion.p
                 {...rWhich(0.32)}
-                className="mt-4 max-w-[34ch] font-display text-[clamp(1.15rem,1.9vw,1.55rem)] font-bold leading-[1.28] text-cream/80"
+                className="mt-4 max-w-[34ch] font-display text-[clamp(1.15rem,1.9vw,1.55rem)] font-bold leading-[1.28] text-cream/90"
               >
                 Above 50 cups a day, a machine is the better fit.
               </motion.p>
 
               <motion.p
                 {...rWhich(0.45)}
-                className="mt-6 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/65"
+                className="mt-6 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/70"
               >
                 Under that line, flasks are the cheaper answer and there is
                 nothing to install. The calculator on the home page works it
@@ -331,7 +368,7 @@ export default function MachinesView() {
               <motion.div {...rWhich(0.58)}>
                 <Link
                   href="/#savings"
-                  className="mt-7 inline-flex items-center gap-2 font-sans text-[0.95rem] font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange"
+                  className="mt-7 inline-flex items-center gap-2 font-sans text-[0.95rem] font-semibold text-orange underline decoration-orange decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
                 >
                   Work out your number
                   <span aria-hidden="true">&rarr;</span>
@@ -375,12 +412,21 @@ export default function MachinesView() {
       </section>
 
       {/* ═══════════════ built to spec ═══════════════ */}
-      <section ref={spec.ref} className="section-y bg-steel-pale">
+      <section
+        ref={spec.ref}
+        className="section-y overflow-x-clip"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 80% 20%, #fdfaf6 0%, #f5efe6 50%, #ede4d6 100%)",
+        }}
+      >
         <div className="shell">
           <motion.div
             {...rSpec(0.05, 24)}
-            className="grid items-center gap-y-10 rounded-[var(--radius-panel)] bg-white px-7 py-10 lg:grid-cols-12 lg:gap-x-12 lg:px-12 lg:py-12"
+            className="group relative grid items-center gap-y-10 overflow-hidden rounded-[var(--radius-panel)] bg-white px-7 py-10 shadow-[0_24px_64px_-16px_rgba(58,20,14,0.22)] lg:grid-cols-12 lg:gap-x-12 lg:px-12 lg:py-12"
           >
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange/[0.04] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
             <div className="lg:col-span-4">
               <motion.div
                 initial={spec.reduced ? undefined : { opacity: 0, y: 18 }}
@@ -449,7 +495,7 @@ export default function MachinesView() {
                       delay: 0.6 + i * 0.08,
                       ease: [0.34, 1.56, 0.64, 1],
                     }}
-                    className="rounded-full border border-line bg-cream px-4 py-2 font-sans text-[0.9rem] font-semibold text-ink"
+                    className="group rounded-full border border-orange/30 bg-white px-4 py-2 font-sans text-[0.9rem] font-semibold text-ink-soft transition-all duration-300 hover:border-orange hover:bg-orange-soft hover:text-orange-dark hover:shadow-[0_4px_16px_-4px_rgba(242,101,34,0.25)]"
                   >
                     {c}
                   </motion.li>
@@ -476,7 +522,14 @@ export default function MachinesView() {
       </section>
 
       {/* ═══════════════ the ask ═══════════════ */}
-      <section ref={ask.ref} className="section-y bg-espresso">
+      <section
+        ref={ask.ref}
+        className="section-y overflow-x-clip"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 30% 100%, #5c2315 0%, #3a140e 45%, #240a06 100%)",
+        }}
+      >
         <div className="shell text-center">
           <h2 className="mx-auto max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-cream">
             <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
