@@ -32,8 +32,15 @@ import { WORKPLACE_ASK, WORKPLACE_FOR, type WorkplaceKey } from "@/lib/workplace
  *      a few percent separates it from the paragraph rather than leaving it
  *      reading as a fourth line of the same block.
  *
- * Both are scrubbed and both reverse. Neither is expressible as an entrance,
- * which is the test for whether GSAP has earned its place on a page.
+ *   3. THE FLASK DRIFTS AGAINST THE HERO. The opening section now follows the
+ *      same dark-ground two-column treatment as /service and /machines: text
+ *      on the left, delivery photograph on the right, both on an espresso
+ *      ground with an orange-accented proof card. The image gets its own
+ *      ScrollTrigger scrub so it drifts at a different rate from the proof
+ *      card, giving the section the same layered depth those pages have.
+ *
+ * All three are scrubbed and all three reverse. None is expressible as an
+ * entrance, which is the test for whether GSAP has earned its place on a page.
  *
  * THE COUNT-UP IS NOT GSAP AND NOT A SCRUB.
  * It is a clock-driven entrance, so it belongs to the entrance half — and it
@@ -141,6 +148,7 @@ export default function WhoWeServeView() {
   const photoRefs = useRef<(HTMLDivElement | null)[]>([]);
   const gridRef = useRef<HTMLUListElement>(null);
   const proofRef = useRef<HTMLElement>(null);
+  const flaskRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -187,6 +195,24 @@ export default function WhoWeServeView() {
           },
         );
       }
+
+      /* ---- 3. the flask drifts against the hero ---- */
+      if (flaskRef.current) {
+        gsap.fromTo(
+          flaskRef.current,
+          { yPercent: -4 },
+          {
+            yPercent: 6,
+            ease: "none",
+            scrollTrigger: {
+              trigger: flaskRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.5,
+            },
+          },
+        );
+      }
     });
 
     return () => mm.revert();
@@ -197,84 +223,133 @@ export default function WhoWeServeView() {
       {/* ═══════════════ the claim ═══════════════ */}
       <section
         ref={hero.ref}
-        className="relative overflow-x-clip bg-cream"
+        className="relative overflow-x-clip bg-espresso-deep"
         style={{
           paddingTop: "calc(var(--header-h) + clamp(2rem, 6vh, 4.5rem))",
           paddingBottom: "clamp(2.5rem, 6vh, 4.5rem)",
         }}
       >
         <div className="shell">
-          <motion.div
-            initial={hero.reduced ? undefined : { opacity: 0, x: -14 }}
-            animate={
-              hero.reduced
-                ? undefined
-                : hero.on
-                  ? { opacity: 1, x: 0 }
-                  : { opacity: 0, x: -14 }
-            }
-            transition={{ duration: 0.7, delay: 0.05, ease: EASE }}
-            className="flex items-center gap-4"
-          >
-            <span className="eyebrow whitespace-nowrap">
-              <span className="text-orange-deep">04</span> — Where the flasks go
-            </span>
-            <motion.span
-              aria-hidden="true"
-              initial={hero.reduced ? false : { scaleX: 0 }}
-              animate={{ scaleX: hero.on ? 1 : 0 }}
-              transition={{ duration: 0.8, delay: 0.05, ease: "linear" }}
-              className="h-px w-16 origin-left bg-line md:w-24"
-            />
-          </motion.div>
-
-          <h1 className="mt-5 max-w-[20ch] font-display text-[clamp(2rem,4.2vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.035em] text-ink">
-            <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-              <motion.span
-                initial={hero.reduced ? false : { y: "112%" }}
-                animate={{ y: hero.on ? "0%" : "112%" }}
-                transition={{ duration: 0.9, delay: 0.15, ease: EASE }}
-                className="block"
+          <div className="grid items-center gap-y-10 lg:grid-cols-12 lg:gap-x-12">
+            <div className="lg:col-span-7">
+              <motion.div
+                initial={hero.reduced ? undefined : { opacity: 0, x: -14 }}
+                animate={
+                  hero.reduced
+                    ? undefined
+                    : hero.on
+                      ? { opacity: 1, x: 0 }
+                      : { opacity: 0, x: -14 }
+                }
+                transition={{ duration: 0.7, delay: 0.05, ease: EASE }}
+                className="flex items-center gap-4"
               >
-                Bringing Better Food
-              </motion.span>
-            </span>
-            <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-              <motion.span
-                initial={hero.reduced ? false : { y: "112%" }}
-                animate={{ y: hero.on ? "0%" : "112%" }}
-                transition={{ duration: 0.9, delay: 0.24, ease: EASE }}
-                className="block text-orange-dark"
+                <span className="eyebrow whitespace-nowrap text-cream/55">
+                  <span className="text-orange">04</span> — Where the flasks go
+                </span>
+                <motion.span
+                  aria-hidden="true"
+                  initial={hero.reduced ? false : { scaleX: 0 }}
+                  animate={{ scaleX: hero.on ? 1 : 0 }}
+                  transition={{ duration: 0.8, delay: 0.05, ease: "linear" }}
+                  className="h-px w-16 origin-left bg-cream/15 md:w-24"
+                />
+              </motion.div>
+
+              <h1 className="mt-5 max-w-[20ch] font-display text-[clamp(2rem,4.2vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.035em] text-cream">
+                <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                  <motion.span
+                    initial={hero.reduced ? false : { y: "112%" }}
+                    animate={{ y: hero.on ? "0%" : "112%" }}
+                    transition={{ duration: 0.9, delay: 0.15, ease: EASE }}
+                    className="block"
+                  >
+                    Bringing Better Food
+                  </motion.span>
+                </span>
+                <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                  <motion.span
+                    initial={hero.reduced ? false : { y: "112%" }}
+                    animate={{ y: hero.on ? "0%" : "112%" }}
+                    transition={{ duration: 0.9, delay: 0.24, ease: EASE }}
+                    className="block text-orange"
+                  >
+                    Experiences to Your Team.
+                  </motion.span>
+                </span>
+              </h1>
+
+              <motion.p
+                {...rHero(0.45)}
+                className="mt-6 max-w-[52ch] font-sans text-[clamp(1.05rem,1.35vw,1.22rem)] leading-[1.6] text-cream/70"
               >
-                Experiences to Your Team.
-              </motion.span>
-            </span>
-          </h1>
+                <strong className="font-semibold tabular-nums text-cream">
+                  {orgs}+
+                </strong>{" "}
+                organizations already on it. Offices, factories, hospitals, colleges
+                and shops across Tamil Nadu.
+              </motion.p>
 
-          <motion.p
-            {...rHero(0.45)}
-            className="mt-6 max-w-[52ch] font-sans text-[clamp(1.05rem,1.35vw,1.22rem)] leading-[1.6] text-ink-soft"
-          >
-            <strong className="font-semibold tabular-nums text-ink">
-              {orgs}+
-            </strong>{" "}
-            organizations already on it. Offices, factories, hospitals, colleges
-            and shops across Tamil Nadu.
-          </motion.p>
+              <figure
+                ref={proofRef}
+                className="mt-10 max-w-[46rem] rounded-[var(--radius-card)] border border-orange/25 bg-orange/[0.08] px-7 py-7"
+              >
+                <motion.blockquote
+                  {...rHero(0.62, 10)}
+                  className="font-display text-[clamp(1.15rem,2vw,1.6rem)] font-extrabold leading-[1.3] tracking-[-0.02em] text-cream"
+                >
+                  Three-shift factories, including 2,000 cups a day in Coimbatore.
+                </motion.blockquote>
+              </figure>
+            </div>
 
-          {/* GSAP owns this element's transform; motion animates its opacity
-              on a CHILD so the two never write the same property here. */}
-          <figure
-            ref={proofRef}
-            className="mt-10 max-w-[46rem] rounded-[var(--radius-card)] border border-line bg-white px-7 py-7"
-          >
-            <motion.blockquote
-              {...rHero(0.62, 10)}
-              className="font-display text-[clamp(1.15rem,2vw,1.6rem)] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink"
-            >
-              Three-shift factories, including 2,000 cups a day in Coimbatore.
-            </motion.blockquote>
-          </figure>
+            <div className="lg:col-span-5">
+              <div
+                ref={flaskRef}
+                className="relative mx-auto w-[72%] max-w-[300px] lg:mr-0"
+                style={{ maxHeight: "42vh" }}
+              >
+                <motion.span
+                  aria-hidden="true"
+                  initial={hero.reduced ? undefined : { scale: 0.82, opacity: 0 }}
+                  animate={
+                    hero.reduced
+                      ? undefined
+                      : hero.on
+                        ? { scale: 1, opacity: 1 }
+                        : { scale: 0.82, opacity: 0 }
+                  }
+                  transition={{ duration: 1, delay: 0.3, ease: EASE }}
+                  className="absolute left-1/2 top-6 aspect-square w-[74%] -translate-x-1/2 rounded-full bg-cream/[0.08]"
+                />
+                <motion.div
+                  initial={
+                    hero.reduced ? undefined : { clipPath: "inset(100% 0% 0% 0%)" }
+                  }
+                  animate={
+                    hero.reduced
+                      ? undefined
+                      : hero.on
+                        ? { clipPath: "inset(0% 0% 0% 0%)" }
+                        : { clipPath: "inset(100% 0% 0% 0%)" }
+                  }
+                  transition={{ duration: 1.1, delay: 0.4, ease: EASE }}
+                  className="relative"
+                >
+                  <Image
+                    src="/woman.png"
+                    alt="Woman"
+                    width={760}
+                    height={1261}
+                    sizes="(max-width: 1024px) 66vw, 280px"
+                    priority
+                    className="h-auto w-full"
+                    style={{ maxHeight: "42vh", objectFit: "contain" }}
+                  />
+                </motion.div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -312,8 +387,10 @@ export default function WhoWeServeView() {
               <motion.li
                 key={p.key}
                 {...rSix(0.45 + i * 0.08, 24)}
-                className="flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream"
+                className="group relative flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)]"
               >
+                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream-deep/80 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 {/* THE FRAME NEVER MOVES. It clips, and the wrapper inside it
                     is the thing GSAP travels — so the card's height, and every
                     line of text under it, stays exactly where it was. */}
@@ -323,7 +400,7 @@ export default function WhoWeServeView() {
                       photoRefs.current[i] = el;
                     }}
                     /* 9% of headroom top and bottom against a ±4% travel */
-                    className="absolute inset-x-0 -top-[9%] -bottom-[9%]"
+                    className="absolute inset-x-0 -top-[9%] -bottom-[9%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                   >
                     <Image
                       src={p.src}
@@ -333,9 +410,10 @@ export default function WhoWeServeView() {
                       className="object-cover"
                     />
                   </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-espresso-deep/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 </div>
 
-                <div className="flex flex-1 flex-col px-6 py-5">
+                <div className="relative flex flex-1 flex-col px-6 py-5">
                   <h3 className="font-display text-[1.2rem] font-bold tracking-[-0.015em] text-ink md:text-[1.35rem]">
                     {p.name}
                   </h3>
@@ -343,7 +421,7 @@ export default function WhoWeServeView() {
                   {/* NO CAPTION AND NO FACT — five of section 04's six are
                       invented. See page.tsx. */}
 
-                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 opacity-0 transition-all duration-300 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                     <a
                       href={mailHref(WORKPLACE_ASK[p.key])}
                       className="font-sans text-[0.9rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
@@ -390,9 +468,10 @@ export default function WhoWeServeView() {
               <motion.div
                 key={c.head}
                 {...rRound(0.3 + i * 0.12, 20)}
-                className="flex flex-col bg-cream px-7 py-8"
+                className="group relative flex flex-col bg-cream px-7 py-8 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:shadow-[0_12px_32px_-8px_rgba(58,20,14,0.18)]"
               >
-                <h3 className="font-display text-[1.25rem] font-extrabold tracking-[-0.02em] text-ink">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange/0 via-orange/70 to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <h3 className="font-display text-[1.25rem] font-extrabold tracking-[-0.02em] text-ink transition-colors duration-300 group-hover:text-orange-dark">
                   {c.head}
                 </h3>
                 <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
@@ -400,10 +479,10 @@ export default function WhoWeServeView() {
                 </p>
                 <Link
                   href={c.href}
-                  className="mt-5 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
+                  className="mt-5 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-all duration-300 hover:text-orange-dark hover:gap-3"
                 >
                   {c.cta}
-                  <span aria-hidden="true">&rarr;</span>
+                  <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
                 </Link>
               </motion.div>
             ))}
@@ -436,8 +515,16 @@ export default function WhoWeServeView() {
       </section>
 
       {/* ═══════════════ the ask ═══════════════ */}
-      <section ref={ask.ref} className="section-y bg-espresso">
-        <div className="shell text-center">
+      <section
+        ref={ask.ref}
+        className="section-y relative overflow-x-clip bg-espresso"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 120%, #4a1c10 0%, #3a140e 40%, #240a06 70%, #1a0503 100%)",
+        }}
+      >
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'%23fff\'/%3E%3C/svg%3E")' }} />
+        <div className="shell relative text-center">
           <h2 className="mx-auto max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-cream">
             <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
               <motion.span
