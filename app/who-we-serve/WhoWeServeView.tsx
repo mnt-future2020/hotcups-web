@@ -73,24 +73,42 @@ const PLACES: { key: WorkplaceKey; name: string; src: string }[] = [
 
 const BANDS = ["Under 100", "100 – 200", "200 – 500"];
 
+/* EACH ONE GAINED A PICTURE, which is the half of the home page's card
+   that was still missing. Swapping the box for Blog.tsx's card made these
+   the right SHAPE, but Blog's card is a photograph over text and these were
+   text alone, so three white rectangles of prose still did not look like
+   anything on the home page.
+
+   NOTHING NEW WAS SHOT AND NOTHING WAS CROPPED. All three already exist in
+   public/img and all three are cut-outs with a real alpha channel, which is
+   why they are drawn CONTAINED on a tinted panel rather than cover like
+   Blog's scenes — a cut-out under object-cover crops the subject and fills
+   the frame with its own transparent margin.
+
+   They are also each already the subject of the page they point at:
+   rig-flasks is the flask row, hero-slide-drinks is the drinks the hero
+   names, section4-machine is the unit section 06 sells. */
 const COLUMNS = [
   {
     head: "Freshly filled flasks",
     body: "Delivered to your pantry. We collect the empties and refill — nothing to install, nothing to clean.",
     href: "/service",
     cta: "How the service works",
+    img: "/img/rig-flasks.webp",
   },
   {
     head: "Tea, coffee, milk, seasonal",
     body: "Everyone drinks something different. The pantry rides along on the same delivery.",
     href: "/menu",
     cta: "See the menu",
+    img: "/img/hero-slide-drinks.webp",
   },
   {
     head: "Or a machine on site",
     body: "Above 50 cups a day, a machine is the better fit. Three sizes, rent or buy.",
     href: "/machines",
     cta: "See the machines",
+    img: "/img/section4-machine.webp",
   },
 ];
 
@@ -387,10 +405,10 @@ export default function WhoWeServeView() {
               <motion.li
                 key={p.key}
                 {...rSix(0.45 + i * 0.08, 24)}
-                className="group relative flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)]"
+                className="group relative flex flex-col overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)] focus-within:-translate-y-2 focus-within:shadow-[0_24px_56px_-12px_rgba(58,20,14,0.35)]"
               >
-                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream-deep/80 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange/0 via-orange to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cream-deep/80 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
                 {/* THE FRAME NEVER MOVES. It clips, and the wrapper inside it
                     is the thing GSAP travels — so the card's height, and every
                     line of text under it, stays exactly where it was. */}
@@ -400,7 +418,7 @@ export default function WhoWeServeView() {
                       photoRefs.current[i] = el;
                     }}
                     /* 9% of headroom top and bottom against a ±4% travel */
-                    className="absolute inset-x-0 -top-[9%] -bottom-[9%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                    className="absolute inset-x-0 -top-[9%] -bottom-[9%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 group-focus-within:scale-105"
                   >
                     <Image
                       src={p.src}
@@ -410,7 +428,7 @@ export default function WhoWeServeView() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-espresso-deep/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-espresso-deep/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-within:opacity-100" />
                 </div>
 
                 <div className="relative flex flex-1 flex-col px-6 py-5">
@@ -421,20 +439,92 @@ export default function WhoWeServeView() {
                   {/* NO CAPTION AND NO FACT — five of section 04's six are
                       invented. See page.tsx. */}
 
-                  <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 opacity-0 transition-all duration-300 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
+                  {/* THESE TWO LINKS USED TO BE opacity-0 UNTIL group-hover,
+                      WHICH WAS THREE PROBLEMS RATHER THAN ONE EFFECT.
+
+                        1. ON A TOUCH SCREEN THERE IS NO HOVER, so twelve links
+                           — two on each of the six cards — were invisible on
+                           every phone while still holding their space and
+                           still sitting in the tab order. The only actions on
+                           this section were unreachable on the device most of
+                           its readers use.
+                        2. TABBING LANDED ON SOMETHING NOBODY COULD SEE. A
+                           focused link at opacity 0 is a focus ring on blank
+                           cream; the fix is focus-visibility, not a hover.
+                        3. AT REST EVERY CARD HELD A BLOCK OF EMPTY SPACE where
+                           the invisible row was, so a name sat at the top of a
+                           tall blank panel and the card read as unfinished.
+                           That space is exactly what the fact line would have
+                           filled if five of the six were not invented.
+
+                      They are visible at rest now and hover EMPHASISES rather
+                      than reveals: the mail link is already the card's one
+                      orange thing, and the arrow slides on hover or keyboard
+                      focus. The row always occupied this space, so the card
+                      is 4px shorter only because its top margin tightened
+                      from mt-5 to mt-4 now that it has something to sit
+                      against — 385px to 381px, measured. */}
+                  {/* TWO UNDERLINED LINKS SIDE BY SIDE WAS THE PROBLEM WITH
+                      THE FIRST PASS. Both were text, both were underlined and
+                      both sat at the same weight, so the row read as one
+                      cluttered strip with no hierarchy and no rhythm — and the
+                      underlines fought the name above them.
+
+                      They are now a PRIMARY and a SECONDARY of different
+                      kinds. The mail link keeps the words and loses its
+                      resting underline, so at rest the card carries exactly
+                      one orange line of text; the underline comes back on
+                      hover and focus, where it means something. WhatsApp
+                      becomes the ring-and-glyph button the FOOTER already
+                      uses for its social links, pushed to the right edge by
+                      ml-auto so the row has two ends instead of a huddle.
+
+                      The hairline above them is what makes the panel read as
+                      a card rather than a caption: name, rule, actions. */}
+                  <div className="mt-4 flex items-center gap-3 border-t border-line/70 pt-4">
                     <a
                       href={mailHref(WORKPLACE_ASK[p.key])}
-                      className="font-sans text-[0.9rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
+                      className="group/ask inline-flex items-center gap-1.5 font-sans text-[0.9rem] font-semibold text-orange-deep decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark hover:underline focus-visible:text-orange-dark focus-visible:underline"
                     >
                       Get pricing for {WORKPLACE_FOR[p.key]}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/ask:translate-x-1"
+                      >
+                        &rarr;
+                      </span>
                     </a>
+
+                    {/* 40px rather than the footer's 44: this sits inside a
+                        card next to a line of 0.9rem text, and 44 made the
+                        ring the loudest thing in the panel. Still a comfortable
+                        target, and the only one on the card that is not text.
+
+                        THE GLYPH IS A PLAIN MESSAGE BUBBLE, NOT THE WHATSAPP
+                        LOGO. Every mark in Footer.tsx is simplified geometry
+                        rather than a brand's own artwork, and this file's
+                        siblings carry a NO BRAND NAMES note for the same
+                        reason. The destination is named in aria-label, so
+                        nothing is lost to a screen reader. */}
                     <a
                       href={waHref(WORKPLACE_ASK[p.key])}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-sans text-[0.9rem] font-semibold text-ink-soft underline decoration-line decoration-2 underline-offset-4 transition-colors duration-300 hover:text-ink"
+                      aria-label={`WhatsApp us about ${WORKPLACE_ASK[p.key]}`}
+                      className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-orange-dark hover:text-orange-dark focus-visible:-translate-y-0.5 focus-visible:border-orange-dark focus-visible:text-orange-dark"
                     >
-                      WhatsApp
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        className="h-[19px] w-[19px] shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 11.6a8.4 8.4 0 0 1-12.3 7.5L3.4 20.6l1.5-5.2A8.4 8.4 0 1 1 21 11.6Z" />
+                      </svg>
                     </a>
                   </div>
                 </div>
@@ -445,9 +535,62 @@ export default function WhoWeServeView() {
       </section>
 
       {/* ═══════════════ what every one of them gets ═══════════════ */}
-      <section ref={round.ref} className="section-y bg-cream-deep">
+      {/* THE DOODLE PLATE, from app/bgimg.png — 1224KB of PNG encoded to
+          49KB of WebP at the same 1888x833. Same construction Pantry.tsx
+          uses for its plate: one backgroundImage holding a flat scrim over
+          the art, with backgroundColor underneath so the section is never
+          bare while the image is still loading.
+
+          THE SCRIM IS 0.70, MEASURED RATHER THAN PICKED. This artwork is
+          darker than the pantry plate it resembles — darkest pixel at
+          luminance 132 against 149, darkest 1% at 174 against 200 — so a
+          lighter scrim would put MORE ink on screen here than that section
+          has. Against the darkest pixel in the image, rgb(186,117,64):
+
+            text-ink       11.46:1
+            text-ink-soft   6.14:1
+            mute            2.52:1   <- see the eyebrow
+
+          The three cards over it are white, so nothing inside them is
+          affected; only the eyebrow and the headline sit on the plate
+          directly, and the headline is text-ink. */}
+      <section
+        ref={round.ref}
+        className="section-y"
+        style={{
+          backgroundColor: "#f8e7d2",
+          backgroundImage:
+            "linear-gradient(rgba(248,231,210,0.70), rgba(248,231,210,0.70)), url(/img/round-doodles.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
+        }}
+      >
         <div className="shell">
-          <motion.span {...rRound(0.05, 0)} className="eyebrow block">
+          {/* THE COLOUR IS SET INLINE, AND IT HAS TO BE. .eyebrow in
+              globals.css sets color: var(--color-mute) and is UNLAYERED,
+              while Tailwind's utilities live in @layer utilities — unlayered
+              CSS beats any layer regardless of specificity, so `text-ink-soft`
+              on this element would be ignored. The note on
+              .stepper-field:focus-visible in globals.css describes the same
+              mechanism.
+
+              That is a real bug and it is not mine to fix here: five
+              eyebrows across the site already ask for a colour and silently
+              get mute, two of them on DARK grounds. Fixing it properly means
+              moving that one rule into @layer components, which changes
+              every eyebrow on the site and was explicitly rewound once. So
+              this section solves its own problem locally and leaves that
+              decision alone.
+
+              mute measures 2.52:1 over the darkest pixel of the plate behind
+              it — under the 4.5 body floor and under the 3.0 large-text one.
+              ink-soft is 6.14:1 on the same pixel. */}
+          <motion.span
+            {...rRound(0.05, 0)}
+            className="eyebrow block"
+            style={{ color: "var(--color-ink-soft)" }}
+          >
             The same round
           </motion.span>
           <h2 className="mt-4 max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
@@ -463,26 +606,69 @@ export default function WhoWeServeView() {
             </span>
           </h2>
 
-          <div className="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line md:grid-cols-3">
+          {/* MATCHED TO THE HOME PAGE'S CARD, WHICH THIS WAS NOT.
+              These three used to be one slab: a bordered box subdivided by
+              gap-px hairlines over a bg-line ground, so the columns read as
+              cells of a table rather than three things you could choose
+              between. That treatment appears exactly twice in the codebase —
+              here and on /service — and NOWHERE on the home page, which was
+              the whole complaint.
+
+              The home page's card is Blog.tsx's: white on the section's
+              cream, a line border, shadow-1 lifting to shadow-2, and a 1.5px
+              rise on hover AND focus. The class string is copied from it
+              rather than approximated, so the two cannot drift into being
+              nearly-the-same.
+
+              THE WHOLE CARD IS THE LINK NOW, also as Blog does it. Each
+              column already pointed at exactly one page, so the card had a
+              small text target inside a large dead rectangle. The old CTA
+              stays as a SPAN — an <a> inside an <a> is invalid, and the
+              affordance is what was wanted, not a second link.
+
+              motion drives the entrance on the outer div and Tailwind's
+              -translate-y drives the lift on the inner Link: different
+              elements, and different properties even if they were not. */}
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {COLUMNS.map((c, i) => (
-              <motion.div
-                key={c.head}
-                {...rRound(0.3 + i * 0.12, 20)}
-                className="group relative flex flex-col bg-cream px-7 py-8 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:shadow-[0_12px_32px_-8px_rgba(58,20,14,0.18)]"
-              >
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange/0 via-orange/70 to-orange/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <h3 className="font-display text-[1.25rem] font-extrabold tracking-[-0.02em] text-ink transition-colors duration-300 group-hover:text-orange-dark">
-                  {c.head}
-                </h3>
-                <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
-                  {c.body}
-                </p>
+              <motion.div key={c.head} {...rRound(0.3 + i * 0.12, 20)}>
                 <Link
                   href={c.href}
-                  className="mt-5 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-all duration-300 hover:text-orange-dark hover:gap-3"
+                  className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
                 >
-                  {c.cta}
-                  <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                  {/* alt="" ON PURPOSE. The whole card is one link and its
+                      accessible name already comes from the heading and the
+                      CTA under it; describing the picture as well would make
+                      a screen reader read the same card twice. The image is
+                      decoration of a labelled thing, which is the case the
+                      empty alt exists for. */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-deep">
+                    <Image
+                      src={c.img}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 92vw, 30vw"
+                      className="object-contain p-6 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                    />
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-7">
+                    <h3 className="font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
+                      {c.head}
+                    </h3>
+                    <p className="mt-3 flex-1 font-sans text-[1.02rem] leading-[1.6] text-ink-soft">
+                      {c.body}
+                    </p>
+                    <span className="mt-6 inline-flex items-center gap-2 font-sans text-[0.92rem] font-semibold text-orange-deep">
+                      {c.cta}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
+                      >
+                        &rarr;
+                      </span>
+                    </span>
+                  </div>
                 </Link>
               </motion.div>
             ))}

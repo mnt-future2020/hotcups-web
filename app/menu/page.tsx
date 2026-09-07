@@ -31,26 +31,31 @@ import MenuView from "./MenuView";
  * not, and it should not until there is a confirmed number with a home.
  *
  * WHAT IT INHERITS
- *   - the counts (8 blends, 6 roasts, 5 options) carry no provenance in
- *     Menu.tsx. Only "2 specials" was ever confirmed. Repeating them here
- *     does not make them truer, and correcting them at source means
- *     correcting them here too.
+ *   - the counts USED to be the problem here: "8 blends, 6 roasts, 5
+ *     options" carried no provenance in Menu.tsx and only "2 specials" was
+ *     ever confirmed. The client has since cut three of the four categories
+ *     to a single drink, so they now read 1 blend, 1 roast, 1 option and
+ *     2 specials, and MenuView derives its three from the list of names
+ *     rather than repeating a string. Section 02 and /service still type
+ *     theirs by hand and are the two places to correct if a list changes.
  *   - lib/contact.ts is placeholder. Its own banner is the authority.
  *   - four of the five pantry pairings are stand-ins — "Healthy Choices" over
  *     deep-fried banana chips most of all. See the banner on STOPS in
  *     Pantry.tsx; that mismatch travels here unchanged.
  *
- * THE SITE STILL DISAGREES WITH ITSELF ABOUT THE FOURTH DRINK, AND THE GAP
- * HAS NOW WIDENED TWICE. Section 02 poured hot chocolate, then a rose
- * sarbath, and now masala buttermilk. Three places were never updated with
- * it and still say hot chocolate:
+ * THE SITE NO LONGER DISAGREES WITH ITSELF ABOUT THE FOURTH DRINK. It did,
+ * for a long time: section 02 poured hot chocolate, then a rose sarbath,
+ * then masala buttermilk, and three places were never updated with any of
+ * it. All three have now been corrected against this page, and every drink
+ * named anywhere on the site is a drink /menu lists:
  *
  *     components/hero/Hero.tsx      slide copy and its alt text
  *     components/sections/Industries.tsx   the MENU list
  *     components/ui/Ticker.tsx      the scrolling drink names
  *
- * This page follows section 02, because section 02 is the menu. Those three
- * are the ones to fix, and they are now two drinks behind rather than one.
+ * They follow section 02, because section 02 is the menu. IF A DRINK CHANGES
+ * AGAIN, those three are what goes stale first — none of them derives its
+ * names from anywhere, and nothing fails a type when they drift.
  *
  * ---------------------------------------------------------------
  * THIS FILE IS A SHELL. `metadata` cannot be exported from a "use client"
@@ -65,7 +70,7 @@ import MenuView from "./MenuView";
 export const metadata: Metadata = {
   title: "The Menu — Hotcups",
   description:
-    "Tea, filter coffee, badam milk and seasonal specials, plus the pantry that rides along — snacks, hot and fresh, and healthy choices for your team.",
+    "Tea, filter coffee, milk and seasonal specials, plus the pantry that rides along — snacks, hot and fresh, and healthy choices for your team.",
 };
 
 export default function MenuPage() {

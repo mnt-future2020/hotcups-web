@@ -163,8 +163,11 @@ function Figure({
 const DWELL = 3500;
 
 /** The menu, in the order the hero and section 02 say it. Named here rather
-    than written inline so the two places cannot drift apart. */
-const MENU = ["Tea", "Filter coffee", "Badam milk", "Hot chocolate"];
+    than written inline so the two places cannot drift apart — which they had
+    anyway: this read "Badam milk, Hot chocolate" until the client cut Milk to
+    plain milk, and the hot chocolate had been stale for two swaps of section
+    02's fourth card before that. Both named drinks /menu does not pour. */
+const MENU = ["Tea", "Filter coffee", "Milk", "Masala buttermilk"];
 
 /* ===============================================================
    !!  FIVE OF THE SIX FACT LINES ARE INVENTED.               !!
