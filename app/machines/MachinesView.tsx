@@ -567,12 +567,39 @@ export default function MachinesView() {
       </section>
 
       {/* ═══════════════ the ask ═══════════════ */}
+      {/* THE DOODLE PLATE, from app/img2.png — 1107KB of PNG encoded to 33KB
+          of WebP at the same 2172x724. Warm rust line art with its own glow
+          low and centred, which is why it suits this section: the radial
+          already burns from 30% 100%, so the two warm sources sit near each
+          other rather than fighting.
+
+          THE RADIAL IS THE SCRIM, NOT THE GROUND, same as the section above:
+          the original three stops with alpha, over the artwork.
+
+          THE ALPHAS ARE HIGH — 0.85 AT THE CENTRE — AND THAT IS THE
+          MEASUREMENT, NOT TIMIDITY. Two things on this section are close to
+          the floor before any picture is added:
+
+            the ORANGE headline is large text, so it needs 3.0:1
+            the LINK ROW was text-cream/55, small text, needing 4.5:1
+
+          Against the brightest pixel in this artwork, rgb(211,106,44), a
+          light scrim puts orange at 2.46:1 and cream/55 at 3.39:1 — both
+          failing. And cream/55 was ALREADY only 4.61:1 on the bare radial,
+          so there is no scrim strength that adds a brighter layer under it
+          and keeps it passing. At 0.85 the composite reads orange 3.22:1 and
+          cream/70 5.57:1, which is why the two faint greys below moved to
+          /70 in the same change. */}
       <section
         ref={ask.ref}
         className="section-y overflow-x-clip"
         style={{
-          background:
-            "radial-gradient(120% 80% at 30% 100%, #5c2315 0%, #3a140e 45%, #240a06 100%)",
+          backgroundColor: "#240a06",
+          backgroundImage:
+            "radial-gradient(120% 80% at 30% 100%, rgba(92,35,21,0.85) 0%, rgba(58,20,14,0.89) 45%, rgba(36,10,6,0.93) 100%), url(/img/ask-doodles.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
         }}
       >
         <div className="shell text-center">
@@ -628,7 +655,8 @@ export default function MachinesView() {
 
           <motion.p
             {...rAsk(0.55)}
-            className="mt-7 font-sans text-[0.95rem] text-cream/60"
+            /* /60 -> /70: 4.37:1 against the plate's brightest pixel, under the 4.5 floor for text this size. /70 is 5.57:1. */
+            className="mt-7 font-sans text-[0.95rem] text-cream/70"
           >
             Or call{" "}
             <a
@@ -641,7 +669,8 @@ export default function MachinesView() {
 
           <motion.p
             {...rAsk(0.68)}
-            className="mt-8 font-sans text-[0.95rem] text-cream/55"
+            /* /55 -> /70. This row was the tightest thing on the section and was already only 4.61:1 on the bare radial, before the plate went behind it. */
+            className="mt-8 font-sans text-[0.95rem] text-cream/70"
           >
             <Link
               href="/service"
