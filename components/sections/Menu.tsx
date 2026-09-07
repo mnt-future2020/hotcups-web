@@ -74,7 +74,12 @@ const CATEGORIES = [
   {
     key: "tea",
     name: "Tea",
-    count: "8 blends",
+    /* WAS "8 blends" until the client answered the question this site had
+       been asking itself: the category pours plain tea and nothing else.
+       /menu derives its count from the list of names, so it changed itself;
+       this one and /service are typed by hand and had to be corrected to
+       match. All three now say one. */
+    count: "1 blend",
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
     wash: "#E5A863",
@@ -86,7 +91,7 @@ const CATEGORIES = [
   {
     key: "coffee",
     name: "Coffee",
-    count: "6 roasts",
+    count: "1 roast",
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
     wash: "#C08A57",
@@ -98,7 +103,7 @@ const CATEGORIES = [
   {
     key: "milk",
     name: "Milk",
-    count: "5 options",
+    count: "1 option",
     /* REBUILT FROM app/Badam.png at the client's direction — a glass of
        saffron badam milk, replacing the plain milk-and-almonds plate. The
        source is a clean 1312x1199 export with a real alpha channel, so
@@ -228,11 +233,13 @@ const CATEGORIES = [
     key: "seasonal",
     /* "Seasonal", not "Specialty", at the client's direction — and the count
        under it could then no longer say "seasonal" too. The row's pattern is
-       <number> <noun> ("8 blends", "6 roasts", "5 options"), so the noun had
-       to change rather than be dropped; "specials" keeps the pattern, keeps
-       the length near "5 options", and does not repeat the word directly
-       above it. If the client would rather it read "2 seasonal", that is
-       this one string. */
+       <number> <noun>, so the noun had to change rather than be dropped;
+       "specials" does not repeat the word directly above it. It was chosen
+       partly to sit at the same length as "5 options", which no longer
+       exists — the other three categories were cut to one drink each and
+       read "1 blend", "1 roast", "1 option". This is now the longest of the
+       four and the only plural. If the client would rather it read
+       "2 seasonal", that is this one string. */
     name: "Seasonal",
     count: "2 specials",
     img: "/img/menu-buttermilk.webp",
@@ -254,17 +261,22 @@ const CATEGORIES = [
   },
 ];
 
-/* one real drink per glass, in the same order — "badam milk" is a thing a
-   person in Madurai actually asks for; "milk drinks" is a category. Each
-   name lights up when its glass is the one being poured, so the sentence
-   and the row are one mechanism rather than a caption over a grid. */
+/* one real drink per glass, in the same order. Each name lights up when its
+   glass is the one being poured, so the sentence and the row are one
+   mechanism rather than a caption over a grid.
+
+   THE THIRD NAME WAS "badam milk" AND THE NOTE HERE ARGUED FOR IT — that it
+   is a thing a person in Madurai actually asks for, where "milk drinks" is
+   only a category. The argument was sound and it is now moot: the client cut
+   the Milk category to plain milk, so badam milk is not on the menu and the
+   generic word is the specific one. */
 const NAMED = [
   /* "Tea", not "Chai" — the client's word. It also matches the card directly
      under it, which has always been labelled Tea, so the sentence and the row
      no longer call the same glass two different things. */
   { label: "Tea", sep: ", " },
   { label: "filter coffee", sep: ", " },
-  { label: "badam milk", sep: ", " },
+  { label: "milk", sep: ", " },
   /* follows the fourth glass, and has to: each name lights up when its own
      card is hovered, so leaving a stale name here lights the wrong two words
      while a different drink comes forward. It has said "hot chocolate" and

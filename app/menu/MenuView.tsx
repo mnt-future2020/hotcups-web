@@ -46,97 +46,69 @@ import { MAIL_HREF, PHONE_LABEL, TEL_HREF, WA_HREF } from "@/lib/contact";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ===============================================================
-   !!  THIRTEEN OF THESE TWENTY-ONE DRINK NAMES ARE INVENTED.  !!
-   !!  DO NOT PUBLISH UNTIL THE CLIENT SUPPLIES THE REAL LIST.  !!
+   THE INVENTED-NAMES BANNER THAT STOOD HERE IS RETIRED. Read why before
+   adding anything to these lists.
    ===============================================================
-   The cards were asked to open and show what is in each category. Nothing
-   on this site has ever listed one. Section 02, /service and this page all
-   published the COUNTS — "8 blends", "6 roasts", "5 options" — and page.tsx
-   already records that those carry no provenance either, and that only
-   "2 specials" was ever confirmed. So the counts promised twenty-one drinks
-   that were never named anywhere, and opening a card is what finally asks
-   the question out loud.
+   This file used to carry twenty-one drink names, THIRTEEN OF THEM MADE
+   UP, under a DO NOT PUBLISH banner. The cards had been asked to open and
+   show what was in each category, and nothing on this site had ever listed
+   a drink — section 02, /service and this page published only the COUNTS
+   ("8 blends", "6 roasts", "5 options"), which promised twenty-one drinks
+   that were never named anywhere. Filling that shape meant inventing.
 
-   EIGHT NAMES ARE REAL, in the weak sense that this site already publishes
-   them and has for as long as the repo goes back. They are marked
-   `real: true` below and they came from:
+   THE CLIENT HAS NOW ANSWERED, category by category: plain tea only, filter
+   coffee only, plain milk only. Seventeen names came out. The five that
+   remain are all names this site already published before any of this
+   started, and every one is marked `real: true`:
 
-     components/ui/Ticker.tsx   Masala Chai, Green Tea, Ginger Tea,
-                                Filter Coffee, Premium Coffee, Badam Milk
-     components/sections/Menu.tsx  Masala Buttermilk — the photograph on the
-                                fourth card — and Rose Sarbath, which was
-                                that photograph until today and whose plate
-                                is still on disk.
+     Tea, Filter Coffee, Milk        components/ui/Ticker.tsx
+     Masala Buttermilk               section 02's fourth card
+     Nannari Sarbath                 renamed from Rose Sarbath, which is
+                                     what that card poured before it. This
+                                     is the one name the client GAVE rather
+                                     than confirmed, so it is the best
+                                     sourced of the five.
 
-   THE OTHER THIRTEEN WERE WRITTEN TO FILL THE SHAPE. They are ordinary
-   South Indian workplace drinks and none of them is a wild guess, but no
-   one has confirmed that Hotcups pours a single one. Replacing them is one
-   array; that is the whole reason the list lives here rather than in JSX.
+   So there is nothing left on this page that no one has confirmed, and the
+   banner has nothing to block. IF A NAME IS ADDED BACK, the banner comes
+   back with it — an unconfirmed drink on a menu is the thing this file was
+   written to prevent, and a photograph in `img` does not confirm one.
 
-   THE LENGTHS ARE NOT FREE CHOICES. Each list is exactly as long as the
-   count that was already published — 8, 6, 5, 2 — and `count` is now
-   DERIVED from the list rather than typed beside it, so the number on the
-   card and the number of names behind it cannot drift apart again. If the
-   client's real list has seven teas, the card will say seven blends by
-   itself, and section 02 and /service are then the two places that have to
-   be corrected to match.
+   The other DO-NOT-PUBLISH banners are untouched and still stand:
+   lib/contact.ts on the contact details, Industries.tsx on its fact lines.
 
-   NO BRAND NAMES. The client had the machine makers taken off the site;
-   a malt drink is "Malted Milk" here rather than the label on the tin.
+   THE COUNTS DERIVE FROM THESE LISTS — see countOf — so a card cannot claim
+   a number the list behind it does not have. Section 02 and /service type
+   theirs by hand and were corrected to match; they are the two places to
+   fix if a list changes again.
 
    ---------------------------------------------------------------
-   EVERY ENTRY NOW HAS A PICTURE. All twenty-one, across all four
-   categories. Do not trust a count written here even so — read the table:
-   an entry with `img` has one, an entry with `tint` is waiting, and if the
-   client's real list adds a drink it will arrive with a tint and this
-   paragraph will be wrong again.
+   PICTURES. Every entry has one. Three are the client's photographs cropped
+   4:3 to 720x540 tiles carrying `cover`; two are cut-out PLATES this site
+   already had, drawn contained — Masala Buttermilk and Nannari Sarbath —
+   and Tea uses its own category plate, which is honest now that it is the
+   only tea rather than one of eight.
 
-   WHERE THEY COME FROM. Most are the client's own photographs, cropped 4:3
-   on the drink and cut to 720x540 tiles, and they carry `cover`. The tea
-   and coffee sets are opaque 1402x1122 scenes — a cup on a wooden table
-   with the spices around it. The three milks that came last are not that
-   uniform: turmeric is square at 1254x1254, rose is portrait at 1122x1402,
-   and malt is a 1358x1159 CUT-OUT WITH AN ALPHA CHANNEL, the only variety
-   tile whose background is the card rather than a table.
+   SIXTEEN TILES ARE UNREFERENCED AND DELIBERATELY NOT DELETED. Every tea
+   but plain tea, every coffee but filter, every milk but plain, all still
+   in public/img as variety-*.webp. "One drink" is a client answer and
+   client answers change; putting a name back is a line, re-cropping the
+   photograph is an afternoon. Two older plates sit there for the same
+   reason: menu-specialty.webp, and menu-milk.webp, which is also stale
+   against app/milks.png now that its source has been overwritten.
 
-   Three entries instead use a cut-out PLATE this site already had, drawn
-   contained rather than cover: Badam Milk, Masala Buttermilk and Rose
-   Sarbath. Those three are the reason a tile can hold either kind.
+   THE MILK CARD STILL SHOWS BADAM MILK — here on `img` below, in section
+   02, and on /service — while the only milk on the list is plain. Changing
+   it is not a one-line swap: section 02 draws steam over its plate from
+   measured rim / cx / mouth / wash values that belong to that photograph,
+   so a new plate needs all four re-measured. Flagged rather than half-done.
 
-   TWO PLATES ARE UNUSED. menu-specialty.webp, because nothing on this list
-   is hot chocolate any more, and menu-milk.webp, which had Hot Milk for
-   one commit and lost it to a scene. Both stay on disk. Note that
-   menu-milk.webp is now stale against its source: app/milks.png was
-   overwritten with the photograph that replaced it.
-
-   WHAT A `tint` WAS, AND WHY IT STAYS: the colour the drink actually is,
-   drawn into a glass mark. Nothing uses one today — every name found a
-   photograph — but GlassMark and the `tint` field are deliberately still
-   here, because the next drink the client names will arrive without a
-   picture and this is what it gets in the meantime.
-
-   It was a deliberate choice over the two alternatives. Repeating the
-   category plate down its own column would put the same glass of chai
-   beside eight different names, which is worse than no picture because it
-   asserts something false about seven of them; an empty slot makes a grid
-   with holes in it. A tint is also not a claim — it is how the drink
-   looks, and a rose milk is pink whoever pours it.
-
-   Drop a photograph in `img` and the mark gives way to it in the same tile
-   at the same size, so the grid does not move when the artwork lands. That
-   swap happened sixteen times over two days and the layout never shifted
-   once, which is the whole reason the tile was built that way.
-
-   FIVE OF THE SIX COFFEES ARE THE SAME CUP. The client's coffee photographs
-   are one mug shot repeatedly with a different liquid in it, so Milk Coffee,
-   Strong Filter and Light Roast are near-identical tiles and the row reads
-   as one drink named three times. Black Coffee and Premium are distinct.
-   That is the photography, not the layout, and it is worth saying to the
-   client before this page is shown to anyone.
-
-   AND A PHOTOGRAPH DOES NOT CONFIRM A NAME. Having a picture of a cardamom
-   tea does not make it a drink Hotcups pours. The banner above still
-   stands for every name marked without `real`.
+   WHAT A `tint` WAS, AND WHY IT STAYS: the colour a drink is, drawn into a
+   glass mark by GlassMark, for entries with no photograph. Nothing uses one
+   now. Both are kept because the next drink the client names will arrive
+   without a picture, and because the swap from mark to photograph never
+   moved the grid — the tile is the same size either way, which is the whole
+   reason it was built like that.
    =============================================================== */
 type Variety = {
   name: string;
@@ -157,25 +129,27 @@ const DRINKS = [
     noun: "blends",
     img: "/img/menu-tea.webp",
     alt: "A glass of masala chai with loose tea leaves",
-    varieties: [
-      /* THE CLIENT'S OWN PHOTOGRAPHS, and the first two of their kind here.
-         Both arrived as 1402x1122 opaque scenes — a glass on a wooden table
-         with the spices around it — not the cut-outs every other drink on
-         this site is. They cannot be keyed: the ground is a photographed
-         table, not a flat colour, so there is nothing to remove. Framed as
-         tiles instead, cropped 4:3 on the drink and cut to 720x540.
+    /* CUT FROM EIGHT TO ONE, ON INSTRUCTION: plain tea is all this category
+       pours. The seven that came out — Masala Chai, Ginger Tea, Green Tea,
+       Cardamom, Lemon, Black Tea, Sulaimani, Herbal — were the invented
+       names this file has carried a banner about since it was written, and
+       they are the first of them to be answered rather than filled in.
 
-         Masala Chai gave up the category plate to take its own picture. */
-      { name: "Masala Chai", real: true, img: "/img/variety-masala-chai.webp", cover: true },
-      { name: "Ginger Tea", real: true, img: "/img/variety-ginger-tea.webp", cover: true },
-      { name: "Green Tea", real: true, img: "/img/variety-green-tea.webp", cover: true },
-      /* the source is app/cardomomtea.png — the client's spelling, kept as
-         the filename it arrived under so it can be found again */
-      { name: "Cardamom Tea", img: "/img/variety-cardamom-tea.webp", cover: true },
-      { name: "Lemon Tea", img: "/img/variety-lemon-tea.webp", cover: true },
-      { name: "Black Tea", img: "/img/variety-black-tea.webp", cover: true },
-      { name: "Sulaimani", img: "/img/variety-sulaimani.webp", cover: true },
-      { name: "Herbal Tea", img: "/img/variety-herbal-tea.webp", cover: true },
+       THEIR PHOTOGRAPHS STAY ON DISK. public/img/variety-*-tea.webp and
+       variety-sulaimani.webp are unreferenced now, not deleted, because
+       "one tea" is a client answer and client answers change. Putting a
+       name back is a line; re-cropping eight tiles is an afternoon.
+
+       Tea was cut first and Coffee and Milk followed, each to one drink.
+       Seasonal is the only category still holding more than one. */
+    varieties: [
+      /* THE CATEGORY PLATE, DRAWN CONTAINED, and the banner's objection to
+         doing that no longer applies. Repeating the plate down a column of
+         eight names asserted something false about seven of them; with one
+         name it is simply a picture of that drink. The tile does duplicate
+         the card directly above it, which is the honest cost of a category
+         that holds a single item. */
+      { name: "Tea", real: true, img: "/img/menu-tea.webp" },
     ] as Variety[],
   },
   {
@@ -188,56 +162,41 @@ const DRINKS = [
     img: "/img/menu-coffee.webp",
     alt: "South Indian filter coffee in a brass tumbler and davara",
     varieties: [
-      /* Filter Coffee moved off the cut-out plate and onto its own scene when
-         that photograph arrived. The plate is still the CARD's picture above,
-         where a cut-out is what the design wants; down here every other tile
-         is a scene, and one plate among five would have been the odd one. */
+      /* CUT FROM SIX TO ONE, same instruction as Tea. Premium, Black, Milk
+         Coffee, Strong Filter and Light Roast are out; their tiles stay on
+         disk, unreferenced, for the same reason the teas' do.
+
+         Five of those six were the same white mug with a different liquid
+         in it — the note about that is gone with them, and so is the row
+         that read as one drink named three times. */
       { name: "Filter Coffee", real: true, img: "/img/variety-filter-coffee.webp", cover: true },
-      { name: "Premium Coffee", real: true, img: "/img/variety-premium-coffee.webp", cover: true },
-      { name: "Black Coffee", img: "/img/variety-black-coffee.webp", cover: true },
-      { name: "Milk Coffee", img: "/img/variety-milk-coffee.webp", cover: true },
-      { name: "Strong Filter", img: "/img/variety-strong-filter.webp", cover: true },
-      { name: "Light Roast", img: "/img/variety-light-roast.webp", cover: true },
     ] as Variety[],
   },
   {
     name: "Milk",
     noun: "options",
+    /* THIS PICTURE IS NOW THE WRONG DRINK — see the banner. It is badam
+       milk, and badam milk came off the list. It is left in place on
+       purpose: the same plate heads this category in section 02 and on
+       /service, where it also carries measured steam geometry, and changing
+       one of the three without the other two would make the site disagree
+       with itself in a new way rather than stop it disagreeing. */
     img: "/img/menu-badam.webp",
     alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
     varieties: [
-      { name: "Badam Milk", real: true, img: "/img/menu-badam.webp" },
-      /* REPLACED, AND IT FIXED BOTH COMPLAINTS AT ONCE. This entry used to
-         be menu-milk.webp, the old cut-out plate, which had whole almonds
-         beside the glass — badam garnish one tile along from Badam Milk —
-         and which drew contained, so it sat small on a dark tile while its
-         neighbours were full-bleed scenes. The replacement has no almonds
-         and is an opaque scene on a wooden board, so it matches. It also
-         arrived already 4:3 at 1448x1086 and only needed cropping in.
+      /* CUT TO PLAIN MILK, same instruction as Tea and Coffee. Badam,
+         Turmeric, Rose and Malted are out, tiles kept on disk.
 
-         menu-milk.webp is now unused. It stays on disk — it is a correct
-         plate and the fourth card may want one again — but it is stale
-         against app/milks.png, which was overwritten with this photograph. */
-      { name: "Hot Milk", img: "/img/variety-hot-milk.webp", cover: true },
-      { name: "Turmeric Milk", img: "/img/variety-turmeric-milk.webp", cover: true },
-      /* Rose arrived portrait, 1122x1402, and a 4:3 window cannot hold a
-         tall glass. Cropped from the top so the rose petals and pistachio
-         survive — they are what names the drink — which costs the base of
-         the glass and the coaster. */
-      { name: "Rose Milk", img: "/img/variety-rose-milk.webp", cover: true },
-      /* THIS ONE HAS A TIN IN IT, and four lines above this list is the note
-         that a malt drink is "Malted Milk" here RATHER THAN THE LABEL ON THE
-         TIN. The label is a generic prop — "MALTED MILK / NUTRITIOUS &
-         DELICIOUS" — not a real brand, so it does not put a brand name back
-         on the site, but it is a fabricated package and it is the only tile
-         on the page carrying readable packaging. It is also unavoidable at
-         this framing: the tin sits behind the mug, and every crop that
-         excludes it slices the mug. Kept whole, flagged for the client.
+         BADAM MILK LEAVING MATTERS MORE THAN THE OTHER CUTS. It was one of
+         the eight names this site already published — it is in the ticker
+         and it is what the CARD above still shows, both here and in section
+         02 — so this list and the picture over it now disagree. See the note
+         on `img` a few lines up. The malt tin and its fabricated label leave
+         with this cut too, which settles that flag by deleting it.
 
-         Also the only variety photograph with an ALPHA CHANNEL — it is a
-         cut-out arrangement, so the tile's own gradient shows through
-         behind it instead of a wooden table. */
-      { name: "Malted Milk", img: "/img/variety-malted-milk.webp", cover: true },
+         The photograph is the one that arrived to replace the almond plate:
+         plain white milk on a wooden board, no garnish to misread. */
+      { name: "Milk", real: true, img: "/img/variety-hot-milk.webp", cover: true },
     ] as Variety[],
   },
   {
@@ -249,10 +208,18 @@ const DRINKS = [
        ever confirmed. Both names are drinks this site has photographed. */
     varieties: [
       { name: "Masala Buttermilk", real: true, img: "/img/menu-buttermilk.webp" },
-      /* menu-sarbath.webp comes back into use here. It was left on disk this
-         morning when the buttermilk took the fourth card; it is still the
-         photograph of this drink, and this is still a seasonal special. */
-      { name: "Rose Sarbath", real: true, img: "/img/menu-sarbath.webp" },
+      /* RENAMED FROM "Rose Sarbath" ON INSTRUCTION. This is the one name on
+         the page the client supplied outright rather than confirmed — the
+         other four were already published here — which makes it the best
+         sourced of the five, not the worst.
+
+         THE PHOTOGRAPH IS UNCHANGED AND MOSTLY SUITS IT. menu-sarbath.webp
+         is sabja seeds, lemon, mint and ice in a tall glass, which is how
+         nannari sarbath is served. The liquid is a pink-crimson rather than
+         nannari syrup's amber-brown; commercial nannari is routinely dyed
+         that red, so it is defensible rather than wrong. If the client wants
+         the true colour it needs a new photograph, not a recrop. */
+      { name: "Nannari Sarbath", real: true, img: "/img/menu-sarbath.webp" },
     ] as Variety[],
   },
 ];
@@ -289,8 +256,16 @@ const PANTRY = [
    name — "8 blends" — with nothing behind it. Now that the names exist, the
    card counts them, so the two can never disagree. See the banner on DRINKS
    for why that matters more here than it looks. */
-const countOf = (d: { noun: string; varieties: Variety[] }) =>
-  `${d.varieties.length} ${d.noun}`;
+/* SINGULAR MATTERS NOW. Every noun here was written as a plural because
+   every count was above one; cutting Tea to a single entry made this print
+   "1 blends". All four nouns are regular plurals — blends, roasts, options,
+   specials — so dropping the "s" is enough, and a category that reaches
+   zero reads "0 blends", which is correct. If a noun ever arrives with an
+   irregular plural this needs a real rule rather than a slice. */
+const countOf = (d: { noun: string; varieties: Variety[] }) => {
+  const n = d.varieties.length;
+  return `${n} ${n === 1 ? d.noun.replace(/s$/, "") : d.noun}`;
+};
 
 /* one panel serves all four cards, so every card's aria-controls points at
    this same id — see the note where it is rendered */
@@ -498,7 +473,7 @@ export default function MenuView() {
               {...rPour(0.42)}
               className="mx-auto mt-6 max-w-[46ch] font-sans text-[clamp(1.05rem,1.35vw,1.22rem)] leading-[1.6] text-cream/70"
             >
-              Tea, filter coffee, badam milk, buttermilk and more.
+              Tea, filter coffee, milk, buttermilk and more.
             </motion.p>
           </div>
 

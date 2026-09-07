@@ -130,7 +130,14 @@ const LIGHT_SLIDES: LightSlide[] = [
        it is ever wanted for the /menu page, where nothing is on a timer. */
     lines: ["One Machine."],
     accent: ["Every Favourite."],
-    sub: "Enjoy freshly prepared Tea, Filter Coffee, Badam Milk, and Hot Chocolate, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
+    /* THE FOUR NAMES HERE HAD TO MOVE WITH THE MENU. This read "Badam Milk,
+       and Hot Chocolate" — the hot chocolate had been wrong since section 02
+       stopped pouring it, two swaps of the fourth card ago, and badam milk
+       went when the client cut Milk to plain milk. Both are now drinks the
+       menu does not have, which is worse in a hero than anywhere else on the
+       site. These four are the menu, and the fifth, Nannari Sarbath, is left
+       out only because the sentence needs to scan. */
+    sub: "Enjoy freshly prepared Tea, Filter Coffee, Milk, and Masala Buttermilk, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
     primary: { label: "See the menu", href: "#menu" },
     secondary: { label: "Get pricing", href: "#pricing" },
     /* THE DRINKS PLATE STAYS, UNDER A HEADLINE THAT SAYS "MACHINE".
@@ -141,7 +148,7 @@ const LIGHT_SLIDES: LightSlide[] = [
        slides, and the hero set has only one of them. */
     image: {
       src: "/img/hero-slide-drinks.webp",
-      alt: "Tea, filter coffee, badam milk and hot chocolate with whole spices",
+      alt: "Tea, filter coffee, milk and masala buttermilk with whole spices",
     },
   },
 ];

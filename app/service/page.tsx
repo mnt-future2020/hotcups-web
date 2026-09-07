@@ -35,8 +35,11 @@ import ServiceView from "./ServiceView";
  * Reusing published copy means reusing whatever is wrong with it:
  *   - lib/contact.ts is placeholder. The number dials, the mail sends. Its own
  *     banner is the authority; this page is one more caller.
- *   - the drink counts (8 blends, 6 roasts, 5 options) carry no provenance in
- *     Menu.tsx. Only the "2" was ever confirmed by the client.
+ *   - the drink counts are now 1 blend, 1 roast, 1 option and 2 specials.
+ *     The first three used to be 8, 6 and 5 with no provenance in Menu.tsx;
+ *     the client has since cut those categories to a single drink each. The
+ *     DRINKS list below types them by hand, so it is one of the two places
+ *     that has to be corrected when a menu list changes.
  * Neither is made truer by appearing twice, and correcting either at source
  * means correcting it here too.
  *
@@ -60,7 +63,7 @@ import ServiceView from "./ServiceView";
 export const metadata: Metadata = {
   title: "The Service — Hotcups",
   description:
-    "Freshly filled flasks delivered to your pantry, and the empties collected. Tea, filter coffee, badam milk and more for workplaces across Tamil Nadu.",
+    "Freshly filled flasks delivered to your pantry, and the empties collected. Tea, filter coffee, milk and more for workplaces across Tamil Nadu.",
 };
 
 export default function ServicePage() {

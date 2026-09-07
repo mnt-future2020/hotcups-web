@@ -4,13 +4,18 @@
  * A ruled band of drink names travelling right to left, sitting between the
  * blog and the footer — the last thing the page says before it signs off, and
  * the one place the individual drinks are named rather than counted. Section
- * 02 sells the menu as four CATEGORIES with counts (8 blends, 6 roasts, 5
- * options, 4 seasonal); this is a handful of what is inside them, which is why
- * the two are not the same list and should not be.
+ * 02 sells the menu as four CATEGORIES with counts (1 blend, 1 roast, 1
+ * option, 2 specials).
  *
- * NOTE FOR WHOEVER VERIFIES THE COPY: these seven names are as unconfirmed as
- * the counts and prices in section 02. They are plausible and generic, not
- * client-supplied.
+ * IT USED TO BE A SAMPLE OF WHAT WAS INSIDE THOSE CATEGORIES, and this note
+ * used to say the two lists were deliberately different. The client cut three
+ * of the four categories to a single drink, so the sample and the menu are
+ * now the same five names — see the note on RUN.
+ *
+ * THE COPY WARNING THAT STOOD HERE IS GONE WITH THEM. It said these names
+ * were plausible and generic rather than client-supplied, and it was right
+ * about the ones it was written for; all of those have been removed. Every
+ * name here is on /menu and predates the cuts.
  *
  * TWO IDENTICAL HALVES, AND EACH ONE HAS TO OUTRUN THE WINDOW
  * The track is width:max-content and the keyframe translates it -50%, which
@@ -49,21 +54,44 @@
  * than every other divider on the page.
  */
 
+/* THIS IS THE WHOLE MENU NOW, NOT A SAMPLE OF IT.
+   The docblock above says this band is "a handful of what is inside" the
+   categories, and that the two lists are not the same and should not be.
+   That stopped being true when the client cut Tea, Coffee and Milk to one
+   drink each: the menu is five drinks, and here they are, all five.
+
+   It also stopped being unconfirmed. The old run — Masala Chai, Green Tea,
+   Ginger Tea, Hot Chocolate, Badam Milk — named four drinks /menu no longer
+   lists, and Hot Chocolate had been wrong for two swaps of section 02's
+   fourth card. Every name below is on the menu and was published by this
+   site before the cuts.
+
+   IF A CATEGORY GROWS AGAIN this goes back to being a sample and the
+   docblock above is right again. Nothing here needs changing for that —
+   just do not let it name a drink the menu does not pour. */
 const RUN = [
-  "Masala Chai",
+  "Tea",
   "Filter Coffee",
-  "Badam Milk",
-  "Hot Chocolate",
-  "Green Tea",
-  "Ginger Tea",
-  "Premium Coffee",
+  "Milk",
+  "Masala Buttermilk",
+  "Nannari Sarbath",
 ];
 
 /** Passes of RUN inside each half — see the note above on why this is not 1.
-    Three, not two: two put a half at 3396px, which covers every ordinary
-    window but not a 3440 ultrawide, where the gap would come back. Three is
-    ~5100px and 42 list items, which costs nothing. */
-const REPEATS = 3;
+    FOUR, RAISED FROM THREE WHEN THE LIST WENT FROM SEVEN NAMES TO FIVE.
+    Three passes of the old seven measured ~5100px; three passes of these
+    five measure 3256px on the running page, which clears a 1920 window but
+    NOT the 3440 ultrawide the previous note set as the bar — the gap this
+    whole mechanism exists to prevent would have come back at that width.
+    Four passes is 4341px and 20 list items.
+
+    The type is clamp(1.25rem, 2.4vw, 1.875rem) and 2.4vw passes 1.875rem at
+    1250px wide, so the names are already at full size in this measurement
+    and do not grow further on a wider screen. The number is safe as read.
+
+    Re-measure this if the list or the type size changes again. It is
+    `document.querySelector('.ticker-track').children[0].getBoundingClientRect().width`. */
+const REPEATS = 4;
 const HALF = Array.from({ length: REPEATS }, () => RUN).flat();
 
 export default function Ticker() {

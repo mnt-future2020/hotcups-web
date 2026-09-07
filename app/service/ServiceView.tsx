@@ -544,7 +544,7 @@ export default function ServiceView() {
             {...rPour(0.4)}
             className="mt-5 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/70"
           >
-            Tea, filter coffee, badam milk, buttermilk and more.
+            Tea, filter coffee, milk, buttermilk and more.
           </motion.p>
 
           <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-7">
