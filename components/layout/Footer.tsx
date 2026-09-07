@@ -540,8 +540,34 @@ export default function Footer() {
             </a>
           </p>
 
+          {/* #main, NOT #hero, AND IT WAS DEAD ON SIX ROUTES OF SEVEN.
+
+              id="hero" is written in exactly one place — Hero.tsx — which
+              renders on the home page and nowhere else. On /menu, /service,
+              /who-we-serve, /machines, /blog and /case-studies this anchor
+              pointed at a target that does not exist, so the browser did the
+              only thing it can: appended "#hero" to the URL and left the
+              reader where they were. Confirmed by counting id="hero" in the
+              served HTML of all seven routes — one on /, zero everywhere
+              else.
+
+              Logo.tsx carries a note about the same bug in the same shape,
+              which it fixed with `onHome ? "#hero" : "/"`. That is right for
+              a logo, whose job is to go home. It is wrong here: this button
+              goes to the top of whatever page it is on.
+
+              #main is <main id="main"> in app/layout.tsx, so it exists on
+              every route by construction and cannot drift. It is also the
+              skip link's target, which is the point rather than a
+              coincidence — a fragment link moves the reading position AND
+              the sequential focus start, so a keyboard reader lands at the
+              top of the content instead of carrying on from the footer.
+              window.scrollTo() would move the pixels and leave focus behind.
+
+              The root's scroll-padding-top: var(--header-h) keeps the
+              landing clear of the fixed header. */}
           <a
-            href="#hero"
+            href="#main"
             /* espresso, so when the amber wipes up the label reads 5.18:1 —
                the same reason the blog's "All posts" is set in it. */
             className="hero-btn group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-line px-6 py-3.5 font-sans text-[1rem] font-semibold text-espresso transition-colors duration-300 hover:border-orange focus-visible:border-orange"
