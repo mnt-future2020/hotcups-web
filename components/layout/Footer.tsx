@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 import Logo from "@/components/layout/Logo";
+import { NAV_HREF } from "@/lib/sections";
 import {
   ADDRESS_LINES,
   EMAIL,
@@ -52,10 +54,11 @@ import {
  * address lived only in section 07. They are here now, from lib/contact, so
  * the two places cannot drift apart.
  *
- * EVERY LINK POINTS AT A REAL ANCHOR
- * Nothing here is a dead href waiting for a route that does not exist. There
- * is no Privacy or Terms in this footer because there is no privacy policy
- * to link to.
+ * EVERY LINK RESOLVES FROM EVERY PAGE
+ * Nothing here is a dead href waiting for a route that does not exist, and
+ * — since the fix on COLUMNS below — nothing is a bare hash that resolves
+ * only on the home page either. There is no Privacy or Terms in this footer
+ * because there is no privacy policy to link to.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -98,23 +101,38 @@ const DOODLE_OPACITY = 0.09;
  * the nav leaves it out too. It is reachable from the machines section it
  * belongs to.
  */
-const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
+/* SECTION IDS, NOT HREFS — because the right href depends on where the
+   reader is standing, and this list cannot know that.
+
+   Every one of these was a bare "#service", "#cases", "#blog". A bare hash
+   only resolves on the page that owns the section, and all eight of these
+   sections live on the home page, so from /service, /menu, /who-we-serve,
+   /machines, /case-studies or /blog every link in this footer pointed at an
+   id that was not in the document and did nothing at all. Measured: eight
+   links dead on six routes.
+
+   Header.tsx already carries this exact fix and says so in a comment on its
+   own nav — "from /blog every one of these pointed at an id that is not in
+   the document, so the whole nav was inert". The footer was never brought
+   across. It is the same expression here, off the same NAV_HREF, so the two
+   navigations cannot drift apart again. */
+const COLUMNS: { title: string; links: { label: string; id: string }[] }[] = [
   {
     title: "Explore",
     links: [
-      { label: "The service", href: "#service" },
-      { label: "The menu", href: "#menu" },
-      { label: "Who we serve", href: "#industries" },
-      { label: "Machines", href: "#machines" },
+      { label: "The service", id: "service" },
+      { label: "The menu", id: "menu" },
+      { label: "Who we serve", id: "industries" },
+      { label: "Machines", id: "machines" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "Case studies", href: "#cases" },
-      { label: "Our story", href: "#story" },
-      { label: "Blog", href: "#blog" },
-      { label: "Get pricing", href: "#pricing" },
+      { label: "Case studies", id: "cases" },
+      { label: "Our story", id: "story" },
+      { label: "Blog", id: "blog" },
+      { label: "Get pricing", id: "pricing" },
     ],
   },
 ];
@@ -289,6 +307,12 @@ export default function Footer() {
   const reduced = useReducedMotion();
   const on = useInView(ref, { amount: 0.15, once: true }) || Boolean(reduced);
 
+  /* WHERE THE READER IS STANDING, which is what decides whether a section
+     link may stay a bare hash. Same test the header runs, off the same hook,
+     so the two navigations answer identically on every route. */
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+
   /** the house entrance: 14px up, opacity, on the 60ms cadence */
   const rise = (at: number) => ({
     initial: reduced ? false : { opacity: 0, y: 14 },
@@ -437,13 +461,32 @@ export default function Footer() {
                 {col.title}
               </h2>
               <ul className="mt-6 space-y-4">
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    <a href={l.href} className={ROW}>
-                      <Wipe label={l.label} />
-                    </a>
-                  </li>
-                ))}
+                {col.links.map((l) => {
+                  /* A route wins outright — it is not a place in a document,
+                     so it works from anywhere and needs no hash. The two
+                     without one, `story` and `pricing`, stay anchors: they
+                     are sections of the home page and there is no page to
+                     send anyone to. Off home they gain the leading slash
+                     that makes them a real navigation back to it. */
+                  const routeHref = NAV_HREF[l.id];
+                  return (
+                    <li key={l.label}>
+                      <a
+                        href={
+                          routeHref ?? (onHome ? `#${l.id}` : `/#${l.id}`)
+                        }
+                        aria-current={
+                          routeHref !== undefined && pathname === routeHref
+                            ? "page"
+                            : undefined
+                        }
+                        className={ROW}
+                      >
+                        <Wipe label={l.label} />
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </motion.nav>
           ))}

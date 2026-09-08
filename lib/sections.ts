@@ -97,6 +97,21 @@ export const NAV_HREF: Record<string, string> = {
      because the calculator itself is a client component that belongs on the
      home page rather than on a static route. The page links back to it. */
   machines: "/machines",
+  /* THESE TWO WERE ALWAYS ROUTES AND WERE NEVER IN THIS MAP.
+
+     /case-studies and /blog have existed for as long as the pages that link
+     to them — Cases.tsx and Blog.tsx each hold their own `const HREF` and
+     send readers there from the home page. They were simply never added
+     here, so every OTHER surface that navigates by section id kept pointing
+     at the home-page teaser instead of the page the teaser advertises.
+
+     `cases` is nav: false, so the header never renders it and adding it
+     changes nothing there. `blog` IS in the header, and that link now goes
+     to /blog rather than to the strip on the home page — which is also what
+     makes the item underline while a reader is on /blog, since that test is
+     pathname === routeHref. */
+  cases: "/case-studies",
+  blog: "/blog",
 };
 export type SectionId = (typeof SECTIONS)[number]["id"];
 
