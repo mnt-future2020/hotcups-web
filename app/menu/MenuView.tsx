@@ -845,14 +845,49 @@ export default function MenuView() {
               NO HOVER LIFT EITHER. The old card rose 1.5px on hover while
               being a name in a box that did nothing — an affordance with no
               action behind it, the same false promise the single-drink
-              category cards were making one section up. */}
-          <ul className="mt-12 grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-7">
+              category cards were making one section up.
+
+              ═══ THE ROW IS A ROUTE, AND THE ROUTE IS ALREADY DRAWN ═══
+
+              pantry-doodles.webp has a dashed line wandering across it with
+              a scooter on it, and the sentence directly under this row is
+              "The snacks ride along on a delivery already happening." The
+              rail is that line, continued in CSS: five dashed borders that
+              butt against each other, with a stop on each.
+
+              WHICH IS WHY THERE IS NO gap-x. A horizontal gap would break
+              the rail into five separate dashes with holes between them; the
+              space between columns is pr-* INSIDE each item instead, so the
+              borders meet and read as one line running the width of the
+              shell. Change the gap back and the whole idea collapses.
+
+              THE STOPS ARE DECORATION, NOT TEXT, which is the only reason
+              they are allowed to be orange in a row where orange fails every
+              text ratio. aria-hidden, no information in them, and the
+              measurement above still governs everything that is read.
+
+              The cream ring is what makes a 12px dot legible where it lands
+              on a doodle line rather than on bare plate. They pop in sequence
+              on the same overshoot the /service pantry dots use, so the rail
+              reads as something travelled rather than something drawn. */}
+          <ul className="mt-12 grid grid-cols-2 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             {PANTRY.map((name, i) => (
               <motion.li
                 key={name}
                 {...rPantry(0.6 + i * 0.09, 22)}
-                className="border-t border-ink/20 pt-4"
+                className="relative border-t border-dashed border-ink/25 pr-5 pt-6 lg:pr-7"
               >
+                <motion.span
+                  aria-hidden="true"
+                  initial={pantry.reduced ? false : { scale: 0 }}
+                  animate={{ scale: pantry.on ? 1 : 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.78 + i * 0.09,
+                    ease: [0.34, 1.56, 0.64, 1],
+                  }}
+                  className="absolute -top-[6px] left-0 h-3 w-3 rounded-full bg-orange-dark ring-2 ring-[#f8e7d2]"
+                />
                 <span className="block font-display text-[0.78rem] font-extrabold tabular-nums tracking-[0.14em] text-ink-soft">
                   {String(i + 1).padStart(2, "0")}
                 </span>
