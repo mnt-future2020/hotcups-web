@@ -850,53 +850,107 @@ export default function MenuView() {
               ═══ THE ROW IS A ROUTE, AND THE ROUTE IS ALREADY DRAWN ═══
 
               pantry-doodles.webp has a dashed line wandering across it with
-              a scooter on it, and the sentence directly under this row is
+              a scooter on it, and the sentence directly under this list is
               "The snacks ride along on a delivery already happening." The
-              rail is that line, continued in CSS: five dashed borders that
-              butt against each other, with a stop on each.
+              spine is that line, continued in CSS.
 
-              WHICH IS WHY THERE IS NO gap-x. A horizontal gap would break
-              the rail into five separate dashes with holes between them; the
-              space between columns is pr-* INSIDE each item instead, so the
-              borders meet and read as one line running the width of the
-              shell. Change the gap back and the whole idea collapses.
+              IT RUNS DOWN RATHER THAN ACROSS, and the stops alternate sides,
+              so the route weaves instead of marching. Five names in a row
+              read as a row of headings however they are ruled; the same five
+              hung off alternating sides of a dashed spine read as somewhere
+              a scooter goes next.
+
+              ═══ WHY A CENTRE SPINE AND NOT A DIAGONAL ZIGZAG ═══
+
+              A true diagonal — a line drawn corner to corner between the
+              stops — has to know where the stops ARE, and they move: name 05
+              wraps to two lines at most widths and one at some, so the rows
+              are not equal height and no fixed geometry survives a reflow.
+              Drawing it would mean measuring five dots and re-measuring them
+              on every resize, and the payoff would be a line that breaks the
+              moment the client adds a sixth name.
+
+              The spine gets the same weave for free and cannot break: the
+              CONTENT alternates, the line is one straight dashed border, and
+              the zigzag is the shape the eye travels between the stops. Add
+              a name, translate one, wrap any of them — it still holds.
+
+              ONE SPINE, TWO PLACES. Below lg it sits hard left with every
+              item to the right of it, because a centre spine on a phone
+              leaves two columns about nine characters wide. Above lg it
+              moves to the middle and the items take turns.
 
               THE STOPS ARE DECORATION, NOT TEXT, which is the only reason
-              they are allowed to be orange in a row where orange fails every
-              text ratio. aria-hidden, no information in them, and the
-              measurement above still governs everything that is read.
+              they are allowed to be orange where orange fails every text
+              ratio against this plate. aria-hidden, no information in them,
+              and the measurement above still governs everything that is
+              read. The cream ring is what makes a 12px dot legible where it
+              lands on a doodle line rather than on bare plate.
 
-              The cream ring is what makes a 12px dot legible where it lands
-              on a doodle line rather than on bare plate. They pop in sequence
-              on the same overshoot the /service pantry dots use, so the rail
-              reads as something travelled rather than something drawn. */}
-          <ul className="mt-12 grid grid-cols-2 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
-            {PANTRY.map((name, i) => (
-              <motion.li
-                key={name}
-                {...rPantry(0.6 + i * 0.09, 22)}
-                className="relative border-t border-dashed border-ink/25 pr-5 pt-6 lg:pr-7"
-              >
-                <motion.span
-                  aria-hidden="true"
-                  initial={pantry.reduced ? false : { scale: 0 }}
-                  animate={{ scale: pantry.on ? 1 : 0 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.78 + i * 0.09,
-                    ease: [0.34, 1.56, 0.64, 1],
-                  }}
-                  className="absolute -top-[6px] left-0 h-3 w-3 rounded-full bg-orange-dark ring-2 ring-[#f8e7d2]"
-                />
-                <span className="block font-display text-[0.78rem] font-extrabold tabular-nums tracking-[0.14em] text-ink-soft">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <p className="mt-2.5 font-display text-[1.15rem] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink md:text-[1.3rem]">
-                  {name}
-                </p>
-              </motion.li>
-            ))}
-          </ul>
+              THE SLIDE IS ON THE CONTENT, NOT ON THE <li>. The dot is
+              absolutely positioned against the <li>, so an x on the <li>
+              would carry the dot off the spine for the length of the
+              entrance and drop it back — the stops have to stay welded to
+              the line while the names arrive from their own side. */}
+          {/* the spine is a sibling of the <ol>, not a child of it: only
+              <li> may sit directly inside a list. */}
+          <div className="relative mt-12">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-1 left-[6px] border-l border-dashed border-ink/25 lg:left-1/2"
+            />
+
+            <ol className="space-y-9 lg:space-y-11">
+              {PANTRY.map((name, i) => {
+              const right = i % 2 === 1;
+
+              return (
+                <li key={name} className="relative">
+                  <motion.span
+                    aria-hidden="true"
+                    initial={pantry.reduced ? false : { scale: 0 }}
+                    animate={{ scale: pantry.on ? 1 : 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.78 + i * 0.09,
+                      ease: [0.34, 1.56, 0.64, 1],
+                    }}
+                    className="absolute top-[7px] left-0 h-3 w-3 rounded-full bg-orange-dark ring-2 ring-[#f8e7d2] lg:left-1/2 lg:-translate-x-1/2"
+                  />
+
+                  <motion.div
+                    initial={
+                      pantry.reduced
+                        ? false
+                        : { opacity: 0, x: right ? 26 : -26 }
+                    }
+                    animate={{
+                      opacity: pantry.on ? 1 : 0,
+                      x: pantry.on ? 0 : right ? 26 : -26,
+                    }}
+                    transition={{
+                      duration: 0.7,
+                      delay: 0.6 + i * 0.09,
+                      ease: EASE,
+                    }}
+                    className={`pl-8 lg:w-1/2 lg:pl-0 ${
+                      right
+                        ? "lg:ml-auto lg:pl-12 lg:text-left"
+                        : "lg:pr-12 lg:text-right"
+                    }`}
+                  >
+                    <span className="block font-display text-[0.78rem] font-extrabold tabular-nums tracking-[0.14em] text-ink-soft">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className="mt-2 font-display text-[1.15rem] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink md:text-[1.35rem]">
+                      {name}
+                    </p>
+                  </motion.div>
+                </li>
+              );
+              })}
+            </ol>
+          </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-3">
             {["We prepare", "We deliver"].map((label, i) => (
