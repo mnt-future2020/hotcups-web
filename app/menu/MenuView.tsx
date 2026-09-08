@@ -900,7 +900,35 @@ export default function MenuView() {
               className="pointer-events-none absolute inset-y-1 left-[6px] border-l border-dashed border-ink/25 lg:left-1/2"
             />
 
-            <ol className="space-y-9 lg:space-y-11">
+            {/* ═══ THE TWO PILLS ARE THE ENDS OF THE ROUTE ═══
+
+                They used to sit in a row under the whole list, next to the
+                sentence, as two labels about the section. On a route they are
+                not labels — they are where it starts and where it finishes,
+                and the five stops are what happens in between. "We prepare"
+                belongs above 01 for the same reason "We deliver" belongs
+                below 05: that is the order the work happens in.
+
+                They sit INSIDE the spine's wrapper, so the dashed line runs
+                from the first pill through every stop to the last. Above lg
+                they are centred on the line and it passes behind them; below
+                lg they align with the names, to the right of it. */}
+            <div className="relative pl-8 lg:flex lg:justify-center lg:pl-0">
+              <motion.span
+                initial={pantry.reduced ? false : { opacity: 0, scale: 0.85 }}
+                animate={{
+                  opacity: pantry.on ? 1 : 0,
+                  scale: pantry.on ? 1 : 0.85,
+                }}
+                transition={{ duration: 0.5, delay: 0.5, ease: EASE }}
+                className="inline-flex items-center gap-2 rounded-[0.7rem] border border-orange-dark/45 bg-cream px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-orange-dark"
+              >
+                We prepare
+                <span aria-hidden="true">&darr;</span>
+              </motion.span>
+            </div>
+
+            <ol className="mt-9 space-y-9 lg:mt-11 lg:space-y-11">
               {PANTRY.map((name, i) => {
               const right = i % 2 === 1;
 
@@ -950,39 +978,32 @@ export default function MenuView() {
               );
               })}
             </ol>
-          </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            {["We prepare", "We deliver"].map((label, i) => (
+            {/* the far end of the same line — see the note on the head */}
+            <div className="relative mt-9 pl-8 lg:mt-11 lg:flex lg:justify-center lg:pl-0">
               <motion.span
-                key={label}
                 initial={pantry.reduced ? false : { opacity: 0, scale: 0.85 }}
                 animate={{
                   opacity: pantry.on ? 1 : 0,
                   scale: pantry.on ? 1 : 0.85,
                 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 1.05 + i * 0.12,
-                  ease: EASE,
-                }}
-                className={`inline-flex items-center gap-2 rounded-[0.7rem] border px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] ${
-                  i === 1
-                    ? "border-orange-dark bg-orange-soft text-orange-dark"
-                    : "border-orange-dark/45 bg-cream text-orange-dark"
-                }`}
+                transition={{ duration: 0.5, delay: 1.28, ease: EASE }}
+                className="inline-flex items-center gap-2 rounded-[0.7rem] border border-orange-dark bg-orange-soft px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-orange-dark"
               >
-                {label}
+                We deliver
                 <span aria-hidden="true">&rarr;</span>
               </motion.span>
-            ))}
-            <motion.p
-              {...rPantry(1.3)}
-              className="font-sans text-[0.95rem] text-ink-soft"
-            >
-              The snacks ride along on a delivery already happening.
-            </motion.p>
+            </div>
           </div>
+
+          {/* the sentence is about the whole route, so it sits under all of
+              it rather than in a row beside the pills it used to share. */}
+          <motion.p
+            {...rPantry(1.42)}
+            className="mt-10 font-sans text-[0.95rem] text-ink-soft lg:text-center"
+          >
+            The snacks ride along on a delivery already happening.
+          </motion.p>
         </div>
       </section>
 
