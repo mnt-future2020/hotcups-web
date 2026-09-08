@@ -224,32 +224,29 @@ const DRINKS = [
   },
 ];
 
+/* NAMES ONLY — THE PLATE BEHIND THIS SECTION IS ALREADY THE PICTURE.
+
+   pantry-doodles.webp is line art of exactly this: biscuits, a bowl of
+   fruit, a scooter mid-delivery, cups, a flask, a samosa. Five photographs
+   of biscuits, vadai, banana chips, a samosa and a davara set were laid on
+   top of it in five opaque cream boxes, so the section showed the same food
+   twice and the boxes covered the drawing that showed it first.
+
+   The five names carry the meaning on their own — "Healthy Choices" and
+   "Team Favourites" are categories, not dishes, and a photograph of one
+   samosa was never going to stand for "Team Favourites" anyway. Two of the
+   five were closer to contradicting their label than illustrating it.
+
+   snack-biscuits, snack-vada, snack-chips, snack-samosa and
+   pantry-beverage are now referenced by nothing. They are left in
+   public/img rather than deleted — the client may want them back on a
+   page where they are the subject instead of a garnish. */
 const PANTRY = [
-  {
-    name: "Customised Snacks",
-    img: "/img/snack-biscuits.webp",
-    alt: "A stack of butter biscuits",
-  },
-  {
-    name: "Hot & Fresh",
-    img: "/img/snack-vada.webp",
-    alt: "Two medhu vadai, freshly fried",
-  },
-  {
-    name: "Healthy Choices",
-    img: "/img/snack-chips.webp",
-    alt: "A heap of banana chips with curry leaves",
-  },
-  {
-    name: "Team Favourites",
-    img: "/img/snack-samosa.webp",
-    alt: "A samosa",
-  },
-  {
-    name: "Beverages for Every Break",
-    img: "/img/pantry-beverage.webp",
-    alt: "Filter coffee in a brass davara set, with beans",
-  },
+  "Customised Snacks",
+  "Hot & Fresh",
+  "Healthy Choices",
+  "Team Favourites",
+  "Beverages for Every Break",
 ];
 
 /* THE COUNT IS DERIVED, NOT TYPED. It used to be a string sitting beside the
@@ -821,24 +818,46 @@ export default function MenuView() {
             </motion.p>
           </div>
 
-          <ul className="mt-12 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-            {PANTRY.map((p, i) => (
+          {/* ═══ AN INDEX, NOT A SHELF OF PRODUCT SHOTS ═══
+
+              NO BOX AND NO BACKDROP-BLUR, which is the point rather than a
+              side effect. The five cards were bg-cream/70 panels, and five
+              opaque panels across the middle of the plate hid the drawing
+              this section was given a plate for. Rules and type sit ON the
+              art instead of over it.
+
+              THE COLOURS ARE MEASURED, NOT PICKED. Sampling the darkest
+              doodle line inside the band this row occupies — rgb(181,169,146)
+              raw, rgb(198,185,162) once the section's own scrim is applied —
+              against every token this row could have used:
+
+                ink          9.67   the names
+                ink-soft     5.19   the ordinals
+                orange-deep  2.84   FAILS 4.5, and fails 3.0 too
+                orange-dark  2.13   FAILS
+
+              So there is no orange in this row, which is why the ordinals are
+              ink-soft. Orange survives here only inside a card that puts a
+              cream ground under it, and the cards are what left. Both tokens
+              in use clear 4.5:1 against the worst pixel the row can land on,
+              not against the flat cream between the doodles.
+
+              NO HOVER LIFT EITHER. The old card rose 1.5px on hover while
+              being a name in a box that did nothing — an affordance with no
+              action behind it, the same false promise the single-drink
+              category cards were making one section up. */}
+          <ul className="mt-12 grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-7">
+            {PANTRY.map((name, i) => (
               <motion.li
-                key={p.name}
+                key={name}
                 {...rPantry(0.6 + i * 0.09, 22)}
-                className="flex flex-col items-center rounded-[var(--radius-card)] border border-line/70 bg-cream/70 px-4 py-6 text-center backdrop-blur-[2px] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5"
+                className="border-t border-ink/20 pt-4"
               >
-                <div className="relative h-[clamp(84px,10vw,120px)] w-full">
-                  <Image
-                    src={p.img}
-                    alt={p.alt}
-                    fill
-                    sizes="(max-width: 1024px) 30vw, 140px"
-                    className="object-contain"
-                  />
-                </div>
-                <p className="mt-5 font-display text-[1.02rem] font-extrabold leading-[1.3] tracking-[-0.01em] text-ink md:text-[1.1rem]">
-                  {p.name}
+                <span className="block font-display text-[0.78rem] font-extrabold tabular-nums tracking-[0.14em] text-ink-soft">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p className="mt-2.5 font-display text-[1.15rem] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink md:text-[1.3rem]">
+                  {name}
                 </p>
               </motion.li>
             ))}
