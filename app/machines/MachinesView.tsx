@@ -181,10 +181,48 @@ export default function MachinesView() {
       {/* ═══════════════ the offer ═══════════════ */}
       <section
         ref={offer.ref}
-        className="relative overflow-x-clip bg-steel-pale"
+        className="relative overflow-x-clip"
+        /* THE PLATE, from app/234image.png — 1420KB of PNG encoded to 48KB of
+           WebP at the same 1886x834.
+
+           A PHOTOGRAPH, NOT LINE ART, which makes it the odd one out among
+           the plates on this site: a cream studio backdrop above, a bowl of
+           beans at the left, and a wooden counter running across the bottom.
+           The other four are doodles and could sit under anything.
+
+           THAT SPLIT IS WHY IT WORKS HERE RATHER THAN ANYWHERE. The copy
+           lands on the plain backdrop at the top, which is the lightest and
+           flattest part of the image, and the three cards land on the counter
+           — so the machines read as standing on a worktop, which is the thing
+           the sentence directly above them says they are ("from counter-top
+           to half a desk"). Move this image to a section with a different
+           layout and both halves of that stop being true.
+
+           THE RADIAL IS NOW THE SCRIM RATHER THAN THE GROUND, exactly as on
+           the `which` section below. The same three stops carry alpha instead
+           of being opaque, so the section keeps the depth ramp it had — light
+           at 20% 10% where the copy sits, denser toward the far corner — and
+           the artwork reads through it. backgroundColor sits underneath so
+           the section is never bare while the image loads.
+
+           THE ALPHAS ARE LOW BECAUSE THEY CAN BE. Inside the copy column —
+           x 8-66%, y 0-40%, where the eyebrow, the heading and the paragraph
+           run — the darkest pixel in this artwork is rgb(229,197,169), which
+           is lighter than most of the plate. Against it:
+
+             scrim 0.30   ink 12.39   ink-soft 6.65   orange-deep 3.64
+             scrim 0.45   ink 12.94   ink-soft 6.94   orange-deep 3.80
+
+           ink and ink-soft clear 4.5 with room to spare at every alpha, so
+           nothing here needed a heavy overlay. See the headline note for the
+           one colour that did move. */
         style={{
-          background:
-            "radial-gradient(120% 80% at 20% 10%, #f5f0ea 0%, #ede4da 45%, #e4d8cc 100%)",
+          backgroundColor: "#ede4da",
+          backgroundImage:
+            "radial-gradient(120% 80% at 20% 10%, rgba(245,240,234,0.42) 0%, rgba(237,228,218,0.34) 45%, rgba(228,216,204,0.30) 100%), url(/img/offer-counter.webp)",
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center, center",
+          backgroundRepeat: "no-repeat, no-repeat",
           paddingTop: "calc(var(--header-h) + clamp(2rem, 6vh, 4.5rem))",
           paddingBottom: "clamp(2.5rem, 6vh, 4.5rem)",
         }}
@@ -202,7 +240,15 @@ export default function MachinesView() {
             transition={{ duration: 0.7, delay: 0.05, ease: EASE }}
             className="flex items-center gap-4"
           >
-            <span className="eyebrow whitespace-nowrap">
+            {/* ink-soft INLINE, because .eyebrow is unlayered in globals.css
+                and beats any Tailwind text utility regardless of specificity.
+                Its default is mute, which measures 2.39:1 on this artwork —
+                and already measured only 2.78-3.44 on the flat radial before
+                the plate arrived. ink-soft is 6.65. */}
+            <span
+              className="eyebrow whitespace-nowrap"
+              style={{ color: "var(--color-ink-soft)" }}
+            >
               <span className="text-orange-deep">06</span> — The machines
             </span>
             <motion.span
@@ -222,7 +268,15 @@ export default function MachinesView() {
                 transition={{ duration: 0.9, delay: 0.15, ease: EASE }}
                 className="block"
               >
-                <span className="text-orange-dark">Rent or buy.</span> Find your
+                {/* orange-DEEP, not orange-dark. This is the one colour the
+                    plate could not carry: orange-dark measures 2.53:1 on the
+                    darkest pixel under this copy and only reaches 2.97 even
+                    at a scrim of 0.62 — still under the 3.0 that display
+                    text needs, and a scrim heavy enough to fix it would have
+                    erased the artwork it was protecting. orange-deep is 3.64
+                    at 0.30, which also beats the 3.63 this headline scored on
+                    the flat radial before there was a plate at all. */}
+                <span className="text-orange-deep">Rent or buy.</span> Find your
               </motion.span>
             </span>
             <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
