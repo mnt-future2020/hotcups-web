@@ -6,7 +6,14 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MAIL_HREF, PHONE_LABEL, TEL_HREF, WA_HREF } from "@/lib/contact";
+import {
+  MAIL_HREF,
+  mailHref,
+  PHONE_LABEL,
+  TEL_HREF,
+  WA_HREF,
+  waHref,
+} from "@/lib/contact";
 
 /**
  * /machines, animated. Fourth page on the same two-engine split: motion owns
@@ -72,6 +79,17 @@ const RIGS = [
     aspect: 1278 / 1230,
   },
 ];
+
+/* THE ASK, DERIVED FROM THE TWO NUMBERS THE CARD ALREADY PRINTS. Nothing is
+   typed twice, so the subject line of the mail and the capacity above the
+   button cannot disagree — the same reason countOf exists on /menu. It reads
+   "a machine for under 100 cups a day" or "a machine for 100 to 200 cups a
+   day", which is a sentence rather than a band, because it is going into
+   somebody's inbox. */
+const askOf = (r: { from: number | null; cap: number }) =>
+  r.from == null
+    ? `a machine for under ${r.cap} cups a day`
+    : `a machine for ${r.from} to ${r.cap} cups a day`;
 
 const CONSTRAINTS = ["Size", "Branding", "Drinks", "Payment", "Timings"];
 
@@ -238,7 +256,7 @@ export default function MachinesView() {
               <motion.li
                 key={r.key}
                 {...rOffer(0.55 + i * 0.13, 26)}
-                className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_-12px_rgba(43,47,51,0.35)]"
+                className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_-12px_rgba(43,47,51,0.35)] focus-within:-translate-y-1.5 focus-within:shadow-[0_18px_48px_-12px_rgba(43,47,51,0.35)]"
               >
                 <div className="px-5 pt-7">
                   {/* GSAP writes THIS node's y; motion writes the <li>'s for the
@@ -311,6 +329,70 @@ export default function MachinesView() {
                     cups / day
                   </span>
                 </motion.p>
+
+                {/* ═══ SOMETHING TO DO ABOUT THE ONE YOU PICKED ═══
+
+                    Until now a reader who decided "the 200-500 is ours" had
+                    nothing to click. Three product cards on the page that
+                    sells the product, and the nearest action was the general
+                    CTA at the very bottom of the page, which arrives with no
+                    idea which size was wanted. The ask now carries the band.
+
+                    THE PHRASE IS DERIVED FROM THE SAME TWO NUMBERS THE CARD
+                    PRINTS — see askOf — so the subject line of the mail and
+                    the figure above it cannot drift apart. The same principle
+                    as countOf on /menu.
+
+                    IT SITS ON THE WHITE, NOT IN THE TINT, AND THAT IS
+                    MEASURED. orange-deep is 4.85:1 on the foot at rest but
+                    4.43:1 once group-hover deepens it to full steel-pale —
+                    under 4.5 exactly when a pointer is on the card. On the
+                    card's own white it is 5.49 and nothing moves it.
+
+                    focus-within IS ON THE <li> WITH THE HOVER, because these
+                    are the first focusable things this card has ever held.
+                    Without it a keyboard user tabbing in would move the ring
+                    into a card that never lifts or tints, while a mouse user
+                    grazing it gets both. */}
+                <div className="mt-auto flex items-center gap-3 border-t border-line px-5 py-4">
+                  <a
+                    href={mailHref(askOf(r))}
+                    className="group/ask inline-flex items-center gap-1.5 font-sans text-[0.9rem] font-semibold text-orange-deep decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark hover:underline focus-visible:text-orange-dark focus-visible:underline"
+                  >
+                    Get pricing
+                    <span
+                      aria-hidden="true"
+                      className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/ask:translate-x-1"
+                    >
+                      &rarr;
+                    </span>
+                  </a>
+
+                  {/* 40px and a plain message bubble rather than the WhatsApp
+                      logo — the same call, for the same reasons, as the ring
+                      on /who-we-serve's cards. The destination is named in
+                      aria-label, so nothing is lost to a screen reader. */}
+                  <a
+                    href={waHref(askOf(r))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`WhatsApp us about ${askOf(r)}`}
+                    className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-orange-dark hover:text-orange-dark focus-visible:-translate-y-0.5 focus-visible:border-orange-dark focus-visible:text-orange-dark"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="h-[19px] w-[19px] shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    </svg>
+                  </a>
+                </div>
               </motion.li>
             ))}
           </ul>
