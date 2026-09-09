@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
@@ -23,11 +23,18 @@ import { motion, useInView, useReducedMotion } from "motion/react";
  * An excerpt turns a card into a paragraph of grey text that nobody reads and
  * that pushes the title of the next card below the fold. Tag, read time,
  * title. The whole card is the link, so there is no "Read more" either.
+ *
+ * MOBILE CAROUSEL
+ * Below sm the cards become a swipeable carousel so a phone visitor sees one
+ * post at a time rather than a squeezed stack. It auto-advances every 5s,
+ * responds to dot taps and arrow keys, and stops entirely under
+ * prefers-reduced-motion. The grid is preserved at sm and above.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 /** the brief's cadence — one card every 100ms */
 const STEP = 0.1;
+const DWELL = 5000;
 
 /* /blog is a real stub route, so none of these are dead links. The posts get
    their own URLs in phase 2, once the CMS is settled. */
@@ -61,6 +68,27 @@ export default function Blog() {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const on = useInView(ref, { amount: 0.2, once: true }) || Boolean(reduced);
+
+  const [index, setIndex] = useState(0);
+  const count = POSTS.length;
+
+  const go = (n: number) => setIndex(((n % count) + count) % count);
+
+  useEffect(() => {
+    if (reduced) return;
+    const t = window.setTimeout(() => setIndex((v) => (v + 1) % count), DWELL);
+    return () => window.clearTimeout(t);
+  }, [index, reduced, count]);
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      go(index + 1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      go(index - 1);
+    }
+  };
 
   const fade = (delay: number) =>
     reduced
@@ -151,15 +179,15 @@ export default function Blog() {
         style={{ background: "rgba(255,247,240,0.76)" }}
       />
 
-      <div className="shell relative z-10">
-        <motion.div {...fade(0)} className="flex items-center gap-4">
+      <div className="shell relative z-10 px-4 sm:px-0">
+        <motion.div {...fade(0)} className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           {/* mute measured 3.25:1 on the washed photo against 3.88 on plain
               cream. The eyebrow is the smallest text on this ground, so it takes
               the darker ink rather than the palette default. */}
           <span className="eyebrow whitespace-nowrap text-ink-soft">
             10 — Reading
           </span>
-          <span className="h-px w-16 bg-line md:w-24" />
+          <span className="h-px w-16 bg-line sm:w-24" />
         </motion.div>
 
         <motion.h2
@@ -168,12 +196,90 @@ export default function Blog() {
              reaches the cap at 1366. The measure went 20ch -> 21ch with it:
              20ch scales WITH the type, so at the cap it was a 732px column
              holding a 713px line — nineteen pixels, which is not a margin. */
-          className="mt-3 max-w-[21ch] font-display text-[clamp(1.7rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.02em] text-ink"
+          className="mx-auto mt-3 max-w-[21ch] text-center sm:text-left font-display text-[clamp(1.7rem,4.4vw,3.75rem)] font-extrabold leading-[1.1] tracking-[-0.02em] text-ink"
         >
           Written for whoever runs the pantry.
         </motion.h2>
 
-        <div className="mt-[clamp(1.75rem,4vw,3rem)] grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* MOBILE CAROUSEL, DESKTOP/TABLET GRID */}
+        <div
+          className="mt-[clamp(1.75rem,4vw,3rem)] block sm:hidden"
+          onKeyDown={onKeyDown}
+          tabIndex={0}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Blog posts"
+        >
+          <div className="relative overflow-hidden">
+            <motion.div
+              animate={{ x: `-${index * 100}%` }}
+              transition={{ duration: reduced ? 0 : 0.5, ease: EASE }}
+              className="flex"
+            >
+              {POSTS.map((post) => (
+                <div key={post.title} className="w-full shrink-0">
+                  <Link
+                    href={HREF}
+                    className="group block overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
+                  >
+                    <div className="relative aspect-[5/4] overflow-hidden bg-cream-deep">
+                      <Image
+                        src={post.src}
+                        alt={post.alt}
+                        fill
+                        sizes="92vw"
+                        className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+                      />
+                    </div>
+
+                    <div className="p-7">
+                      <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.14em]">
+                        <span className="text-orange-dark">{post.tag}</span>
+                        <span aria-hidden="true" className="mx-2 text-line">
+                          &middot;
+                        </span>
+                        <span className="font-medium tracking-[0.08em] text-mute">
+                          {post.read}
+                        </span>
+                      </p>
+
+                      <h3 className="mt-3 font-display text-[1.35rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-300 group-hover:decoration-orange">
+                        {post.title}
+                      </h3>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {POSTS.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Show post ${i + 1} of ${count}`}
+                className="group grid h-6 w-6 place-items-center"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    i === index ? "w-6 bg-orange" : "w-1.5 bg-ink/25 group-hover:bg-ink/50"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* sm:grid, NOT grid. "hidden grid" is not a breakpoint pair — both
+            are unconditional display utilities, and Tailwind emits .hidden
+            AFTER .grid (byte 12938 against 12919 in the built stylesheet), so
+            at equal specificity in the same layer the later rule wins and
+            this was display:none at EVERY width. With the carousel above it
+            set to sm:hidden, that left the section with no cards at all on
+            desktop and tablet — only the heading. */}
+        <div className="mt-[clamp(1.75rem,4vw,3rem)] hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
           {POSTS.map((post, i) => (
             <motion.div key={post.title} {...fade(0.2 + i * STEP)}>
               <Link

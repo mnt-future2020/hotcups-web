@@ -224,32 +224,29 @@ const DRINKS = [
   },
 ];
 
+/* NAMES ONLY — THE PLATE BEHIND THIS SECTION IS ALREADY THE PICTURE.
+
+   pantry-doodles.webp is line art of exactly this: biscuits, a bowl of
+   fruit, a scooter mid-delivery, cups, a flask, a samosa. Five photographs
+   of biscuits, vadai, banana chips, a samosa and a davara set were laid on
+   top of it in five opaque cream boxes, so the section showed the same food
+   twice and the boxes covered the drawing that showed it first.
+
+   The five names carry the meaning on their own — "Healthy Choices" and
+   "Team Favourites" are categories, not dishes, and a photograph of one
+   samosa was never going to stand for "Team Favourites" anyway. Two of the
+   five were closer to contradicting their label than illustrating it.
+
+   snack-biscuits, snack-vada, snack-chips, snack-samosa and
+   pantry-beverage are now referenced by nothing. They are left in
+   public/img rather than deleted — the client may want them back on a
+   page where they are the subject instead of a garnish. */
 const PANTRY = [
-  {
-    name: "Customised Snacks",
-    img: "/img/snack-biscuits.webp",
-    alt: "A stack of butter biscuits",
-  },
-  {
-    name: "Hot & Fresh",
-    img: "/img/snack-vada.webp",
-    alt: "Two medhu vadai, freshly fried",
-  },
-  {
-    name: "Healthy Choices",
-    img: "/img/snack-chips.webp",
-    alt: "A heap of banana chips with curry leaves",
-  },
-  {
-    name: "Team Favourites",
-    img: "/img/snack-samosa.webp",
-    alt: "A samosa",
-  },
-  {
-    name: "Beverages for Every Break",
-    img: "/img/pantry-beverage.webp",
-    alt: "Filter coffee in a brass davara set, with beans",
-  },
+  "Customised Snacks",
+  "Hot & Fresh",
+  "Healthy Choices",
+  "Team Favourites",
+  "Beverages for Every Break",
 ];
 
 /* THE COUNT IS DERIVED, NOT TYPED. It used to be a string sitting beside the
@@ -485,63 +482,72 @@ export default function MenuView() {
               const isOpen = open === i;
               const dim = open !== null && !isOpen;
 
-              return (
-                <motion.li
-                  key={d.name}
-                  {...rPour(0.5 + i * 0.1, 26)}
-                  className="flex flex-col"
-                >
-                  {/* THE CARD IS A BUTTON NOW, and the dim lives on IT rather
-                      than on the <li>. The <li> is what motion animates on
-                      entrance, so an opacity written there would inherit the
-                      entrance's own delay and answer a click up to a second
-                      late — the same trap the pantry's hover-dim fell into.
-                      A CSS transition on the child answers immediately.
+              /* A CATEGORY WITH ONE DRINK IN IT HAS NOTHING TO OPEN.
 
-                      type="button" matters: this sits inside no form, but an
-                      unqualified <button> defaults to submit and a stray
-                      Enter would try to navigate. */}
-                  <button
-                    type="button"
-                    onClick={() => setOpen(isOpen ? null : i)}
-                    aria-expanded={isOpen}
-                    aria-controls={PANEL_ID}
-                    className={`group flex w-full cursor-pointer flex-col rounded-[var(--radius-card)] outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/60 ${
-                      dim ? "opacity-45" : "opacity-100"
+                 Since the menu was cut, Tea, Coffee and Milk hold one variety
+                 each, and the panel they opened showed that single drink's
+                 photograph a second time, under the same name, beside the
+                 same count already printed on the card. Three of the four
+                 cards were a control whose whole result was to repeat what
+                 the reader had just clicked.
+
+                 Only Seasonal, at two, holds anything the row does not
+                 already say — so only Seasonal is a button. This is derived
+                 from varieties.length, not a list of names, so a category
+                 that grows back to two becomes clickable on its own. */
+              const expandable = d.varieties.length > 1;
+
+              /* THE FACE IS IDENTICAL EITHER WAY — only the wrapper changes.
+                 A card that cannot open must not be a <button>: a button
+                 announces itself to a screen reader as an action, takes a tab
+                 stop, and shows a pointer cursor, and all three would promise
+                 an answer that never comes. */
+              const face = (
+                <>
+                  {/* GSAP writes THIS node's y; motion writes the <li>'s.
+                      Two engines, two elements, one visual result — which
+                      is why the hover lift below is on the TEXT and the
+                      ring, never on this div. A third writer here would
+                      silently lose to whichever ran last. */}
+                  <div
+                    ref={(el) => {
+                      glassRefs.current[i] = el;
+                    }}
+                    className="relative aspect-[4/5] w-full"
+                  >
+                    <Image
+                      src={d.img}
+                      alt={d.alt}
+                      fill
+                      sizes="(max-width: 1024px) 44vw, 22vw"
+                      className="object-contain object-bottom"
+                    />
+                  </div>
+                  <p
+                    className={`mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] transition-colors duration-300 md:text-[1.5rem] ${
+                      isOpen
+                        ? "text-orange"
+                        : expandable
+                          ? "text-cream group-hover:text-orange"
+                          : "text-cream"
                     }`}
                   >
-                    {/* GSAP writes THIS node's y; motion writes the <li>'s.
-                        Two engines, two elements, one visual result — which
-                        is why the hover lift below is on the TEXT and the
-                        ring, never on this div. A third writer here would
-                        silently lose to whichever ran last. */}
-                    <div
-                      ref={(el) => {
-                        glassRefs.current[i] = el;
-                      }}
-                      className="relative aspect-[4/5] w-full"
-                    >
-                      <Image
-                        src={d.img}
-                        alt={d.alt}
-                        fill
-                        sizes="(max-width: 1024px) 44vw, 22vw"
-                        className="object-contain object-bottom"
-                      />
-                    </div>
-                    <p
-                      className={`mt-5 text-center font-display text-[1.35rem] font-extrabold tracking-[-0.02em] transition-colors duration-300 md:text-[1.5rem] ${
-                        isOpen ? "text-orange" : "text-cream group-hover:text-orange"
-                      }`}
-                    >
-                      {d.name}
-                    </p>
-                    <span className="mt-1 flex items-center justify-center gap-1.5 font-sans text-[0.92rem] text-cream/60 transition-colors duration-300 group-hover:text-cream/85">
-                      {countOf(d)}
-                      {/* the chevron IS the affordance. Without it a card that
-                          opens looks identical to one that does not, and the
-                          only hint is the cursor — which a touch screen has
-                          no way to show. */}
+                    {d.name}
+                  </p>
+                  <span
+                    className={`mt-1 flex items-center justify-center gap-1.5 font-sans text-[0.92rem] text-cream/60 transition-colors duration-300 ${
+                      expandable ? "group-hover:text-cream/85" : ""
+                    }`}
+                  >
+                    {countOf(d)}
+                    {/* THE CHEVRON IS THE AFFORDANCE, which is exactly why it
+                        is gone from the three that no longer open. Without it
+                        a card that opens looks identical to one that does
+                        not, and the only hint is the cursor — which a touch
+                        screen has no way to show. Left on a card that does
+                        nothing, it would be the same lie pointing the other
+                        way. */}
+                    {expandable && (
                       <svg
                         aria-hidden="true"
                         viewBox="0 0 12 12"
@@ -556,8 +562,49 @@ export default function MenuView() {
                       >
                         <path d="M2.5 4.5 6 8l3.5-3.5" />
                       </svg>
-                    </span>
-                  </button>
+                    )}
+                  </span>
+                </>
+              );
+
+              return (
+                <motion.li
+                  key={d.name}
+                  {...rPour(0.5 + i * 0.1, 26)}
+                  className="flex flex-col"
+                >
+                  {/* THE DIM LIVES ON THE WRAPPER rather than on the <li>. The
+                      <li> is what motion animates on entrance, so an opacity
+                      written there would inherit the entrance's own delay and
+                      answer a click up to a second late — the same trap the
+                      pantry's hover-dim fell into. A CSS transition on the
+                      child answers immediately.
+
+                      type="button" matters on the one that is a button: it
+                      sits inside no form, but an unqualified <button>
+                      defaults to submit and a stray Enter would try to
+                      navigate. */}
+                  {expandable ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      aria-controls={PANEL_ID}
+                      className={`group flex w-full cursor-pointer flex-col rounded-[var(--radius-card)] outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-orange/60 ${
+                        dim ? "opacity-45" : "opacity-100"
+                      }`}
+                    >
+                      {face}
+                    </button>
+                  ) : (
+                    <div
+                      className={`flex w-full flex-col rounded-[var(--radius-card)] transition-opacity duration-300 ${
+                        dim ? "opacity-45" : "opacity-100"
+                      }`}
+                    >
+                      {face}
+                    </div>
+                  )}
                 </motion.li>
               );
             })}
@@ -573,9 +620,10 @@ export default function MenuView() {
               where the cards are two-up, it still lands directly beneath the
               pair rather than halfway up the grid.
 
-              HEIGHT IS ANIMATED TO "auto", WHICH MOTION RESOLVES. The lists
-              are 2 to 8 names long, so a fixed height would clip the teas or
-              leave a hole under the seasonals. overflow-hidden on the
+              HEIGHT IS ANIMATED TO "auto", WHICH MOTION RESOLVES. Only
+              Seasonal opens now and it holds two, but the panel stays
+              measured rather than fixed — a category that grows must not
+              need this number found again. overflow-hidden on the
               animated element is what makes the collapse read as a shutter
               rather than a fade. */}
           <motion.div
@@ -770,60 +818,192 @@ export default function MenuView() {
             </motion.p>
           </div>
 
-          <ul className="mt-12 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-            {PANTRY.map((p, i) => (
-              <motion.li
-                key={p.name}
-                {...rPantry(0.6 + i * 0.09, 22)}
-                className="flex flex-col items-center rounded-[var(--radius-card)] border border-line/70 bg-cream/70 px-4 py-6 text-center backdrop-blur-[2px] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5"
-              >
-                <div className="relative h-[clamp(84px,10vw,120px)] w-full">
-                  <Image
-                    src={p.img}
-                    alt={p.alt}
-                    fill
-                    sizes="(max-width: 1024px) 30vw, 140px"
-                    className="object-contain"
-                  />
-                </div>
-                <p className="mt-5 font-display text-[1.02rem] font-extrabold leading-[1.3] tracking-[-0.01em] text-ink md:text-[1.1rem]">
-                  {p.name}
-                </p>
-              </motion.li>
-            ))}
-          </ul>
+          {/* ═══ AN INDEX, NOT A SHELF OF PRODUCT SHOTS ═══
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            {["We prepare", "We deliver"].map((label, i) => (
+              NO BOX AND NO BACKDROP-BLUR, which is the point rather than a
+              side effect. The five cards were bg-cream/70 panels, and five
+              opaque panels across the middle of the plate hid the drawing
+              this section was given a plate for. Rules and type sit ON the
+              art instead of over it.
+
+              THE COLOURS ARE MEASURED, NOT PICKED. Sampling the darkest
+              doodle line inside the band this row occupies — rgb(181,169,146)
+              raw, rgb(198,185,162) once the section's own scrim is applied —
+              against every token this row could have used:
+
+                ink          9.67   the names
+                ink-soft     5.19   the ordinals
+                orange-deep  2.84   FAILS 4.5, and fails 3.0 too
+                orange-dark  2.13   FAILS
+
+              So there is no orange in this row, which is why the ordinals are
+              ink-soft. Orange survives here only inside a card that puts a
+              cream ground under it, and the cards are what left. Both tokens
+              in use clear 4.5:1 against the worst pixel the row can land on,
+              not against the flat cream between the doodles.
+
+              NO HOVER LIFT EITHER. The old card rose 1.5px on hover while
+              being a name in a box that did nothing — an affordance with no
+              action behind it, the same false promise the single-drink
+              category cards were making one section up.
+
+              ═══ THE ROW IS A ROUTE, AND THE ROUTE IS ALREADY DRAWN ═══
+
+              pantry-doodles.webp has a dashed line wandering across it with
+              a scooter on it, and the sentence directly under this list is
+              "The snacks ride along on a delivery already happening." The
+              spine is that line, continued in CSS.
+
+              IT RUNS DOWN RATHER THAN ACROSS, and the stops alternate sides,
+              so the route weaves instead of marching. Five names in a row
+              read as a row of headings however they are ruled; the same five
+              hung off alternating sides of a dashed spine read as somewhere
+              a scooter goes next.
+
+              ═══ WHY A CENTRE SPINE AND NOT A DIAGONAL ZIGZAG ═══
+
+              A true diagonal — a line drawn corner to corner between the
+              stops — has to know where the stops ARE, and they move: name 05
+              wraps to two lines at most widths and one at some, so the rows
+              are not equal height and no fixed geometry survives a reflow.
+              Drawing it would mean measuring five dots and re-measuring them
+              on every resize, and the payoff would be a line that breaks the
+              moment the client adds a sixth name.
+
+              The spine gets the same weave for free and cannot break: the
+              CONTENT alternates, the line is one straight dashed border, and
+              the zigzag is the shape the eye travels between the stops. Add
+              a name, translate one, wrap any of them — it still holds.
+
+              ONE SPINE, TWO PLACES. Below lg it sits hard left with every
+              item to the right of it, because a centre spine on a phone
+              leaves two columns about nine characters wide. Above lg it
+              moves to the middle and the items take turns.
+
+              THE STOPS ARE DECORATION, NOT TEXT, which is the only reason
+              they are allowed to be orange where orange fails every text
+              ratio against this plate. aria-hidden, no information in them,
+              and the measurement above still governs everything that is
+              read. The cream ring is what makes a 12px dot legible where it
+              lands on a doodle line rather than on bare plate.
+
+              THE SLIDE IS ON THE CONTENT, NOT ON THE <li>. The dot is
+              absolutely positioned against the <li>, so an x on the <li>
+              would carry the dot off the spine for the length of the
+              entrance and drop it back — the stops have to stay welded to
+              the line while the names arrive from their own side. */}
+          {/* the spine is a sibling of the <ol>, not a child of it: only
+              <li> may sit directly inside a list. */}
+          <div className="relative mt-12">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-1 left-[6px] border-l border-dashed border-ink/25 lg:left-1/2"
+            />
+
+            {/* ═══ THE TWO PILLS ARE THE ENDS OF THE ROUTE ═══
+
+                They used to sit in a row under the whole list, next to the
+                sentence, as two labels about the section. On a route they are
+                not labels — they are where it starts and where it finishes,
+                and the five stops are what happens in between. "We prepare"
+                belongs above 01 for the same reason "We deliver" belongs
+                below 05: that is the order the work happens in.
+
+                They sit INSIDE the spine's wrapper, so the dashed line runs
+                from the first pill through every stop to the last. Above lg
+                they are centred on the line and it passes behind them; below
+                lg they align with the names, to the right of it. */}
+            <div className="relative pl-8 lg:flex lg:justify-center lg:pl-0">
               <motion.span
-                key={label}
                 initial={pantry.reduced ? false : { opacity: 0, scale: 0.85 }}
                 animate={{
                   opacity: pantry.on ? 1 : 0,
                   scale: pantry.on ? 1 : 0.85,
                 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 1.05 + i * 0.12,
-                  ease: EASE,
-                }}
-                className={`inline-flex items-center gap-2 rounded-[0.7rem] border px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] ${
-                  i === 1
-                    ? "border-orange-dark bg-orange-soft text-orange-dark"
-                    : "border-orange-dark/45 bg-cream text-orange-dark"
-                }`}
+                transition={{ duration: 0.5, delay: 0.5, ease: EASE }}
+                className="inline-flex items-center gap-2 rounded-[0.7rem] border border-orange-dark/45 bg-cream px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-orange-dark"
               >
-                {label}
+                We prepare
+                <span aria-hidden="true">&darr;</span>
+              </motion.span>
+            </div>
+
+            <ol className="mt-9 space-y-9 lg:mt-11 lg:space-y-11">
+              {PANTRY.map((name, i) => {
+              const right = i % 2 === 1;
+
+              return (
+                <li key={name} className="relative">
+                  <motion.span
+                    aria-hidden="true"
+                    initial={pantry.reduced ? false : { scale: 0 }}
+                    animate={{ scale: pantry.on ? 1 : 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.78 + i * 0.09,
+                      ease: [0.34, 1.56, 0.64, 1],
+                    }}
+                    className="absolute top-[7px] left-0 h-3 w-3 rounded-full bg-orange-dark ring-2 ring-[#f8e7d2] lg:left-1/2 lg:-translate-x-1/2"
+                  />
+
+                  <motion.div
+                    initial={
+                      pantry.reduced
+                        ? false
+                        : { opacity: 0, x: right ? 26 : -26 }
+                    }
+                    animate={{
+                      opacity: pantry.on ? 1 : 0,
+                      x: pantry.on ? 0 : right ? 26 : -26,
+                    }}
+                    transition={{
+                      duration: 0.7,
+                      delay: 0.6 + i * 0.09,
+                      ease: EASE,
+                    }}
+                    className={`pl-8 lg:w-1/2 lg:pl-0 ${
+                      right
+                        ? "lg:ml-auto lg:pl-12 lg:text-left"
+                        : "lg:pr-12 lg:text-right"
+                    }`}
+                  >
+                    <span className="block font-display text-[0.78rem] font-extrabold tabular-nums tracking-[0.14em] text-ink-soft">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className="mt-2 font-display text-[1.15rem] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink md:text-[1.35rem]">
+                      {name}
+                    </p>
+                  </motion.div>
+                </li>
+              );
+              })}
+            </ol>
+
+            {/* the far end of the same line — see the note on the head */}
+            <div className="relative mt-9 pl-8 lg:mt-11 lg:flex lg:justify-center lg:pl-0">
+              <motion.span
+                initial={pantry.reduced ? false : { opacity: 0, scale: 0.85 }}
+                animate={{
+                  opacity: pantry.on ? 1 : 0,
+                  scale: pantry.on ? 1 : 0.85,
+                }}
+                transition={{ duration: 0.5, delay: 1.28, ease: EASE }}
+                className="inline-flex items-center gap-2 rounded-[0.7rem] border border-orange-dark bg-orange-soft px-4 py-2.5 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.1em] text-orange-dark"
+              >
+                We deliver
                 <span aria-hidden="true">&rarr;</span>
               </motion.span>
-            ))}
-            <motion.p
-              {...rPantry(1.3)}
-              className="font-sans text-[0.95rem] text-ink-soft"
-            >
-              The snacks ride along on a delivery already happening.
-            </motion.p>
+            </div>
           </div>
+
+          {/* the sentence is about the whole route, so it sits under all of
+              it rather than in a row beside the pills it used to share. */}
+          <motion.p
+            {...rPantry(1.42)}
+            className="mt-10 font-sans text-[0.95rem] text-ink-soft lg:text-center"
+          >
+            The snacks ride along on a delivery already happening.
+          </motion.p>
         </div>
       </section>
 

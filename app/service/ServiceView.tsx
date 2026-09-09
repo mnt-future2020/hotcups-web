@@ -92,13 +92,30 @@ const PANTRY = [
   "Beverages for Every Break",
 ];
 
+/* NAMES, NOT PICTURES — and the reason is duplication rather than taste.
+
+   This section used to render the same six photographs, in the same order,
+   under a 4:3 card, that /who-we-serve renders in its "The six" section.
+   Same files, same order, same names: a visitor who read both pages met the
+   identical block twice.
+
+   OF THE TWO, THIS WAS THE WEAKER ONE. /who-we-serve's card carries a
+   parallax photo, a hover lift, a per-segment "Get pricing for a factory"
+   link and a WhatsApp button; this one carried a name under a picture and
+   went nowhere. Keeping both meant the page that owns the subject and the
+   page that mentions it in passing looked equally important, and the
+   passing mention was a dead end.
+
+   So the pictures and the six pricing routes stay on the page that is about
+   them, and this became what it always was in the argument of /service — a
+   list of who the round already goes to, and a door to the detail. */
 const WORKPLACES = [
-  { name: "IT & offices", src: "/img/wp-office.webp" },
-  { name: "Manufacturing", src: "/img/wp-factory.webp" },
-  { name: "Hospitals", src: "/img/wp-hospital.webp" },
-  { name: "Colleges & schools", src: "/img/wp-college.webp" },
-  { name: "Retail shops", src: "/img/wp-retail.webp" },
-  { name: "Showrooms & banks", src: "/img/wp-other.webp" },
+  "IT & offices",
+  "Manufacturing",
+  "Hospitals",
+  "Colleges & schools",
+  "Retail shops",
+  "Showrooms & banks",
 ];
 
 const BANDS = [
@@ -680,30 +697,36 @@ export default function ServiceView() {
             and shops across Tamil Nadu.
           </motion.p>
 
-          <ul className="mt-12 grid grid-cols-2 gap-5 md:grid-cols-3 lg:gap-6">
+          {/* A WRAPPED ROW OF NAMES, which is the one shape this page did not
+              already own. The section above it is a gap-px hairline list and
+              the section below is a card grid on a doodle plate, so a second
+              card grid here read as a repeat of both its neighbours and of
+              /who-we-serve. Pills are the same idiom as that page's capacity
+              band, at the same 0.95rem — related, not identical. */}
+          <ul className="mt-10 flex flex-wrap gap-2.5">
             {WORKPLACES.map((w, i) => (
               <motion.li
-                key={w.name}
-                {...rWho(0.45 + i * 0.07, 22)}
-                className="overflow-hidden rounded-[var(--radius-media)] border border-line bg-cream"
+                key={w}
+                {...rWho(0.45 + i * 0.07, 14)}
+                className="rounded-full border border-line bg-cream px-5 py-2.5 font-display text-[0.95rem] font-extrabold tracking-[-0.01em] text-ink md:text-[1rem]"
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden">
-                  {/* the image itself leans in on hover. A transform on the
-                      picture inside a clipped box, so nothing outside moves. */}
-                  <Image
-                    src={w.src}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 45vw, 30vw"
-                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.05]"
-                  />
-                </div>
-                <p className="px-5 py-4 font-display text-[1.05rem] font-bold tracking-[-0.015em] text-ink md:text-[1.2rem]">
-                  {w.name}
-                </p>
+                {w}
               </motion.li>
             ))}
           </ul>
+
+          {/* THE DOOR. Without this the list is the dead end the grid was —
+              six names and nowhere to go. It is the same link idiom as "See
+              the machines" in the next section. */}
+          <motion.div {...rWho(0.95)}>
+            <Link
+              href="/who-we-serve"
+              className="mt-8 inline-flex items-center gap-2 font-sans text-[0.95rem] font-semibold text-orange-deep underline decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
+            >
+              See how the round runs in each one
+              <span aria-hidden="true">&rarr;</span>
+            </Link>
+          </motion.div>
         </div>
       </section>
 

@@ -355,7 +355,19 @@ export default function WhoWeServeView() {
                   className="relative"
                 >
                   <Image
-                    src="/woman.png"
+                    /* SHIPPED AS WEBP, NOT AS THE PNG IT WAS CUT FROM.
+                       The source is 1078x1460 and 1494KB; this is the same
+                       1078x1460 at 71KB, q86 — 95% smaller for pixels that
+                       are never drawn wider than 300px here.
+
+                       IT ALSO MOVED INTO public/img, WHERE EVERY OTHER
+                       SHIPPED IMAGE ON THIS SITE LIVES. It sat at the root
+                       of public/ as the only served asset outside that
+                       folder, and .gitignore's own note says everything
+                       under public/ is served — so the PNG now sits with
+                       the other superseded originals it lists, on disk and
+                       out of git. */
+                    src="/img/who-hero-woman.webp"
                     alt="Woman"
                     width={760}
                     height={1261}
