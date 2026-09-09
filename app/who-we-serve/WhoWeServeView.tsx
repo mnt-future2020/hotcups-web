@@ -324,8 +324,15 @@ export default function WhoWeServeView() {
             <div className="lg:col-span-5">
               <div
                 ref={flaskRef}
-                className="relative mx-auto w-[72%] max-w-[300px] lg:mr-0"
-                style={{ maxHeight: "42vh" }}
+                /* BOTH CAPS HAD TO RISE TOGETHER. The picture is bound by
+                   whichever of the two binds first — the width cap here and
+                   the height cap below — and at 300px/42vh it was the HEIGHT
+                   that bound: 300 wide implies 406 tall, 42vh on a 900px
+                   viewport is 378, so the box was cut to 378 and the picture
+                   drawn to fit inside it. Raising only max-w would have moved
+                   nothing at all. */
+                className="relative mx-auto w-[80%] max-w-[340px] lg:mr-0 lg:w-full lg:max-w-[430px]"
+                style={{ maxHeight: "64vh" }}
               >
                 <motion.span
                   aria-hidden="true"
@@ -355,10 +362,22 @@ export default function WhoWeServeView() {
                   className="relative"
                 >
                   <Image
-                    /* SHIPPED AS WEBP, NOT AS THE PNG IT WAS CUT FROM.
+                    /* THE DECLARED SIZE IS THE FILE'S OWN, AND IT WAS NOT.
+                       760x1261 is 0.603; the file is 1078x1460, which is
+                       0.738. Next writes the declared pair as the box's
+                       aspect-ratio, so the box was a good deal narrower than
+                       the picture and object-contain letterboxed it inside:
+                       measured 279px of woman in a 300px box, ~7% of the
+                       width thrown away as empty margin on a photograph that
+                       was already the smallest thing in this hero. Correcting
+                       the pair removes the letterbox; contain is now a no-op
+                       and stays only as a guard.
+
+                       SHIPPED AS WEBP, NOT AS THE PNG IT WAS CUT FROM.
                        The source is 1078x1460 and 1494KB; this is the same
-                       1078x1460 at 71KB, q86 — 95% smaller for pixels that
-                       are never drawn wider than 300px here.
+                       1078x1460 at 71KB, q86 — 95% smaller, and now drawn
+                       at up to 430 CSS px, so still comfortably above what
+                       the layout asks of it even at 2x.
 
                        IT ALSO MOVED INTO public/img, WHERE EVERY OTHER
                        SHIPPED IMAGE ON THIS SITE LIVES. It sat at the root
@@ -369,12 +388,12 @@ export default function WhoWeServeView() {
                        out of git. */
                     src="/img/who-hero-woman.webp"
                     alt="Woman"
-                    width={760}
-                    height={1261}
-                    sizes="(max-width: 1024px) 66vw, 280px"
+                    width={1078}
+                    height={1460}
+                    sizes="(max-width: 1024px) 80vw, 430px"
                     priority
                     className="h-auto w-full"
-                    style={{ maxHeight: "42vh", objectFit: "contain" }}
+                    style={{ maxHeight: "64vh", objectFit: "contain" }}
                   />
                 </motion.div>
               </div>
