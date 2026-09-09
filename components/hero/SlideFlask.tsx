@@ -15,7 +15,7 @@ import LiquidSurface, {
 } from "./LiquidSurface";
 import SteamCanvas from "./SteamCanvas";
 import PourWord from "./PourWord";
-import { currentCups, subscribeCups } from "@/lib/cups";
+import { currentCups } from "@/lib/cups";
 
 /**
  * Hero slide 1 — "Inside the cup".
@@ -123,7 +123,6 @@ export default function SlideFlask({ active }: { active: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const liquid = useRef<LiquidHandle | null>(null);
 
-  const [cups, setCups] = useState(currentCups);
   const [rollTo, setRollTo] = useState(reduced ? currentCups() : 0);
   const [rush, setRush] = useState(1);
   const [steam, setSteam] = useState(reduced ? 1 : 0);
@@ -188,10 +187,10 @@ export default function SlideFlask({ active }: { active: boolean }) {
     return () => kill.forEach((f) => f());
   }, [reduced]);
 
-  /* the counter keeps ticking for as long as the page is open */
-  useEffect(() => subscribeCups(setCups), []);
-
-  /* the badge counts up once, then tracks the live value */
+  /* THE BADGE STILL COUNTS UP, AND THAT IS NOT THE TICKER. The ticker was a
+     figure that kept changing for as long as the tab was open; this is an
+     entrance that runs 0 -> 15,000 once and then stops on the number the
+     client stands behind. Nothing moves after it lands. */
   const [shown, setShown] = useState(reduced ? currentCups() : 0);
   useEffect(() => {
     if (rollTo === 0) return;
@@ -201,10 +200,10 @@ export default function SlideFlask({ active }: { active: boolean }) {
     }
     return tween((v) => setShown(Math.round(v)), 0, rollTo, 900);
   }, [rollTo, reduced]);
-  useEffect(() => {
-    if (shown > 0) setShown(cups);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cups]);
+  /* The effect that used to sit here re-set `shown` whenever the ticker
+     pushed a new value. `cups` is a constant now, so it could only ever have
+     fired once, with the value the roll-up was already heading for — a
+     dependency that never changes is not a subscription, it is dead code. */
 
   /* ---------------- the scroll ---------------- */
   useMotionValueEvent(scrollYProgress, "change", (p) => {

@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
 import { NAV, NAV_FOR, NAV_HREF, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
-import { currentCups, subscribeCups } from "@/lib/cups";
+import { currentCups } from "@/lib/cups";
 
 /* THE COUNTER DOCK, at the client's direction — the badge moves out of the
    hero and up here. lib/cups.ts has described this since it was written
@@ -50,8 +50,11 @@ import { currentCups, subscribeCups } from "@/lib/cups";
    breakpoint would have turned the same number from a month's work into a
    day's. Both strings change together or neither does. */
 function CupsDock({ onDark }: { onDark: boolean }) {
-  const [cups, setCups] = useState(currentCups);
-  useEffect(() => subscribeCups(setCups), []);
+  /* NO STATE AND NO SUBSCRIPTION. The figure is a constant — see lib/cups
+     for why the ticker went — so there is nothing to hold in state and
+     nothing to hear about. It also means this dock renders the same number
+     on the server as in the browser, which the ticking version did not. */
+  const cups = currentCups();
 
   return (
     <p
