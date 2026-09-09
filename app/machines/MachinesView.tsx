@@ -856,90 +856,126 @@ export default function MachinesView() {
           backgroundRepeat: "no-repeat, no-repeat",
         }}
       >
-        <div className="shell text-center">
-          <h2 className="mx-auto max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-cream">
-            <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-              <motion.span
-                initial={ask.reduced ? false : { y: "112%" }}
-                animate={{ y: ask.on ? "0%" : "112%" }}
-                transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-                className="block"
-              >
-                Tell us your headcount.
-              </motion.span>
-            </span>
-            <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-              <motion.span
-                initial={ask.reduced ? false : { y: "112%" }}
-                animate={{ y: ask.on ? "0%" : "112%" }}
-                transition={{ duration: 0.9, delay: 0.19, ease: EASE }}
-                className="block text-orange"
-              >
-                We’ll size it.
-              </motion.span>
-            </span>
-          </h2>
+        {/* === A BAND, NOT A CENTRED STACK ===
 
+            This was four blocks centred one under another: a headline, two
+            buttons, "Or call", and two page links. Two problems with that.
+
+            IT WAS THE ONLY CENTRED THING ON THE PAGE. Every other section
+            here sets its copy from the left margin, so the closing block
+            broke the page's own rhythm at the one moment it is asking for
+            something.
+
+            AND IT MIXED CONTACT WITH NAVIGATION. "Or call" and "How the
+            service works" were the same size, the same cream, the same
+            orange underline, sitting eight pixels apart — so a phone number
+            and a link to another page read as two items on one list. They
+            are not the same kind of thing: one is how you reach a human, the
+            other is where to go if you are not ready to. The rule between
+            them says so.
+
+            The three ways to reach us now group on the right, in the order
+            they commit you to: a form, a message, a phone call. */}
+        <div className="shell">
+          <div className="grid gap-y-9 lg:grid-cols-12 lg:items-end lg:gap-x-12">
+            <div className="lg:col-span-7">
+              <h2 className="max-w-[22ch] font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-cream">
+                <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                  <motion.span
+                    initial={ask.reduced ? false : { y: "112%" }}
+                    animate={{ y: ask.on ? "0%" : "112%" }}
+                    transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
+                    className="block"
+                  >
+                    Tell us your headcount.
+                  </motion.span>
+                </span>
+                <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                  <motion.span
+                    initial={ask.reduced ? false : { y: "112%" }}
+                    animate={{ y: ask.on ? "0%" : "112%" }}
+                    transition={{ duration: 0.9, delay: 0.19, ease: EASE }}
+                    className="block text-orange"
+                  >
+                    We&rsquo;ll size it.
+                  </motion.span>
+                </span>
+              </h2>
+            </div>
+
+            <div className="lg:col-span-5">
+              <motion.div
+                {...rAsk(0.4)}
+                className="flex flex-wrap items-center gap-4 lg:justify-end"
+              >
+                <Link
+                  href="/#pricing"
+                  className="hero-btn-dark group relative inline-flex h-[3.25rem] items-center gap-2 overflow-hidden rounded-full bg-orange px-7 font-sans text-[0.95rem] font-semibold text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
+                >
+                  <span className="relative z-10">Get pricing</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative z-10 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5"
+                  >
+                    &rarr;
+                  </span>
+                </Link>
+
+                <a
+                  href={WA_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-[3.25rem] items-center rounded-full border border-cream/25 px-7 font-sans text-[0.95rem] font-semibold text-cream transition-colors duration-300 hover:border-cream/60"
+                >
+                  WhatsApp
+                </a>
+              </motion.div>
+
+              <motion.p
+                {...rAsk(0.55)}
+                /* /60 -> /70: 4.37:1 against the plate's brightest pixel,
+                   under the 4.5 floor for text this size. /70 is 5.57:1. */
+                className="mt-5 font-sans text-[0.95rem] text-cream/70 lg:text-right"
+              >
+                Or call{" "}
+                <a
+                  href={TEL_HREF}
+                  className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
+                >
+                  {PHONE_LABEL}
+                </a>
+              </motion.p>
+            </div>
+          </div>
+
+          {/* the rule is what separates "reach us" from "read on" — see the
+              note above. Decoration, so cream/15 is a border and not text. */}
           <motion.div
-            {...rAsk(0.4)}
-            className="mt-9 flex flex-wrap items-center justify-center gap-4"
-          >
-            <Link
-              href="/#pricing"
-              className="hero-btn-dark group relative inline-flex h-[3.25rem] items-center gap-2 overflow-hidden rounded-full bg-orange px-7 font-sans text-[0.95rem] font-semibold text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
-            >
-              <span className="relative z-10">Get pricing</span>
-              <span
-                aria-hidden="true"
-                className="relative z-10 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5"
-              >
-                &rarr;
-              </span>
-            </Link>
-
-            <a
-              href={WA_HREF}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-[3.25rem] items-center rounded-full border border-cream/25 px-7 font-sans text-[0.95rem] font-semibold text-cream transition-colors duration-300 hover:border-cream/60"
-            >
-              WhatsApp
-            </a>
-          </motion.div>
-
-          <motion.p
-            {...rAsk(0.55)}
-            /* /60 -> /70: 4.37:1 against the plate's brightest pixel, under the 4.5 floor for text this size. /70 is 5.57:1. */
-            className="mt-7 font-sans text-[0.95rem] text-cream/70"
-          >
-            Or call{" "}
-            <a
-              href={TEL_HREF}
-              className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
-            >
-              {PHONE_LABEL}
-            </a>
-          </motion.p>
-
-          <motion.p
             {...rAsk(0.68)}
-            /* /55 -> /70. This row was the tightest thing on the section and was already only 4.61:1 on the bare radial, before the plate went behind it. */
-            className="mt-8 font-sans text-[0.95rem] text-cream/70"
+            className="mt-12 flex flex-wrap items-baseline gap-x-7 gap-y-3 border-t border-cream/15 pt-7"
           >
-            <Link
-              href="/service"
-              className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
-            >
-              How the service works
-            </Link>
-            {" · "}
-            <Link
-              href="/menu"
-              className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
-            >
-              The menu
-            </Link>
-          </motion.p>
+            <span className="font-display text-[0.72rem] font-extrabold uppercase tracking-[0.16em] text-cream/70">
+              Keep reading
+            </span>
+            {/* /55 -> /70. This row was the tightest thing on the section and
+                was already only 4.61:1 on the bare radial, before the plate
+                went behind it. */}
+            <p className="font-sans text-[0.95rem] text-cream/70">
+              <Link
+                href="/service"
+                className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
+              >
+                How the service works
+              </Link>
+              {" · "}
+              <Link
+                href="/menu"
+                className="font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4"
+              >
+                The menu
+              </Link>
+            </p>
+          </motion.div>
         </div>
       </section>
     </>
