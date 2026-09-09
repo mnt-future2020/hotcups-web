@@ -249,7 +249,13 @@ export default function WhoWeServeView() {
       >
         <div className="shell">
           <div className="grid items-center gap-y-10 lg:grid-cols-12 lg:gap-x-12">
-            <div className="lg:col-span-7">
+            {/* 7/5 BECAME 6/6 SO THE PORTRAIT COULD GROW AT ALL. It had
+                already filled 430 of the 442px its column offered — twelve
+                pixels of slack — so every further increase to max-w was
+                landing on a column that could not give it. The copy column
+                gives up 638px for 540; measured, the headline still breaks
+                in the same three places. */}
+            <div className="lg:col-span-6">
               <motion.div
                 initial={hero.reduced ? undefined : { opacity: 0, x: -14 }}
                 animate={
@@ -321,7 +327,7 @@ export default function WhoWeServeView() {
               </figure>
             </div>
 
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-6">
               <div
                 ref={flaskRef}
                 /* BOTH CAPS HAD TO RISE TOGETHER. The picture is bound by
@@ -331,8 +337,8 @@ export default function WhoWeServeView() {
                    viewport is 378, so the box was cut to 378 and the picture
                    drawn to fit inside it. Raising only max-w would have moved
                    nothing at all. */
-                className="relative mx-auto w-[80%] max-w-[340px] lg:mr-0 lg:w-full lg:max-w-[430px]"
-                style={{ maxHeight: "64vh" }}
+                className="relative mx-auto w-[86%] max-w-[380px] lg:mr-0 lg:w-full lg:max-w-[540px]"
+                style={{ maxHeight: "78vh" }}
               >
                 <motion.span
                   aria-hidden="true"
@@ -390,10 +396,10 @@ export default function WhoWeServeView() {
                     alt="Woman"
                     width={1078}
                     height={1460}
-                    sizes="(max-width: 1024px) 80vw, 430px"
+                    sizes="(max-width: 1024px) 86vw, 540px"
                     priority
                     className="h-auto w-full"
-                    style={{ maxHeight: "64vh", objectFit: "contain" }}
+                    style={{ maxHeight: "78vh", objectFit: "contain" }}
                   />
                 </motion.div>
               </div>
