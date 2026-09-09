@@ -490,104 +490,214 @@ export default function MachinesView() {
         }}
       >
         <div className="shell">
-          <div className="grid items-center gap-y-8 lg:grid-cols-12 lg:gap-x-12">
-            <div className="lg:col-span-7">
-              {/* text-cream/50 NEVER APPLIED, and it was failing before this
-                  plate went in. .eyebrow in globals.css sets
-                  color: var(--color-mute) and is UNLAYERED, so it beats any
-                  Tailwind text utility — utilities live in @layer utilities
-                  and unlayered CSS wins over a layer regardless of
-                  specificity. This eyebrow has been rendering mute, #8b7a6f,
-                  on an espresso ground: 2.8:1, which fails.
+          {/* === THE SECTION IS A DECISION, SO IT IS DRAWN AS ONE ===
 
-                  Set inline so it actually takes, and at 70% rather than the
-                  50% the class asked for, because 50% measures 3.9:1 over
-                  this ground and small text needs 4.5. cream at 70% is
-                  6.0:1. The class stays as a record of the intent.
+              It was copy-left / photograph-right, which is the layout of the
+              hero on /service, the hero on /who-we-serve and the section
+              directly above this one. Four in a row of the same shape, and
+              this is the only one whose content is not a description but a
+              THRESHOLD: everything it says turns on a number and which side
+              of it you are.
 
-                  The underlying bug is site-wide — five eyebrows ask for a
-                  colour and silently get mute — and fixing it means moving
-                  that one rule into @layer components, which touches every
-                  eyebrow on the site. Not done here on purpose. */}
-              <motion.span
-                {...rWhich(0.05, 0)}
-                className="eyebrow block text-cream/50"
-                style={{ color: "rgb(255 247 240 / 0.7)" }}
-              >
-                <span className="text-orange">05</span> — Which one you need
-              </motion.span>
+              So the number is the layout. One rail across the shell, a pivot
+              on it at 50 cups a day, and the two answers hung either side —
+              flasks under the line, a machine above it. The rail is lit only
+              on the machine side, because that is the half the sentence
+              points at.
 
-              <h2 className="mt-4 max-w-[16ch] font-display text-[clamp(1.85rem,3.6vw,3rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-cream">
-                <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
-                  <motion.span
-                    initial={which.reduced ? false : { y: "112%" }}
-                    animate={{ y: which.on ? "0%" : "112%" }}
-                    transition={{ duration: 0.9, delay: 0.14, ease: EASE }}
-                    className="block"
-                  >
-                    Flasks or a <span className="text-orange">machine?</span>
-                  </motion.span>
-                </span>
-              </h2>
+              NOTHING HERE IS NEW COPY. "The cheaper answer, and nothing to
+              install" and "the better fit" are the two halves of the
+              paragraph this replaces, split at the comma they already had.
+              The calculator sentence and its link survive underneath.
 
-              <motion.p
-                {...rWhich(0.32)}
-                className="mt-4 max-w-[34ch] font-display text-[clamp(1.15rem,1.9vw,1.55rem)] font-bold leading-[1.28] text-cream/90"
-              >
-                Above 50 cups a day, a machine is the better fit.
-              </motion.p>
+              THE PHOTOGRAPH MOVED TO THE MACHINE SIDE. It used to sit in a
+              column of its own with nothing to do with the argument; it is a
+              machine, so it belongs above the line. Its GSAP ref and its
+              motion clip come with it unchanged — the two engines still
+              write different nodes. */}
+          <div className="max-w-[46rem]">
+            {/* text-cream/50 NEVER APPLIED. .eyebrow in globals.css sets
+                color: var(--color-mute) and is UNLAYERED, so it beats any
+                Tailwind text utility regardless of specificity. This eyebrow
+                had been rendering mute, #8b7a6f, at 2.8:1. Set inline so it
+                takes, and at 70% rather than the 50% the class asks for,
+                because 50% measures 3.9:1 over this ground and small text
+                needs 4.5. cream at 70% is 6.0:1. */}
+            <motion.span
+              {...rWhich(0.05, 0)}
+              className="eyebrow block text-cream/50"
+              style={{ color: "rgb(255 247 240 / 0.7)" }}
+            >
+              <span className="text-orange">05</span> — Which one you need
+            </motion.span>
 
-              <motion.p
-                {...rWhich(0.45)}
-                className="mt-6 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/70"
-              >
-                Under that line, flasks are the cheaper answer and there is
-                nothing to install. The calculator on the home page works it
-                out from your headcount.
-              </motion.p>
-
-              <motion.div {...rWhich(0.58)}>
-                <Link
-                  href="/#savings"
-                  className="mt-7 inline-flex items-center gap-2 font-sans text-[0.95rem] font-semibold text-orange underline decoration-orange decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange-dark"
+            <h2 className="mt-4 max-w-[16ch] font-display text-[clamp(1.85rem,3.6vw,3rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-cream">
+              <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                <motion.span
+                  initial={which.reduced ? false : { y: "112%" }}
+                  animate={{ y: which.on ? "0%" : "112%" }}
+                  transition={{ duration: 0.9, delay: 0.14, ease: EASE }}
+                  className="block"
                 >
-                  Work out your number
-                  <span aria-hidden="true">&rarr;</span>
-                </Link>
+                  Flasks or a <span className="text-orange">machine?</span>
+                </motion.span>
+              </span>
+            </h2>
+          </div>
+
+          {/* --- the rail --- */}
+          <div className="mt-11 lg:mt-14">
+            <div className="relative h-[3px] w-full rounded-full bg-cream/15">
+              {/* lit from the pivot rightward, because "above the line" is
+                  the half the sentence recommends. Decoration: aria-hidden,
+                  and no text sits on it. */}
+              <motion.span
+                aria-hidden="true"
+                initial={which.reduced ? false : { scaleX: 0 }}
+                animate={{ scaleX: which.on ? 1 : 0 }}
+                transition={{ duration: 0.9, delay: 0.35, ease: EASE }}
+                className="absolute inset-y-0 left-[38%] right-0 origin-left rounded-full bg-gradient-to-r from-orange/40 to-orange"
+              />
+              <motion.span
+                aria-hidden="true"
+                initial={which.reduced ? false : { scale: 0 }}
+                animate={{ scale: which.on ? 1 : 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.75,
+                  ease: [0.34, 1.56, 0.64, 1],
+                }}
+                className="absolute left-[38%] top-1/2 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-orange bg-[#241c18]"
+              />
+            </div>
+
+            {/* the number hangs off the pivot, so the two read as one object */}
+            <div className="relative mt-4 h-[1.4rem]">
+              <motion.span
+                {...rWhich(0.85, 8)}
+                className="absolute left-[38%] -translate-x-1/2 whitespace-nowrap font-display text-[0.82rem] font-extrabold uppercase tracking-[0.16em] text-cream"
+              >
+                50 cups a day
+              </motion.span>
+            </div>
+
+            {/* --- the two answers, one each side of it ---
+
+                EVERY SMALL SIZE HERE IS cream/85 OR ABOVE, AND THAT IS
+                MEASURED. The scrim is a radial weakest at 70% 30% — which is
+                exactly where the right-hand answer now sits — so the worst
+                ground in this section is rgb(117,93,79), and against it:
+
+                  cream/70   3.78   fails
+                  cream/80   4.37   fails
+                  cream/85   4.70   passes
+                  cream      5.77
+
+                The paragraph this replaces was cream/70, safe only because it
+                sat on the left where the scrim is heaviest. Moving copy to
+                the right half made 70% unusable. */}
+            <div className="mt-9 grid gap-y-10 lg:grid-cols-[38%_1fr] lg:gap-x-14">
+              <motion.div
+                {...rWhich(0.95, 18)}
+                className="lg:pr-14 lg:text-right"
+              >
+                <p className="font-display text-[0.75rem] font-extrabold uppercase tracking-[0.16em] text-cream/85">
+                  Under the line
+                </p>
+                <h3 className="mt-3 font-display text-[clamp(1.3rem,2.2vw,1.75rem)] font-extrabold tracking-[-0.02em] text-cream">
+                  Flasks
+                </h3>
+                <p className="mt-2.5 font-sans text-[1rem] leading-[1.6] text-cream/85 lg:ml-auto lg:max-w-[26ch]">
+                  The cheaper answer, and nothing to install.
+                </p>
+              </motion.div>
+
+              <motion.div
+                {...rWhich(1.05, 18)}
+                /* items-START, not items-center. Centred, the right-hand
+                   answer floated down against a photograph twice the height
+                   of its text, so "Above the line" sat 45px below "Under the
+                   line" and the two stopped reading as a pair either side of
+                   the pivot. They are one comparison; they start on one
+                   line. */
+                className="lg:flex lg:items-start lg:gap-10"
+              >
+                <div className="lg:flex-1">
+                  <p className="font-display text-[0.75rem] font-extrabold uppercase tracking-[0.16em] text-orange">
+                    Above the line
+                  </p>
+                  <h3 className="mt-3 font-display text-[clamp(1.3rem,2.2vw,1.75rem)] font-extrabold tracking-[-0.02em] text-cream">
+                    A machine
+                  </h3>
+                  <p className="mt-2.5 max-w-[26ch] font-sans text-[1rem] leading-[1.6] text-cream/85">
+                    The better fit.
+                  </p>
+                </div>
+
+                {/* GSAP owns this wrapper; motion animates the inner
+                    clip-path, so the two never write the same property on one
+                    node. Both unchanged — only where the wrapper sits did. */}
+                <div
+                  ref={bandMachineRef}
+                  className="relative mt-8 aspect-[3/2] w-full max-w-[380px] lg:-mt-6 lg:w-[42%] lg:max-w-none lg:shrink-0"
+                >
+                  <motion.div
+                    initial={
+                      which.reduced ? undefined : { opacity: 0, scale: 0.94 }
+                    }
+                    animate={
+                      which.reduced
+                        ? undefined
+                        : which.on
+                          ? { opacity: 1, scale: 1 }
+                          : { opacity: 0, scale: 0.94 }
+                    }
+                    transition={{ duration: 0.9, delay: 0.5, ease: EASE }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src="/img/section4-machine.webp"
+                      alt="A beverage machine on a workplace counter"
+                      fill
+                      sizes="(max-width: 1024px) 80vw, 300px"
+                      className="object-contain"
+                    />
+                  </motion.div>
+                </div>
               </motion.div>
             </div>
 
-            <div className="lg:col-span-5">
-              {/* GSAP owns this wrapper; motion animates the inner clip-path,
-                  so the two never write the same property on one node. */}
-              <div
-                ref={bandMachineRef}
-                className="relative mx-auto aspect-[3/2] w-full max-w-[440px]"
+            {/* --- what works it out --- */}
+            <motion.p
+              {...rWhich(1.2)}
+              className="mt-10 max-w-[46ch] font-sans text-[1.05rem] leading-[1.6] text-cream/85"
+            >
+              The calculator on the home page works it out from your
+              headcount.
+            </motion.p>
+
+            {/* THE LINK IS CREAM NOW, NOT ORANGE. orange measures 1.94:1 at
+                the weakest point of this scrim and only 4.15 at the
+                strongest — under 4.5 everywhere in the section, at 0.95rem.
+                It was failing before this change and would have failed worse
+                here, since the rail block reaches further right than the old
+                copy column did. Cream is 5.77 at worst; the orange survives
+                as the underline and as the hover colour, neither of which is
+                text a ratio applies to. */}
+            <motion.div {...rWhich(1.3)}>
+              <Link
+                href="/#savings"
+                className="group/calc mt-7 inline-flex items-center gap-2 font-sans text-[0.95rem] font-semibold text-cream underline decoration-orange decoration-2 underline-offset-4 transition-colors duration-300 hover:text-orange"
               >
-                <motion.div
-                  initial={
-                    which.reduced ? undefined : { opacity: 0, scale: 0.94 }
-                  }
-                  animate={
-                    which.reduced
-                      ? undefined
-                      : which.on
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.94 }
-                  }
-                  transition={{ duration: 0.9, delay: 0.35, ease: EASE }}
-                  className="absolute inset-0"
+                Work out your number
+                <span
+                  aria-hidden="true"
+                  className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/calc:translate-x-1"
                 >
-                  <Image
-                    src="/img/section4-machine.webp"
-                    alt="A beverage machine on a workplace counter"
-                    fill
-                    sizes="(max-width: 1024px) 80vw, 440px"
-                    className="object-contain"
-                  />
-                </motion.div>
-              </div>
-            </div>
+                  &rarr;
+                </span>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>
