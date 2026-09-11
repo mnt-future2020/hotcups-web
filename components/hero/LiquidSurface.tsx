@@ -32,42 +32,58 @@ export type LiquidHandle = {
 export type FlaskMouth = [number, number];
 
 const POSTER = "/img/hero-poster.webp";
-/* The branded flask and a glass of chai mid-splash, composited into ONE
-   texture. Two textures would mean two rects, two rises and two reflections
-   in the shader; as one image the waterline cut, the mirrored reflection and
-   the contact darkening all apply to both for free. */
-/* Flask and glass side by side. The steam rises off the CHAI, not the sealed
-   flask: a closed vacuum flask does not steam, and the glass is the thing that
-   is visibly hot.
+/* THE PLATE IS THE CREAM HOTCUPS FLASK NOW, at the client's direction — the
+   same composition as before, flask beside a glass of chai mid-splash, with
+   the client's own branded flask in place of the unbranded steel one. It
+   replaces hero-subject-v2.webp.
 
-   THE ORIGIN IS THE GLASS RIM, NOT THE SPLASH. v was 0.38, picked off a
-   measurement of the splash crown — and 0.38 is up in the crown itself, a
-   clear third of the plate ABOVE anything hot. Puffs then climb another 15%
-   of the frame from there, so the brightest part of the plume ended up level
-   with the flask's shoulder: a soft bright blob hanging in mid-air with a gap
-   between it and the chai. Re-measured against guides drawn on the plate, the
-   tumbler's rim sits at v = 0.555 and its centre line at u = 0.35.
+   IT WAS CUT HERE, NOT SUPPLIED CUT. The source is app/im1.png, a 1230x1278
+   photograph on a wooden counter, fully opaque — no alpha channel at all. The
+   cut is reproducible and committed: scripts/cut-im1.js carries the key, and
+   every threshold in it was measured off this photograph rather than
+   guessed.
 
-   v = 0.5, which is a notch ABOVE the rim rather than on it. Sitting exactly
-   on 0.555 the first half of every puff's life was spent behind the glass and
-   the splash, so the plume only became visible well up the frame — the same
-   complaint as the old 0.38, from the opposite direction. 0.5 is the base of
-   the splash: the plume leaves the chai, rises through the crown, and is
-   visible from its first frame.
+   THE KEY HAS THREE ARMS, because no single threshold separates this frame.
 
-   ONE PLATE NOW, NOT TWO.
-   A phone used to get hero-flask-v2.webp, a portrait crop of this same
-   photograph, on the reasoning that the pair "clamps to a squat 27% of the
-   height" on a narrow screen. That reasoning belonged to a layout where the
-   flask stood in the right-hand margin beside the copy. It does not stand
-   there any more — below md it sits in a wide, short band across the bottom,
-   which is exactly the shape this landscape plate wants.
+     FLASK   sat < 0.30, fenced to u > 0.42. The body is (198,185,169) at sat
+             0.15 and the lid (26,27,27) at sat 0.02 — near-neutral against a
+             backdrop that is warm brown everywhere, sat 0.88-0.90. The fence
+             exists because the PHOTOGRAPH'S OWN STEAM is grey enough in
+             places to slip through this arm, and it drifts to the left.
 
-   And the crop was cutting the glass. Its left edge runs straight through the
-   chai tumbler, so the phone was being shown a severed glass while every
-   other width got the whole composition. A wide band and a landscape plate
-   fix the shape and the crop in the same move. */
-const SUBJECT = { src: "/img/hero-subject-v2.webp", u: 0.35, v: 0.5 };
+     BRIGHT  lum > 110, anywhere. Takes the splash crown (152), every droplet
+             (119+) and the lit ginger (164). 110 and not 70: that steam tops
+             out near 90, and keying it in hung brown smears in mid-air beside
+             the glass — visible, and wrong, because the hero draws its own.
+
+     GLASS   lum > 55, fenced to u < 0.45 and 0.52 < v < 0.92. The tumbler's
+             facets and its shaded side fall well under 110; at that threshold
+             they keyed OUT and left transparent stripes down the middle of
+             the chai. Nothing else in that corner survives 55 — the table
+             reads 39-41, the cinnamon 37, the cardamom 38, the leaf 48.
+
+   Then: drop components under 45px, fill interior holes, cut the table at
+   v = 0.92, feather 1.5px. HOLES ARE FILLED BEFORE THE BOTTOM IS CUT, and
+   getting that order wrong is what produced the stripes the first time —
+   cutting first opens a channel from the chai's dark bands down through the
+   glass base to the frame edge, so the flood that finds "outside" reaches
+   them and they are never filled. The handle's opening is the one hole left
+   alone: any hole over 4000px whose centroid is right of u 0.78.
+
+   ASPECT 1.169 -> 1.059, near enough that the geometry below is untouched.
+   The plate is sized by HEIGHT and width follows texAspect — the reason that
+   choice is spelled out at the top of layout() — so a 9% narrower plate just
+   leaves 9% more air in the right margin.
+
+   THE STEAM STILL LEAVES THE CHAI, u = 0.27, v = 0.55, and the old note's
+   reasoning survives the swap intact: "a closed vacuum flask does not steam,
+   and the glass is the thing that is visibly hot." Re-measured on guides over
+   THIS cut-out, the tumbler's rim sits at v = 0.60 and its centre line at
+   u = 0.27. v = 0.55 is a notch above the rim rather than on it — the same
+   0.055 of clearance the old plate used against its own 0.555 rim, and for
+   the same reason: born exactly on the rim, the first half of every puff is
+   spent behind the glass and the splash. */
+const SUBJECT = { src: "/img/hero-hotcups-chai.webp", u: 0.27, v: 0.55 };
 
 function capable() {
   if (typeof window === "undefined") return false;
@@ -383,8 +399,10 @@ export default function LiquidSurface({
          query.) */
       const baseY = stacked ? 0.04 : 0.13;
       uniforms.uFlaskRect.value = [baseX, baseY, wUV, hUV];
-      /* the steam leaves the flask's spout, which is off-centre inside the
-         composite — reported in the 2D canvas's top-down space */
+      /* the steam leaves the chai, which is off-centre inside the composite
+         — reported in the 2D canvas's top-down space. SUBJECT.v is measured
+         from the TOP of the image, which is why it is added to the plate's
+         top edge rather than subtracted from it. */
       onMouth?.([
         baseX - wUV / 2 + subject.u * wUV,
         Math.max(0.02, 1 - (baseY + hUV) + subject.v * hUV),
