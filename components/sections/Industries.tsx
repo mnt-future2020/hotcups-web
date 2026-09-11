@@ -166,8 +166,11 @@ const DWELL = 3500;
     than written inline so the two places cannot drift apart — which they had
     anyway: this read "Badam milk, Hot chocolate" until the client cut Milk to
     plain milk, and the hot chocolate had been stale for two swaps of section
-    02's fourth card before that. Both named drinks /menu does not pour. */
-const MENU = ["Tea", "Filter coffee", "Milk", "Masala buttermilk"];
+    02's fourth card before that. Both named drinks /menu does not pour.
+
+    "Buttermilk", not "Masala buttermilk", at the client's direction — the
+    drink is plain. Same correction in Ticker, Hero, section 02 and /menu. */
+const MENU = ["Tea", "Filter coffee", "Milk", "Buttermilk"];
 
 /* ===============================================================
    !!  FIVE OF THE SIX FACT LINES ARE INVENTED.               !!

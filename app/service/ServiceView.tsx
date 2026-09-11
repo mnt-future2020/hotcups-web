@@ -81,7 +81,7 @@ const DRINKS = [
   { name: "Tea", count: "1 blend", img: "/img/menu-tea.webp", alt: "A glass of masala chai with loose tea leaves" },
   { name: "Coffee", count: "1 roast", img: "/img/menu-coffee.webp", alt: "South Indian filter coffee in a brass tumbler and davara" },
   { name: "Milk", count: "1 option", img: "/img/menu-badam.webp", alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes" },
-  { name: "Seasonal", count: "2 specials", img: "/img/menu-buttermilk.webp", alt: "Masala buttermilk with coriander, cumin and a slice of cucumber" },
+  { name: "Seasonal", count: "2 specials", img: "/img/menu-buttermilk.webp", alt: "A glass of buttermilk topped with chopped coriander and cumin, a slice of cucumber on the rim" },
 ];
 
 const PANTRY = [

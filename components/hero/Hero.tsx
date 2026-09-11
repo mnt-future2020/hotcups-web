@@ -136,19 +136,33 @@ const LIGHT_SLIDES: LightSlide[] = [
        went when the client cut Milk to plain milk. Both are now drinks the
        menu does not have, which is worse in a hero than anywhere else on the
        site. These four are the menu, and the fifth, Nannari Sarbath, is left
-       out only because the sentence needs to scan. */
-    sub: "Enjoy freshly prepared Tea, Filter Coffee, Milk, and Masala Buttermilk, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
+       out only because the sentence needs to scan.
+
+       "Buttermilk", not "Masala Buttermilk", at the client's direction — the
+       drink is plain. The same correction is in Ticker, Industries, section
+       02 and /menu; all five read from their own copy of the name, so they
+       had to be changed together or not at all. */
+    sub: "Enjoy freshly prepared Tea, Filter Coffee, Milk, and Buttermilk, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
     primary: { label: "See the menu", href: "#menu" },
     secondary: { label: "Get pricing", href: "#pricing" },
     /* THE DRINKS PLATE STAYS, UNDER A HEADLINE THAT SAYS "MACHINE".
        That pairing is deliberate and was chosen over the machine plate. The
-       sentence is about what comes OUT of the machine — four named drinks —
-       so the photograph showing those four is the one that carries it. The
-       machine plate would also have put the same picture on two consecutive
-       slides, and the hero set has only one of them. */
+       sentence is about what comes OUT of the machine, so a photograph of
+       drinks is the one that carries it. The machine plate would also have
+       put the same picture on two consecutive slides, and the hero set has
+       only one of them.
+
+       THE PLATE DOES NOT SHOW THE FOUR DRINKS THE SENTENCE NAMES, and the
+       alt used to claim it did. What is actually in frame: masala chai, a
+       filter coffee davara set, badam milk and a mug of hot chocolate. There
+       is no buttermilk in it at all and no plain milk — two of the four are
+       drinks /menu does not pour, which is the exact fault the note above
+       records being fixed in the COPY and which was left standing in the
+       PICTURE. The alt describes what is there instead of naming drinks, so
+       it is at least true; the photograph itself still needs replacing. */
     image: {
       src: "/img/hero-slide-drinks.webp",
-      alt: "Tea, filter coffee, milk and masala buttermilk with whole spices",
+      alt: "A group of hot drinks with whole spices, nuts and coffee beans",
     },
   },
 ];

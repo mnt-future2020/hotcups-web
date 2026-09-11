@@ -62,7 +62,11 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    started, and every one is marked `real: true`:
 
      Tea, Filter Coffee, Milk        components/ui/Ticker.tsx
-     Masala Buttermilk               section 02's fourth card
+     Buttermilk                      section 02's fourth card. Plain,
+                                     not masala — corrected on the
+                                     client's instruction after the
+                                     name had run as "Masala
+                                     Buttermilk" in five places.
      Nannari Sarbath                 renamed from Rose Sarbath, which is
                                      what that card poured before it. This
                                      is the one name the client GAVE rather
@@ -85,7 +89,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    ---------------------------------------------------------------
    PICTURES. Every entry has one. Three are the client's photographs cropped
    4:3 to 720x540 tiles carrying `cover`; two are cut-out PLATES this site
-   already had, drawn contained — Masala Buttermilk and Nannari Sarbath —
+   already had, drawn contained — Buttermilk and Nannari Sarbath —
    and Tea uses its own category plate, which is honest now that it is the
    only tea rather than one of eight.
 
@@ -203,11 +207,11 @@ const DRINKS = [
     name: "Seasonal",
     noun: "specials",
     img: "/img/menu-buttermilk.webp",
-    alt: "Masala buttermilk with coriander, cumin and a slice of cucumber",
+    alt: "A glass of buttermilk topped with chopped coriander and cumin, a slice of cucumber on the rim",
     /* THE ONLY CATEGORY THAT IS FULLY GROUNDED, and the only count that was
        ever confirmed. Both names are drinks this site has photographed. */
     varieties: [
-      { name: "Masala Buttermilk", real: true, img: "/img/menu-buttermilk.webp" },
+      { name: "Buttermilk", real: true, img: "/img/menu-buttermilk.webp" },
       /* RENAMED FROM "Rose Sarbath" ON INSTRUCTION. This is the one name on
          the page the client supplied outright rather than confirmed — the
          other four were already published here — which makes it the best

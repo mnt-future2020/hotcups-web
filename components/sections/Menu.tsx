@@ -185,7 +185,15 @@ const CATEGORIES = [
   {
     /* THE ONE COLD DRINK, and everything odd about this entry follows from
        that. It has been a mug of hot chocolate and a rose sarbath; it is now
-       masala buttermilk, from app/buttermilk.png at the client's direction.
+       buttermilk, from app/buttermilk.png at the client's direction.
+
+       PLAIN BUTTERMILK, NOT MASALA. It ran as "Masala Buttermilk" in five
+       places until the client corrected it. THE PHOTOGRAPH STILL SHOWS THE
+       SPICED DRINK — chopped coriander through it, cumin and chilli across
+       the top, a slice of cucumber on the rim — so the picture and the name
+       no longer agree. The alt text was rewritten to describe what is in the
+       glass instead of naming the drink, which keeps it true, but this needs
+       a photograph of plain buttermilk to actually be right.
        /img/menu-specialty.webp and /img/menu-sarbath.webp are both
        unreferenced from here on and both left on disk.
 
@@ -243,7 +251,7 @@ const CATEGORIES = [
     name: "Seasonal",
     count: "2 specials",
     img: "/img/menu-buttermilk.webp",
-    alt: "Masala buttermilk with coriander, cumin and a slice of cucumber",
+    alt: "A glass of buttermilk topped with chopped coriander and cumin, a slice of cucumber on the rim",
     wash: "#D1D1C7",
     rim: 49,
     cx: 50,
