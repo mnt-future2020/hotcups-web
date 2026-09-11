@@ -166,17 +166,29 @@ const DWELL = 3500;
     than written inline so the two places cannot drift apart — which they had
     anyway: this read "Badam milk, Hot chocolate" until the client cut Milk to
     plain milk, and the hot chocolate had been stale for two swaps of section
-    02's fourth card before that. Both named drinks /menu does not pour. */
-const MENU = ["Tea", "Filter coffee", "Milk", "Masala buttermilk"];
+    02's fourth card before that. Both named drinks /menu does not pour.
+
+    "Buttermilk", not "Masala buttermilk", at the client's direction — the
+    drink is plain. Same correction in Ticker, Hero, section 02 and /menu. */
+const MENU = ["Tea", "Filter coffee", "Milk", "Buttermilk"];
 
 /* ===============================================================
-   !!  FIVE OF THE SIX FACT LINES ARE INVENTED.               !!
+   !!  SIX OF THE SEVEN FACT LINES ARE INVENTED.              !!
    !!  DO NOT PUBLISH UNTIL EACH ONE IS CONFIRMED.            !!
    ===============================================================
      Only the Coimbatore figure — three-shift factories at 2,000
-     cups a day — came from the client. The other five were
+     cups a day — came from the client. The other six were
      written to fill the shape and are marked `placeholder: true`
      below.
+
+     EVENTS & FUNCTIONS IS THE NEWEST AND THE LEAST SOURCED. The
+     client supplied a photograph of a catering counter at a
+     wedding and asked for it to be used here; the segment exists
+     because the picture does. Nobody has said Hotcups caters
+     events, how it is priced, or whether it is the same round or
+     a separate booking. The caption and the fact line below are
+     written from what is visible in the photograph and nothing
+     else.
 
      They read as operational facts about a real company: that
      hospitals are served through night shifts, that campuses are
@@ -205,7 +217,13 @@ const PLACES: Place[] = [
   {
     key: "office",
     name: "IT & offices",
-    src: "/img/wp-office.webp",
+    /* SWAPPED FROM wp-office.webp at the client's direction, for a
+       photograph they supplied. THE BRANDING LEFT THE FRAME WITH IT: the old
+       plate had HOTCUPS cups on every desk, this one is a bean-to-cup
+       machine and plain white cups. The client was asked and chose the
+       better photograph over the branded one. wp-office.webp is unreferenced
+       from here now and left on disk. */
+    src: "/img/wp-office-pantry.webp",
     caption: "desk-side, twice a day",
     fact: "Desk-side delivery, morning and evening.",
     placeholder: true,
@@ -246,11 +264,14 @@ const PLACES: Place[] = [
   {
     key: "showroom",
     name: "Showrooms & banks",
-    /* STAND-IN. wp-other is the generic stock office that used to sit under
-       "Something else" — no branded cups, cooler grade than the other five.
-       It is here only so the slot points at a file that exists; the showroom
+    /* STILL A STAND-IN, JUST A BETTER ONE. This was wp-other.webp, the
+       generic stock office that used to sit under "Something else" — no
+       branded cups, cooler grade than the other five. wp-branch.webp is the
+       client's own photograph and is lit and staged far better, but it is
+       AN OPEN-PLAN OFFICE, not a showroom floor or a bank branch: the slot
+       still does not have a picture of the thing it names. The showroom
        photograph is being shot. */
-    src: "/img/wp-other.webp",
+    src: "/img/wp-branch.webp",
     /* deliberately NOT "through peak hours" — that is Retail's line, and the
        two segments would read as the same thing. A shop serves its own staff
        across a busy day; a showroom or a branch serves the customer sitting
@@ -258,6 +279,24 @@ const PLACES: Place[] = [
        the list. */
     caption: "for the customers waiting",
     fact: "Showroom floors and bank branches, where customers are served while they wait.",
+    placeholder: true,
+  },
+  {
+    key: "event",
+    name: "Events & functions",
+    src: "/img/wp-event.webp",
+    /* EVERY OTHER CAPTION HERE IS A CADENCE — twice a day, three shifts,
+       round the clock, between classes, through peak hours, for the
+       customers waiting. An event has no cadence; it has a day. So this one
+       describes the same thing the others do — when the flasks are there —
+       in the only unit that applies to it. */
+    caption: "for as long as the hall is full",
+    /* WRITTEN FROM THE PHOTOGRAPH, NOT FROM ANYTHING ANYONE SAID. It shows a
+       server pouring chai from a brass pot into davara sets at a decorated
+       counter, with a function going on behind him. The sentence claims
+       nothing the picture does not already show — no volumes, no service
+       model, no pricing. See the banner above. */
+    fact: "Weddings and functions, poured at the counter through the day.",
     placeholder: true,
   },
 ];
@@ -744,7 +783,15 @@ export default function Industries() {
                       aria-pressed={isPicked}
                       className="group block w-full text-left"
                     >
-                      <span className="flex items-baseline justify-between gap-4 py-[clamp(0.3rem,0.9svh,0.7rem)]">
+                      {/* 0.66svh, DOWN FROM 0.9. The seventh name is why — see the
+                          note on .ledger-name in globals.css, which carries
+                          the measurements. 0.72 was tried first and cleared
+                          1366x768, 1440x900 and 1920x1080 but left 1280x720
+                          two pixels over; 0.66 clears all four. The floor and
+                          the ceiling are untouched, so nothing changes below
+                          a 667px-tall window where the 0.3rem floor already
+                          binds. */}
+                      <span className="flex items-baseline justify-between gap-4 py-[clamp(0.3rem,0.66svh,0.7rem)]">
                         {/* WEIGHT AND COLOUR, NOT OUTLINE.
                             These were stroked outlines with no fill. The
                             contrast RATIO was fine — full-strength ink on the

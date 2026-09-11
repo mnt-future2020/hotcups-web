@@ -73,7 +73,7 @@ const RUN = [
   "Tea",
   "Filter Coffee",
   "Milk",
-  "Masala Buttermilk",
+  "Buttermilk",
   "Nannari Sarbath",
 ];
 
@@ -84,6 +84,12 @@ const RUN = [
     NOT the 3440 ultrawide the previous note set as the bar — the gap this
     whole mechanism exists to prevent would have come back at that width.
     Four passes is 4341px and 20 list items.
+
+    THAT NUMBER IS NOW CONSERVATIVE, NOT WRONG. "Masala Buttermilk" became
+    "Buttermilk" when the client corrected the drink, which takes seven
+    characters out of each of the four passes — the run got SHORTER, so the
+    3440 case the four passes were bought for still holds with room to spare.
+    Re-measure only if the list gains a name or the type grows.
 
     The type is clamp(1.25rem, 2.4vw, 1.875rem) and 2.4vw passes 1.875rem at
     1250px wide, so the names are already at full size in this measurement

@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
 import { NAV, NAV_FOR, NAV_HREF, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
-import { currentCups, subscribeCups } from "@/lib/cups";
+import { CUPS_LABEL } from "@/lib/cups";
 
 /* THE COUNTER DOCK, at the client's direction — the badge moves out of the
    hero and up here. lib/cups.ts has described this since it was written
@@ -30,18 +30,19 @@ import { currentCups, subscribeCups } from "@/lib/cups";
    the hero (see SlideFlask) — exactly one of the two renders at any width, so
    nothing is duplicated and nothing is lost on a laptop or a phone.
 
-   "cups this day", not "cups served this day". Dropping "served" is what the
+   "cups per day", not "cups served per day". Dropping "served" is what the
    dock has always done — it is doing no work the rest of the line is not
    already doing, and the words it saves are the difference between the dock
    fitting at 1280 and not. The hero badge keeps the full line.
 
-   THE PERIOD CHANGED FROM A MONTH TO A DAY, at the client's direction, and
-   the table above is now CONSERVATIVE rather than wrong. It was modelled on
-   "cups this month" at a dock+CTA of 345px; measured at 1280 the current
-   string gives a dock of 178px and a dock+CTA of 320px, so every row in it
-   has 25px more room than it claims. 1280 is therefore still safe as the
-   threshold — it was chosen against the wider string and nothing has grown.
-   Widen the label again and re-measure before trusting those numbers.
+   THE PERIOD CHANGED FROM A MONTH TO A DAY, then the figure from 15,000 to
+   18K, and the table above is now CONSERVATIVE rather than wrong on both
+   counts. It was modelled on "cups this month" at a dock+CTA of 345px;
+   "15,000+ cups this day" measured 178px at 1280, and "18K+ cups per day"
+   measures narrower again because the abbreviation drops three glyphs. The
+   string has only ever shrunk, so every row in the table has more room than
+   it claims and 1280 is still safe as the threshold. Widen the label and
+   re-measure before trusting those numbers.
 
    THE HERO BADGE SAYS THE SAME PERIOD, AND HAS TO.
    Exactly one of the two renders at any width (see SlideFlask), so a visitor
@@ -50,8 +51,11 @@ import { currentCups, subscribeCups } from "@/lib/cups";
    breakpoint would have turned the same number from a month's work into a
    day's. Both strings change together or neither does. */
 function CupsDock({ onDark }: { onDark: boolean }) {
-  const [cups, setCups] = useState(currentCups);
-  useEffect(() => subscribeCups(setCups), []);
+  /* NO STATE, NO SUBSCRIPTION AND NO FORMATTING. The figure is a constant
+     and so is its string — see lib/cups for why the ticker went and why the
+     abbreviation lives there rather than here. It also means this dock
+     renders the same number on the server as in the browser, which the
+     ticking version did not. */
 
   return (
     <p
@@ -100,9 +104,9 @@ function CupsDock({ onDark }: { onDark: boolean }) {
       </span>
       <span className="tabular-nums">
         <strong className={`font-semibold ${onDark ? "text-cream" : "text-ink"}`}>
-          {cups.toLocaleString("en-IN")}+
+          {CUPS_LABEL}
         </strong>{" "}
-        cups this day
+        cups per day
       </span>
     </p>
   );

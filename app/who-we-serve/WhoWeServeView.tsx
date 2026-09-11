@@ -61,14 +61,21 @@ import { WORKPLACE_ASK, WORKPLACE_FOR, type WorkplaceKey } from "@/lib/workplace
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+/* THIS LIST FOLLOWS SECTION 04 AND HAS TO. Industries.tsx is where the
+   segments are decided; if these two disagree, the home page and this page
+   name different businesses. Two photographs were swapped for the client's
+   own and a seventh segment was added there, so all three changes are
+   repeated here. The reasoning for each lives next to PLACES in
+   components/sections/Industries.tsx. */
 const PLACES: { key: WorkplaceKey; name: string; src: string }[] = [
-  { key: "office", name: "IT & offices", src: "/img/wp-office.webp" },
+  { key: "office", name: "IT & offices", src: "/img/wp-office-pantry.webp" },
   { key: "factory", name: "Manufacturing", src: "/img/wp-factory.webp" },
   { key: "hospital", name: "Hospitals", src: "/img/wp-hospital.webp" },
   { key: "college", name: "Colleges & schools", src: "/img/wp-college.webp" },
   { key: "retail", name: "Retail shops", src: "/img/wp-retail.webp" },
-  /* the stand-in photograph — see page.tsx */
-  { key: "showroom", name: "Showrooms & banks", src: "/img/wp-other.webp" },
+  /* still the stand-in, just a better one — see section 04 */
+  { key: "showroom", name: "Showrooms & banks", src: "/img/wp-branch.webp" },
+  { key: "event", name: "Events & functions", src: "/img/wp-event.webp" },
 ];
 
 const BANDS = ["Under 100", "100 – 200", "200 – 500"];
@@ -249,7 +256,13 @@ export default function WhoWeServeView() {
       >
         <div className="shell">
           <div className="grid items-center gap-y-10 lg:grid-cols-12 lg:gap-x-12">
-            <div className="lg:col-span-7">
+            {/* 7/5 BECAME 6/6 SO THE PORTRAIT COULD GROW AT ALL. It had
+                already filled 430 of the 442px its column offered — twelve
+                pixels of slack — so every further increase to max-w was
+                landing on a column that could not give it. The copy column
+                gives up 638px for 540; measured, the headline still breaks
+                in the same three places. */}
+            <div className="lg:col-span-6">
               <motion.div
                 initial={hero.reduced ? undefined : { opacity: 0, x: -14 }}
                 animate={
@@ -321,11 +334,18 @@ export default function WhoWeServeView() {
               </figure>
             </div>
 
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-6">
               <div
                 ref={flaskRef}
-                className="relative mx-auto w-[72%] max-w-[300px] lg:mr-0"
-                style={{ maxHeight: "42vh" }}
+                /* BOTH CAPS HAD TO RISE TOGETHER. The picture is bound by
+                   whichever of the two binds first — the width cap here and
+                   the height cap below — and at 300px/42vh it was the HEIGHT
+                   that bound: 300 wide implies 406 tall, 42vh on a 900px
+                   viewport is 378, so the box was cut to 378 and the picture
+                   drawn to fit inside it. Raising only max-w would have moved
+                   nothing at all. */
+                className="relative mx-auto w-[86%] max-w-[380px] lg:mr-0 lg:w-full lg:max-w-[540px]"
+                style={{ maxHeight: "78vh" }}
               >
                 <motion.span
                   aria-hidden="true"
@@ -355,10 +375,22 @@ export default function WhoWeServeView() {
                   className="relative"
                 >
                   <Image
-                    /* SHIPPED AS WEBP, NOT AS THE PNG IT WAS CUT FROM.
+                    /* THE DECLARED SIZE IS THE FILE'S OWN, AND IT WAS NOT.
+                       760x1261 is 0.603; the file is 1078x1460, which is
+                       0.738. Next writes the declared pair as the box's
+                       aspect-ratio, so the box was a good deal narrower than
+                       the picture and object-contain letterboxed it inside:
+                       measured 279px of woman in a 300px box, ~7% of the
+                       width thrown away as empty margin on a photograph that
+                       was already the smallest thing in this hero. Correcting
+                       the pair removes the letterbox; contain is now a no-op
+                       and stays only as a guard.
+
+                       SHIPPED AS WEBP, NOT AS THE PNG IT WAS CUT FROM.
                        The source is 1078x1460 and 1494KB; this is the same
-                       1078x1460 at 71KB, q86 — 95% smaller for pixels that
-                       are never drawn wider than 300px here.
+                       1078x1460 at 71KB, q86 — 95% smaller, and now drawn
+                       at up to 430 CSS px, so still comfortably above what
+                       the layout asks of it even at 2x.
 
                        IT ALSO MOVED INTO public/img, WHERE EVERY OTHER
                        SHIPPED IMAGE ON THIS SITE LIVES. It sat at the root
@@ -369,12 +401,12 @@ export default function WhoWeServeView() {
                        out of git. */
                     src="/img/who-hero-woman.webp"
                     alt="Woman"
-                    width={760}
-                    height={1261}
-                    sizes="(max-width: 1024px) 66vw, 280px"
+                    width={1078}
+                    height={1460}
+                    sizes="(max-width: 1024px) 86vw, 540px"
                     priority
                     className="h-auto w-full"
-                    style={{ maxHeight: "42vh", objectFit: "contain" }}
+                    style={{ maxHeight: "78vh", objectFit: "contain" }}
                   />
                 </motion.div>
               </div>
