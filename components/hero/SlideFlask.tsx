@@ -15,7 +15,7 @@ import LiquidSurface, {
 } from "./LiquidSurface";
 import SteamCanvas from "./SteamCanvas";
 import PourWord from "./PourWord";
-import { currentCups } from "@/lib/cups";
+import { CUPS_LABEL } from "@/lib/cups";
 
 /**
  * Hero slide 1 — "Inside the cup".
@@ -123,7 +123,6 @@ export default function SlideFlask({ active }: { active: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const liquid = useRef<LiquidHandle | null>(null);
 
-  const [rollTo, setRollTo] = useState(reduced ? currentCups() : 0);
   const [rush, setRush] = useState(1);
   const [steam, setSteam] = useState(reduced ? 1 : 0);
   /* the steam must leave the flask’s MOUTH, so the shader reports where
@@ -179,31 +178,26 @@ export default function SlideFlask({ active }: { active: boolean }) {
       const [bx, by] = liquid.current?.base() ?? [0.78, 0.4];
       liquid.current?.ripple(bx, by, 1.6);
     }, 1150);
-    const t3 = setTimeout(() => setRollTo(currentCups()), 1300);
-    kill.push(() => {
-      clearTimeout(t2);
-      clearTimeout(t3);
-    });
+    kill.push(() => clearTimeout(t2));
     return () => kill.forEach((f) => f());
   }, [reduced]);
 
-  /* THE BADGE STILL COUNTS UP, AND THAT IS NOT THE TICKER. The ticker was a
-     figure that kept changing for as long as the tab was open; this is an
-     entrance that runs 0 -> 15,000 once and then stops on the number the
-     client stands behind. Nothing moves after it lands. */
-  const [shown, setShown] = useState(reduced ? currentCups() : 0);
-  useEffect(() => {
-    if (rollTo === 0) return;
-    if (reduced) {
-      setShown(rollTo);
-      return;
-    }
-    return tween((v) => setShown(Math.round(v)), 0, rollTo, 900);
-  }, [rollTo, reduced]);
-  /* The effect that used to sit here re-set `shown` whenever the ticker
-     pushed a new value. `cups` is a constant now, so it could only ever have
-     fired once, with the value the roll-up was already heading for — a
-     dependency that never changes is not a subscription, it is dead code. */
+  /* THE BADGE NO LONGER COUNTS UP, AND THE ABBREVIATION IS WHY. It used to
+     hold a `rollTo` and a `shown`, fire the first at 1300ms and tween the
+     second 0 -> 15,000 over 900ms — some fifteen thousand distinct values,
+     which is what made it read as a number climbing rather than as digits
+     flickering.
+
+     The figure is "18K+" now (see lib/cups). Counting to it in the unit it
+     is displayed in gives EIGHTEEN frames over those same 900ms, one every
+     50ms: not a count, a stutter. The alternatives were both worse — roll
+     the raw 0 -> 18,000 and swap to "18K" at the end, which changes the
+     string's shape at the moment the eye lands on it, or keep two formats
+     alive so the badge and the dock can disagree.
+
+     So it lands with the rest of the copy and stays put. The entrance is
+     carried by the clip-reveal the badge already sits inside; nothing about
+     the number itself was ever load-bearing. */
 
   /* ---------------- the scroll ---------------- */
   useMotionValueEvent(scrollYProgress, "change", (p) => {
@@ -526,9 +520,9 @@ export default function SlideFlask({ active }: { active: boolean }) {
               </span>
               <span className="tabular-nums">
                 <strong className="font-semibold text-cream">
-                  {shown.toLocaleString("en-IN")}+
+                  {CUPS_LABEL}
                 </strong>{" "}
-                cups served this day
+                cups served per day
               </span>
             </motion.p>
           </div>
