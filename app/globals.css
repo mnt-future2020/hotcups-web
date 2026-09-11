@@ -248,10 +248,28 @@ body {
    as before, so wide screens are untouched.
 
    476, not 482, so the arithmetic has a few pixels of slack in it. */
+/* 4.0svh, DOWN FROM 4.4, BECAUSE THE LEDGER GAINED A SEVENTH NAME.
+   Events & functions was added to section 04. Measured in headless Chrome at
+   1366x768 before the trim: the section stood 804px against a 768px viewport
+   and the ledger column was 437px to the picture column's 378 — so the
+   ledger is what sets the height, and it had overrun by 36px. Six names fit
+   with 28px to spare; seven at the old size do not.
+
+   The two numbers were cut together, this and the row padding in
+   Industries.tsx, because either one alone would have had to move far enough
+   to be visible. Measured again after the trim, the section fits the viewport
+   exactly at 1280x720, 1366x768, 1440x900 and 1920x1080 — the row went from
+   51.7px to 44.5px at 768, which is the 7 x 7px the seventh name cost.
+
+   THE 9.55 IS STILL RIGHT AND WAS RE-MEASURED, NOT ASSUMED. It is the width
+   of the longest name in em and it is still "Showrooms & banks": at 33.79px
+   that name renders 306.4px wide against "Events & functions" at 284.5, so
+   the new name is 7% SHORTER than the binding one and the divisor does not
+   move. Check this again before renaming anything on that list. */
 .ledger-name {
   font-size: clamp(
     1.6rem,
-    min(3.6vw, 4.4svh, calc((476px - var(--fig-overlap, 0px)) / 9.55)),
+    min(3.6vw, 4svh, calc((476px - var(--fig-overlap, 0px)) / 9.55)),
     3rem
   );
 }

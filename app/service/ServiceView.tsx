@@ -109,6 +109,10 @@ const PANTRY = [
    So the pictures and the six pricing routes stay on the page that is about
    them, and this became what it always was in the argument of /service — a
    list of who the round already goes to, and a door to the detail. */
+/* FOLLOWS SECTION 04, which is where the segments are decided. Events &
+   functions was added there with the client's photograph; a pill row that
+   stopped at six would have this page naming a smaller business than the
+   home page does. */
 const WORKPLACES = [
   "IT & offices",
   "Manufacturing",
@@ -116,6 +120,7 @@ const WORKPLACES = [
   "Colleges & schools",
   "Retail shops",
   "Showrooms & banks",
+  "Events & functions",
 ];
 
 const BANDS = [

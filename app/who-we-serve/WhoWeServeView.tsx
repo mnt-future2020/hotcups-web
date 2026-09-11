@@ -61,14 +61,21 @@ import { WORKPLACE_ASK, WORKPLACE_FOR, type WorkplaceKey } from "@/lib/workplace
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+/* THIS LIST FOLLOWS SECTION 04 AND HAS TO. Industries.tsx is where the
+   segments are decided; if these two disagree, the home page and this page
+   name different businesses. Two photographs were swapped for the client's
+   own and a seventh segment was added there, so all three changes are
+   repeated here. The reasoning for each lives next to PLACES in
+   components/sections/Industries.tsx. */
 const PLACES: { key: WorkplaceKey; name: string; src: string }[] = [
-  { key: "office", name: "IT & offices", src: "/img/wp-office.webp" },
+  { key: "office", name: "IT & offices", src: "/img/wp-office-pantry.webp" },
   { key: "factory", name: "Manufacturing", src: "/img/wp-factory.webp" },
   { key: "hospital", name: "Hospitals", src: "/img/wp-hospital.webp" },
   { key: "college", name: "Colleges & schools", src: "/img/wp-college.webp" },
   { key: "retail", name: "Retail shops", src: "/img/wp-retail.webp" },
-  /* the stand-in photograph — see page.tsx */
-  { key: "showroom", name: "Showrooms & banks", src: "/img/wp-other.webp" },
+  /* still the stand-in, just a better one — see section 04 */
+  { key: "showroom", name: "Showrooms & banks", src: "/img/wp-branch.webp" },
+  { key: "event", name: "Events & functions", src: "/img/wp-event.webp" },
 ];
 
 const BANDS = ["Under 100", "100 – 200", "200 – 500"];
