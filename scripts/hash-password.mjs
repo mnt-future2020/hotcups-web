@@ -53,9 +53,30 @@ const hash = pbkdf2Sync(password, salt, ITERATIONS, KEY_BYTES, "sha256");
 const b64url = (buf) =>
   buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
+const value = `pbkdf2$${ITERATIONS}$${b64url(salt)}$${b64url(hash)}`;
+
+/**
+ * TWO FORMS, BECAUSE A DOTENV FILE AND A HOSTING DASHBOARD DISAGREE.
+ *
+ * Next reads .env through dotenv-expand, which treats $NAME as a reference to
+ * another variable — and this string is four fields separated by $. Pasted
+ * raw into .env, "pbkdf2$210000$salt$hash" is loaded as "pbkdf2-salt-hash":
+ * the iteration count and the hash expand to nothing, verifyPassword sees
+ * three fields instead of four and returns false, and every sign-in fails with
+ * "that email and password do not match" — a message that points at the
+ * password and says nothing about the file it came from.
+ *
+ * A HOSTING DASHBOARD DOES NOT EXPAND ANYTHING. Vercel, Railway, Render and
+ * the rest store the characters you type, so the backslashes would become part
+ * of the value and break it just as thoroughly in the other direction.
+ *
+ * So both are printed and each says where it goes. Printing one and leaving
+ * the reader to work out the other is how this gets debugged twice.
+ */
+console.log("\nFor a .env file — the $ must be escaped:\n");
+console.log(`  ADMIN_PASSWORD_HASH=${value.replaceAll("$", "\\$")}\n`);
+console.log("For a hosting dashboard (Vercel, Railway, Render) — paste as-is:\n");
+console.log(`  ${value}\n`);
 console.log(
-  `\nADMIN_PASSWORD_HASH=pbkdf2$${ITERATIONS}$${b64url(salt)}$${b64url(hash)}\n`,
-);
-console.log(
-  "Paste that line into .env.local, and make sure ADMIN_PASSWORD is not also set.\n",
+  "Set one or the other, and make sure ADMIN_PASSWORD is not also set.\n",
 );
