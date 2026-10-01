@@ -3,6 +3,9 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
+
+import { useSiteContent } from "@/lib/content/context";
+import { drinkCount } from "@/lib/content/schema";
 import CardSteam from "@/components/ui/CardSteam";
 
 /**
@@ -70,230 +73,71 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const DEAL_AT = 0.55;
 const DEAL_GAP = 0.12;
 
-const CATEGORIES = [
-  {
-    key: "tea",
-    name: "Tea",
-    /* WAS "8 blends" until the client answered the question this site had
-       been asking itself: the category pours plain tea and nothing else.
-       /menu derives its count from the list of names, so it changed itself;
-       this one and /service are typed by hand and had to be corrected to
-       match. All three now say one. */
-    count: "1 blend",
-    img: "/img/menu-tea.webp",
-    alt: "A glass of masala chai with loose tea leaves",
-    wash: "#E5A863",
-    rim: 39,
-    cx: 66,
-    mouth: 52,
-    steam: true,
-  },
-  {
-    key: "coffee",
-    name: "Coffee",
-    count: "1 roast",
-    img: "/img/menu-coffee.webp",
-    alt: "South Indian filter coffee in a brass tumbler and davara",
-    wash: "#C08A57",
-    rim: 39,
-    cx: 60,
-    mouth: 37,
-    steam: true,
-  },
-  {
-    key: "milk",
-    name: "Milk",
-    count: "1 option",
-    /* REBUILT FROM app/Badam.png at the client's direction — a glass of
-       saffron badam milk, replacing the plain milk-and-almonds plate. The
-       source is a clean 1312x1199 export with a real alpha channel, so
-       nothing had to be keyed; it is trimmed to its alpha bbox and scaled to
-       a 601px content height, the mean of tea's 598 and coffee's 604, then
-       centred and bottom-aligned at 96% like the rest of the set. Rebuilding
-       it at another size means going back to that source rather than
-       upscaling this. app/milks.png, which the previous plate came from, is
-       still on disk.
+/* THE FOUR DRINKS AND THE FOUR NAMES ARE ONE LIST NOW, and they are stored
+   content — see DrinkContent in lib/content/schema, which holds these exact
+   values as its defaults along with every note that used to sit here: why tea
+   says "1 blend" rather than "8 blends", why the milk plate is badam and why
+   its rim of 55 looks low and is not, why the buttermilk is plain while the
+   photograph still shows the spiced drink, and why that card has no plume.
 
-       IT IS A NEW FILE, NOT A REPLACED ONE, AND THE REASON IS THE IMAGE
-       OPTIMIZER. The badam plate was first written straight over
-       menu-milk.webp, which is correct on disk and still did not reach the
-       browser: `next dev` caches optimizer output IN MEMORY, keyed by url,
-       width, quality and OUTPUT FORMAT, and nothing invalidates that key
-       when the source file underneath it changes. Measured on the running
-       server, the same request returned the badam as JPEG and the old milk
-       as WebP — both reporting a cache HIT — because no request carrying a
-       wildcard Accept header had ever been made, so the JPEG generated
-       fresh, while every width the page itself had already loaded as WebP
-       stayed stale. A width that had never been requested at all returned
-       MISS, and returned the badam.
+   THIS FILE USED TO CARRY TWO PARALLEL ARRAYS — the cards here and the names in
+   the sentence above them in `NAMED` — and the comment on the fourth entry of
+   the second one recorded what that cost: it "has said 'hot chocolate' and
+   'sarbath' in front of this same slot; both were wrong the moment the
+   photograph under them changed and neither was caught by a type". The name and
+   the card are one object in the schema, so that particular drift is no longer
+   something anyone can type.
 
-       (Do not write that wildcard header out in full anywhere in this file.
-       It contains the characters that close a block comment, which ends the
-       comment mid-sentence and turns the rest of this table into syntax
-       errors. It did exactly that once already.)
+   THE COUNT IS NOT FIXED ANY MORE, and the note that used to say it was had
+   inherited a constraint that turned out not to exist. It read that CardSteam's
+   fourth variant must stay "because `variant` is the card's index, so deleting
+   the entry would shift tea, coffee and milk onto each other's plumes" —
+   true about which plume each card gets, and not a reason the count cannot
+   change: CardSteam indexes VARIANTS[variant % VARIANTS.length], so a fifth
+   drink reuses the first one's plume rather than reading off the end.
 
-       Restarting the dev server clears it. A new filename is a new cache
-       key, which fixes it without needing to. The plate that was there is
-       restored to its committed bytes and left on disk unreferenced, the
-       same way menu-specialty.webp was when the sarbath replaced it.
+   What DID constrain it was this row's `lg:grid-cols-4`, which is now derived
+   from the list — see COLUMNS below. Drinks are added and removed at
+   /admin/menu. Four still fills a row exactly and is what the layout was
+   measured at; the panel says so rather than enforcing it. */
 
-       IT IS THE FIRST PLATE IN THE ROW WITH NO SIDE GARNISH, which changes
-       every number below. The other three are a vessel plus leaves or beans
-       spread out beside it, so their content runs 92% of the frame wide and
-       the glass itself sits well inside that. Here the content IS the glass:
-       486px wide against the old plate's 728. Same glass height, narrower
-       plate, and cx lands at dead centre for the first time.
 
-       rim / cx / mouth ARE MEASURED OFF THIS PHOTOGRAPH, and the last set
-       had gone stale — proof that they cannot be left alone when the picture
-       changes. The old entry still read rim: 30 from before that plate was
-       resized from 691px to 601px of content, which moved the glass top from
-       26.9% down to 35.9% and left the steam base hanging 6 points ABOVE the
-       rim it was supposed to sit on.
-
-       rim IS 55, WHICH LOOKS LOW AND IS NOT. The glass is squat and shot
-       from a high angle, so the milk surface is a wide open ellipse rather
-       than a sliver: its centre — found from the saffron rosette floating on
-       it — is 31.7% down the content, which is 55% down the frame. The steam
-       base lands on the garnish, which is exactly where the liquid is.
-
-       mouth IS THE LIQUID, NOT THE GLASS. Walking in along the surface row,
-       the wall and its specular highlight run to x 290 and the saturated
-       milk starts at 300; the same on the right at 1015 against an outer
-       edge of 1081. That is 50% of the frame against the outer glass's 59.
-       CardSteam spreads the plume to mouth * 1.9, so taking the outer figure
-       would have pushed wisps 113% of the card wide, into its neighbours.
-
-       wash IS THE DRINK'S OWN LIT BAND, PULLED DOWN TO 208. Sampled straight,
-       the top quartile of this liquid means #F8E289 at luminance 222, above
-       the 148-210 the other three occupy — badam milk is simply the palest
-       thing in the row, and the ground behind it is espresso. Scaling that
-       colour to 208 keeps the saffron hue and lands it at the pale end where
-       the milk card already sat. */
-    img: "/img/menu-badam.webp",
-    alt: "Badam milk in a glass tumbler, topped with saffron, pistachio and almond flakes",
-    wash: "#E8D480",
-    rim: 55,
-    cx: 50,
-    mouth: 50,
-    /* CardSteam's own note calls variant 2 "a tall glass of warm badam milk
-       — few, wide, slow and faint". That was written about the drink this
-       card is named for rather than the one it was showing. It is now the
-       drink in the photograph. */
-    steam: true,
-  },
-  {
-    /* THE ONE COLD DRINK, and everything odd about this entry follows from
-       that. It has been a mug of hot chocolate and a rose sarbath; it is now
-       buttermilk, from app/buttermilk.png at the client's direction.
-
-       PLAIN BUTTERMILK, NOT MASALA. It ran as "Masala Buttermilk" in five
-       places until the client corrected it. THE PHOTOGRAPH STILL SHOWS THE
-       SPICED DRINK — chopped coriander through it, cumin and chilli across
-       the top, a slice of cucumber on the rim — so the picture and the name
-       no longer agree. The alt text was rewritten to describe what is in the
-       glass instead of naming the drink, which keeps it true, but this needs
-       a photograph of plain buttermilk to actually be right.
-       /img/menu-specialty.webp and /img/menu-sarbath.webp are both
-       unreferenced from here on and both left on disk.
-
-       IT UNDOES A PIECE OF BAKED-IN DAMAGE, WHICH IS WORTH RECORDING. The
-       sarbath was shot on a wet white table, and the puddle could not be
-       keyed: measured, it ran sat 0.01-0.19 at luminance 141-240 while the
-       ICE CUBES ran sat 0.02 at 226-242, so any key that removed the surface
-       took the ice and the glass base with it. The fix was to blend the wet
-       table TOWARDS the ground instead of erasing it — which baked #240a06,
-       this section's own espresso, into the pixels of that file. It carried a
-       standing warning: change the section's background and one drink shows a
-       brown smear at its base.
-
-       The buttermilk source needs none of that. It is a clean 1370x1148
-       export with a real alpha channel, so nothing is keyed, nothing is
-       blended, and no ground colour is baked in. The section's background is
-       free to change again.
-
-       IT IS SCALED BY THE GLASS, NOT BY THE CONTENT, and it is the first
-       plate here that had to be. The cucumber wheel and the coriander sprig
-       sit ABOVE the rim and off to the right, so the content bbox is 1117
-       tall where the vessel is 1024 — scaling the bbox to the row's 601
-       would have drawn a glass about a tenth short of its neighbours. Scaled
-       by the glass instead, its top lands at 35.9% of the frame, which is
-       where tea, coffee and badam all sit to the decimal. Its mouth comes to
-       59.4% against badam's 59: the two squat tumblers now match.
-
-       AND IT IS THE GLASS THAT IS CENTRED, NOT THE PLATE. The other three
-       centre their whole content, garnish included, because that garnish sits
-       beside the vessel and balances it. This one's hangs off a single
-       corner, so centring the content would push the glass left of the label
-       naming it. cx is therefore an honest 50 rather than a correction.
-
-       rim IS RECORDED BUT NOT READ — steam is false below, so CardSteam never
-       mounts and never asks for it. It is measured anyway, off the coriander
-       and cumin floating on the surface, so that turning steam on is a
-       one-word change rather than a re-measurement.
-
-       wash IS THE PALEST AND THE ONLY NEUTRAL ONE. Buttermilk is white; its
-       lit band means #E8E8DD at luminance 231, and scaled to 208 that is
-       #D1D1C7 — inside the 148-210 the others occupy, but with barely any
-       hue. That is honest rather than a mistake: this is the one drink in the
-       row that is not a warm colour, and inventing a tint to match the other
-       three would be a lie about what is in the glass. */
-    key: "seasonal",
-    /* "Seasonal", not "Specialty", at the client's direction — and the count
-       under it could then no longer say "seasonal" too. The row's pattern is
-       <number> <noun>, so the noun had to change rather than be dropped;
-       "specials" does not repeat the word directly above it. It was chosen
-       partly to sit at the same length as "5 options", which no longer
-       exists — the other three categories were cut to one drink each and
-       read "1 blend", "1 roast", "1 option". This is now the longest of the
-       four and the only plural. If the client would rather it read
-       "2 seasonal", that is this one string. */
-    name: "Seasonal",
-    count: "2 specials",
-    img: "/img/menu-buttermilk.webp",
-    alt: "A glass of buttermilk topped with chopped coriander and cumin, a slice of cucumber on the rim",
-    wash: "#D1D1C7",
-    rim: 49,
-    cx: 50,
-    mouth: 59,
-    /* NO PLUME, AND THE REASON SURVIVED THE DRINK CHANGING. This section is
-       built on steam and buttermilk is served cold, exactly as the sarbath
-       before it was served over ice — a visible plume off either one is not a
-       stylistic choice, it is wrong about the drink. CardSteam is simply not
-       mounted for it.
-
-       VARIANTS[3] in CardSteam is now unreachable. It is left in place
-       because `variant` is the card's index, so deleting the entry would
-       shift tea, coffee and milk onto each other's plumes. */
-    steam: false,
-  },
-];
-
-/* one real drink per glass, in the same order. Each name lights up when its
-   glass is the one being poured, so the sentence and the row are one
-   mechanism rather than a caption over a grid.
-
-   THE THIRD NAME WAS "badam milk" AND THE NOTE HERE ARGUED FOR IT — that it
-   is a thing a person in Madurai actually asks for, where "milk drinks" is
-   only a category. The argument was sound and it is now moot: the client cut
-   the Milk category to plain milk, so badam milk is not on the menu and the
-   generic word is the specific one. */
-const NAMED = [
-  /* "Tea", not "Chai" — the client's word. It also matches the card directly
-     under it, which has always been labelled Tea, so the sentence and the row
-     no longer call the same glass two different things. */
-  { label: "Tea", sep: ", " },
-  { label: "filter coffee", sep: ", " },
-  { label: "milk", sep: ", " },
-  /* follows the fourth glass, and has to: each name lights up when its own
-     card is hovered, so leaving a stale name here lights the wrong two words
-     while a different drink comes forward. It has said "hot chocolate" and
-     "sarbath" in front of this same slot; both were wrong the moment the
-     photograph under them changed and neither was caught by a type. */
-  { label: "buttermilk", sep: " and " },
-];
+/**
+ * How many columns the row takes at lg, by how many drinks there are.
+ *
+ * WHY A TABLE AND NOT `lg:grid-cols-${n}`. Tailwind scans source files for
+ * complete class names at build time; an interpolated one is not in the output
+ * at all, so the grid would silently fall back to two columns for every count.
+ * This is the standard way round it — every class that can be used is written
+ * out somewhere a scanner can see it.
+ *
+ * WHY THESE NUMBERS. Four is what the row was measured at and it fills a line
+ * exactly. Five would leave one card alone on a second row, so five and six
+ * both take three columns — 3+2 and 3+3 — which reads as two deliberate rows
+ * rather than a row with a straggler. Seven and eight go back to four. Beyond
+ * eight the cards are too small to be worth more rows, so it caps there.
+ *
+ * The panel says which counts sit well rather than refusing the others; this
+ * makes sure none of them actually breaks.
+ */
+const COLUMNS: Record<number, string> = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-3",
+  6: "lg:grid-cols-3",
+  7: "lg:grid-cols-4",
+  8: "lg:grid-cols-4",
+};
 
 export default function Menu() {
+  const { menu } = useSiteContent();
+  /* The name the card wears and the name the sentence uses are fields of the
+     same drink now, so `drinks` is what both the row and the paragraph read. */
+  const drinks = menu.drinks;
+  const columns = COLUMNS[drinks.length] ?? "lg:grid-cols-4";
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const inView = useInView(ref, { amount: 0.2 });
@@ -353,7 +197,7 @@ export default function Menu() {
               className="eyebrow whitespace-nowrap"
               style={{ color: "rgba(255,233,220,0.6)" }}
             >
-              02 — On the menu
+              {menu.eyebrow}
             </span>
             <motion.span
               initial={reduced ? undefined : { scaleX: 0 }}
@@ -369,16 +213,22 @@ export default function Menu() {
               17.08 em — 1038px at the cap against a 1120px measure. Swept at
               seventeen window sizes: one line from 640 up, and below 610 it
               wraps to two, which is what a 36-character sentence does on a
-              phone. */}
+              phone.
+
+              THAT IS A MEASUREMENT OF THE DEFAULT SENTENCE AND IT DOES NOT
+              TRAVEL WITH AN EDIT. The headline is editable now, the type is
+              sized by the viewport rather than by the words, and a longer
+              sentence will simply take a second line earlier than 610px. The
+              panel says so beside the field; nothing here can enforce it. */}
           <h2 className="mt-6 font-display text-[clamp(1.9rem,4.25vw,3.8rem)] font-extrabold leading-[1.12] tracking-[-0.035em] text-white">
             <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
               <motion.span {...clipLine(0.15)} className="block">
-                Everyone drinks something different.
+                {menu.headline}
               </motion.span>
             </span>
             <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
               <motion.span {...clipLine(0.26)} className="block text-orange">
-                We pour all of it.
+                {menu.headlineAccent}
               </motion.span>
             </span>
           </h2>
@@ -387,19 +237,22 @@ export default function Menu() {
             {...reveal(0.4)}
             className="mx-auto mt-5 max-w-[68ch] font-sans text-[clamp(1.05rem,1.35vw,1.4rem)] leading-[1.6] text-white/70"
           >
-            {NAMED.map((n, i) => (
-              <span key={n.label}>
+            {/* keyed by `key` rather than by the label: the label is typed in
+                the panel, two drinks can share one while a rename is half done,
+                and a duplicate React key here would swap which word lights. */}
+            {drinks.map((drink, i) => (
+              <span key={drink.key}>
                 <span
                   className={`transition-colors duration-500 ${
                     active === i ? "text-orange" : ""
                   }`}
                 >
-                  {n.label}
+                  {drink.label}
                 </span>
-                {n.sep}
+                {drink.separator}
               </span>
             ))}
-            more.
+            {menu.tail}
           </motion.p>
         </div>
 
@@ -420,7 +273,7 @@ export default function Menu() {
             animate={{
               left: active === null ? "50%" : `${(active + 0.5) * 25}%`,
               backgroundColor:
-                active === null ? "#C79A6B" : CATEGORIES[active].wash,
+                active === null ? "#C79A6B" : drinks[active].wash,
               opacity: active === null ? 0.26 : 0.42,
             }}
             transition={{
@@ -430,8 +283,15 @@ export default function Menu() {
             }}
           />
 
-          <div className="relative mx-auto grid max-w-[1150px] grid-cols-2 gap-x-5 gap-y-8 md:gap-x-6 lg:grid-cols-4 lg:gap-x-7">
-            {CATEGORIES.map((cat, i) => {
+          {/* THE COLUMN COUNT FOLLOWS THE LIST — see `columns` above for why the
+              rule is what it is, and why this is a lookup rather than an
+              interpolated class. Two columns on a phone whatever the count:
+              these are tall glasses and one per row would be a very long
+              scroll, three would make each about 110px wide. */}
+          <div
+            className={`relative mx-auto grid max-w-[1150px] grid-cols-2 gap-x-5 gap-y-8 md:gap-x-6 lg:gap-x-7 ${columns}`}
+          >
+            {drinks.map((cat, i) => {
               const at = DEAL_AT + i * DEAL_GAP;
               const isOn = active === i;
               /* only the OTHERS go quiet, and only while one is hovered —
@@ -522,8 +382,14 @@ export default function Menu() {
                     <h3 className="font-display text-[1.6rem] font-extrabold leading-none tracking-[-0.02em] text-white md:text-[2rem]">
                       {cat.name}
                     </h3>
+                    {/* DERIVED, NOT TYPED. This line used to be a string in
+                        the array above, and the note on Tea recorded what that
+                        cost: "/menu derives its count from the list of names, so
+                        it changed itself; this one and /service are typed by
+                        hand and had to be corrected to match." All three now
+                        call drinkCount on the same list. */}
                     <p className="mt-2 font-sans text-[1rem] font-medium text-white/70">
-                      {cat.count}
+                      {drinkCount(cat)}
                     </p>
                   </motion.div>
                 </motion.div>

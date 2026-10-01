@@ -15,7 +15,8 @@ import LiquidSurface, {
 } from "./LiquidSurface";
 import SteamCanvas from "./SteamCanvas";
 import PourWord from "./PourWord";
-import { CUPS_LABEL } from "@/lib/cups";
+import { useSiteContent, useStats } from "@/lib/content/context";
+import { cupsLabel, flaskGroundStyle } from "@/lib/content/schema";
 
 /**
  * Hero slide 1 — "Inside the cup".
@@ -61,18 +62,27 @@ const EASE = [0.16, 1, 0.3, 1] as const;
    Twenty-six characters give back 0.91 em, so the real line is 11.13 em and
    it fits with 1.4% to spare. Measure tracking with the line or the number is
    meaningless. */
-const LINES = [
-  "Hot tea and filter coffee,",
-  "delivered to your office",
-  "in flasks.",
-];
+/* The three lines and the poured word are stored content now — see
+   DEFAULT_CONTENT.hero.flask, which holds exactly the strings that used to be
+   here, and /admin/hero, which edits them.
+
+   THE MEASUREMENT ABOVE IS ABOUT THE DEFAULT COPY AND DOES NOT TRAVEL WITH AN
+   EDIT. "Hot tea and filter coffee," fits a 48vw column with 1.4% to spare; a
+   longer line will not, and nothing in the code will stop it — the h1 clamps
+   its size by viewport, not by content. The panel says so beside the field.
+   That is the honest position: the constraint is real, it is a judgement about
+   a specific string, and it cannot be enforced by a validator that does not
+   know the font metrics. */
 /** expo out - no overshoot */
 const EXPO = [0.16, 1, 0.3, 1] as const;
 /** each line 90ms behind the one above it */
 const LINE_GAP = 0.09;
 const LINE_DUR = 0.5;
-/** "Twice a day." fills once its line has landed */
-const T_LAST = LINES.length * LINE_GAP + LINE_DUR + 0.15;
+/** "Twice a day." fills once its line has landed. A FUNCTION NOW, not a
+    constant: the line count is stored content, so the moment it stops being
+    three this has to follow it. Left as a constant it would have kept timing the
+    pour to a three-line headline and fired early or late on any other. */
+const tLast = (lineCount: number) => lineCount * LINE_GAP + LINE_DUR + 0.15;
 /* The flask's rise runs 1.1s -> 1.75s. The steam used to fire at 0.7s, so on
    every load the plume arrived over an empty scene and only then did the cup
    come up underneath it. It now waits for the texture to decode AND for the
@@ -120,6 +130,14 @@ function tween(
 
 export default function SlideFlask({ active }: { active: boolean }) {
   const reduced = useReducedMotion();
+  /* The badge's figure, from the same store the header dock reads. Exactly one
+     of the two renders at any width, so they are never on screen together —
+     which is precisely why they have to come from one source: a visitor
+     dragging a window across 1280px would otherwise be the only person who
+     could catch them disagreeing. */
+  const { cups } = useStats();
+  /* The headline, the poured word, the sub and both buttons. */
+  const { flask } = useSiteContent().hero;
   const ref = useRef<HTMLDivElement>(null);
   const liquid = useRef<LiquidHandle | null>(null);
 
@@ -232,16 +250,44 @@ export default function SlideFlask({ active }: { active: boolean }) {
     "--color-pour-fill": "var(--color-orange)",
   } as CSSProperties;
 
+  const flip = Boolean(flask.flip);
+
 
   return (
+    /* THE GROUND WAS `bg-espresso-deep` AND IS NOW EDITABLE. Same colour by
+       default — flaskGroundStyle returns #240a06 for the shipped preset — so
+       nothing moved; it is simply chosen at /admin/hero instead of typed
+       here. */
     <div
       ref={ref}
-      className="absolute inset-0 overflow-hidden bg-espresso-deep"
+      className="absolute inset-0 overflow-hidden"
+      style={{ background: flaskGroundStyle(flask) }}
     >
-      {/* ---------------- the scene ---------------- */}
+      {/* ---------------- the scene ----------------
+          THE SCENE AND ITS STEAM FLIP TOGETHER, inside one wrapper, and that
+          is the whole reason there is a wrapper. The plume is its own canvas
+          positioned from a point the shader reports; mirroring the flask on
+          its own would leave the steam rising from where the spout used to
+          be. One transform over both keeps them welded.
+
+          NOTHING BELOW md. There the copy sits ON the flask rather than
+          beside it — the vertical scrim above is for exactly that — so there
+          is no left and right to swap, which is also why slides 2 and 3 only
+          reorder in landscape. */}
+      <div
+        className={`absolute inset-0 ${
+          flip ? "md:landscape:[transform:scaleX(-1)]" : ""
+        }`}
+      >
       <LiquidSurface
         className="absolute inset-0 h-full w-full"
         active={active}
+        /* The two photographs this scene is made of, and where the plume
+           leaves the glass — all three editable at /admin/hero. */
+        poster={flask.poster}
+        subject={flask.subject}
+        alt={flask.alt}
+        steam={flask.steam}
         onReady={onReady}
         onMouth={onMouth}
         onSubject={onSubject}
@@ -256,19 +302,26 @@ export default function SlideFlask({ active }: { active: boolean }) {
           <SteamCanvas origin={mouth} intensity={steam} rush={rush} />
         </div>
       )}
+      </div>
 
       {/* ---------------- the scrim ----------------
           Between the canvas and the copy, guaranteeing contrast whatever the
           noise does on a given frame. Heavy where the words are, gone by the
           time it reaches the flask. */}
-      {/* Above md the copy is on the LEFT and the flask on the right, so the
-          scrim is a radial anchored left. */}
+      {/* Above md the copy is on one side and the flask on the other, so the
+          scrim is a radial anchored under the copy.
+
+          ITS ANCHOR FOLLOWS THE COPY — 12% when the words are on the left,
+          88% when they are on the right. This is the half of the flip that is
+          easy to forget and impossible to miss once it is wrong: leave it at
+          12% with the copy moved right and the words sit on open shader while
+          the flask sits under a veil. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 hidden md:landscape:block"
         style={{
           background:
-            "radial-gradient(76% 120% at 12% 50%, rgba(18,5,2,0.95) 0%, rgba(18,5,2,0.92) 45%, rgba(18,5,2,0.74) 62%, rgba(18,5,2,0.26) 80%, rgba(18,5,2,0) 100%)",
+            `radial-gradient(76% 120% at ${flip ? "88%" : "12%"} 50%, rgba(18,5,2,0.95) 0%, rgba(18,5,2,0.92) 45%, rgba(18,5,2,0.74) 62%, rgba(18,5,2,0.26) 80%, rgba(18,5,2,0) 100%)`,
         }}
       />
       {/* Below md they are STACKED, copy over flask, so the scrim has to be
@@ -326,7 +379,12 @@ export default function SlideFlask({ active }: { active: boolean }) {
           width, so a portrait tablet stacks instead of halving 1024px */}
       <div className="relative z-10 flex min-h-svh flex-col justify-start pb-[clamp(6rem,13vh,9rem)] pt-[calc(var(--header-h)+1.25rem)] md:landscape:justify-center md:landscape:pt-[calc(var(--header-h)+2rem)]">
         <motion.div
-          className="shell-wide"
+          /* The copy column keeps its own width and its left-aligned text;
+             only WHERE it sits in the shell changes. Right-aligning the text
+             as well would be a different design, not the same one mirrored. */
+          className={`shell-wide ${
+            flip ? "md:landscape:flex md:landscape:justify-end" : ""
+          }`}
           style={reduced ? undefined : { y: copyY, opacity: copyFade }}
         >
           {/* Capped in vw as well as rem: at 1440 a fixed 43rem column runs
@@ -383,7 +441,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
                 that cap at 453px and rides the column down below it — 296px
                 of line in 320px of column at 360, 267 in 280 at 320. */}
             <h1 className="font-display text-[clamp(1.5rem,7.2vw,2.04rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-cream md:text-[clamp(2.05rem,4.25vw,5rem)]">
-              {LINES.map((line, i) => (
+              {flask.lines.map((line, i) => (
                 <span
                   key={line}
                   className="block overflow-hidden pb-[0.14em] -mb-[0.14em]"
@@ -411,13 +469,26 @@ export default function SlideFlask({ active }: { active: boolean }) {
                   animate={{ y: "0%" }}
                   transition={{
                     duration: LINE_DUR,
-                    delay: LINES.length * LINE_GAP,
+                    delay: flask.lines.length * LINE_GAP,
                     ease: EXPO,
                   }}
                 >
-                  <PourWord outline delay={T_LAST} duration={0.55}>
-                    Twice a day.
-                  </PourWord>
+                  {/* ONE PER LINE AND STAGGERED, continuing the count the
+                      headline started — line 3 of the headline is followed by
+                      accent line 1 at the next beat, not by all of them at
+                      once. `block` lets a long one wrap inside its own mask so
+                      the fill still rises through it as a single shape. */}
+                  {flask.accent.map((word, n) => (
+                    <PourWord
+                      key={n}
+                      outline
+                      block
+                      delay={tLast(flask.lines.length + n)}
+                      duration={0.55}
+                    >
+                      {word}
+                    </PourWord>
+                  ))}
                 </motion.span>
               </span>
             </h1>
@@ -430,17 +501,15 @@ export default function SlideFlask({ active }: { active: boolean }) {
                  that reads well. Above md it goes back to relaxed. */
               className="mt-4 max-w-[44ch] font-sans text-base leading-[1.5] text-cream/75 md:mt-6 md:text-lg md:leading-relaxed"
             >
-              {/* "No machine to buy." USED TO OPEN THIS LINE AND IT HAD TO GO.
-                  It is true of the flask service in isolation, but it is the
-                  first promise a visitor reads on a site whose nav carries a
-                  "Machines" link and whose section 04 exists to argue that
-                  above 40 cups a day a machine is the answer. Opening with a
-                  reason not to want one contradicts the page underneath it.
-
-                  "No pantry staff" survives because it is true either way —
-                  flask or machine, nobody on their payroll makes the tea. */}
-              No pantry staff. We deliver at your timings and collect the
-              empties.
+              {/* Editable, and the reasoning that produced the default is kept
+                  with the default in lib/content/schema: "No machine to buy."
+                  used to open this line and had to go, because it is the first
+                  promise a visitor reads on a site whose nav carries a
+                  "Machines" link and whose section 04 argues that above 40 cups
+                  a day a machine is the answer. Anyone rewriting it in the
+                  panel is rewriting past that decision, so the note travels
+                  with the string rather than staying here. */}
+              {flask.sub}
             </motion.p>
 
             {/* THE THREE GAPS BELOW ARE TIGHTER THAN THEY WERE, ON PHONES ONLY.
@@ -468,10 +537,10 @@ export default function SlideFlask({ active }: { active: boolean }) {
             <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
               <motion.a
                 {...rise(1.08)}
-                href="#pricing"
+                href={flask.primary.href}
                 className="hero-btn group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-orange px-5 py-3.5 font-sans text-sm font-semibold text-white shadow-[0_12px_34px_-14px_rgba(242,101,34,0.95)] md:px-7 md:py-4"
               >
-                <span className="relative z-10">Get pricing</span>
+                <span className="relative z-10">{flask.primary.label}</span>
                 <span
                   aria-hidden="true"
                   className="relative z-10 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
@@ -482,10 +551,10 @@ export default function SlideFlask({ active }: { active: boolean }) {
 
               <motion.a
                 {...rise(1.16)}
-                href="#savings"
+                href={flask.secondary.href}
                 className="hero-btn group relative inline-flex items-center overflow-hidden rounded-full border border-cream/25 px-5 py-3.5 font-sans text-sm font-semibold text-cream backdrop-blur-sm transition-colors duration-300 hover:border-cream/60 md:px-6 md:py-4"
               >
-                <span className="relative z-10">Flasks or a machine?</span>
+                <span className="relative z-10">{flask.secondary.label}</span>
               </motion.a>
             </div>
 
@@ -511,7 +580,8 @@ export default function SlideFlask({ active }: { active: boolean }) {
                  below 1280 (the model is in Header.tsx): so above that width
                  the dock renders and this hides, below it this renders and
                  the dock hides. Exactly one at any width. Both read the same
-                 lib/cups.ts value, so they cannot disagree. */
+                 figure from the content context and format it with the same
+                 cupsLabel, so they cannot disagree. */
               className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-cream/15 bg-cream/[0.06] px-4 py-1.5 font-sans text-[0.82rem] text-cream/70 backdrop-blur-sm md:mt-8 md:py-2 min-[1280px]:hidden"
             >
               <span className="relative flex h-2 w-2 shrink-0">
@@ -520,7 +590,7 @@ export default function SlideFlask({ active }: { active: boolean }) {
               </span>
               <span className="tabular-nums">
                 <strong className="font-semibold text-cream">
-                  {CUPS_LABEL}
+                  {cupsLabel(cups)}
                 </strong>{" "}
                 cups served per day
               </span>

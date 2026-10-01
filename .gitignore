@@ -86,3 +86,35 @@ next-env.d.ts
 # and it sat at the root of public/ where it would have been served as well
 # as stored. Kept on disk next to the webp it produced.
 /public/woman.png
+
+# The admin panel's content store. RUNTIME STATE, NOT SOURCE — it is written by
+# a form on a running server, so committing it would mean every deploy's
+# `git pull` either conflicts with the client's edits or reverts them. The
+# versioned copy of these values is DEFAULT_CONTENT in lib/content/schema.ts,
+# which is what the site renders when this file is absent.
+/data/content.json
+
+# Pictures uploaded through the admin panel. RUNTIME STATE, like the content
+# store beside it: written by a form on a running server, so committing them
+# would mean every deploy either conflicting with the client's uploads or
+# reverting them. The pictures that ship with the build live in public/img and
+# are committed; these are not. Back them up the way you would a database.
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Source images for the admin panel, kept on disk and out of the repository —
+# the same rule as /public/woman.png above and the PNG block before it: the
+# optimised file that the build actually references is committed, the original
+# it was made from is not.
+#
+#   side.png, pv.png, app/adminbg.png  — dropped in while the sidebar and its
+#     background were being tried out. Nothing imports any of them.
+#   /public/img/sidebar-bg.png         — 692KB, superseded by the 188KB webp
+#     beside it, which is what Shell.tsx loads.
+#
+# Together they are 3.1MB of binaries that no code path reaches. They stay
+# where they are; git just does not carry them.
+/side.png
+/pv.png
+/app/adminbg.png
+/public/img/sidebar-bg.png

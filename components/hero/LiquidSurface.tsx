@@ -31,59 +31,12 @@ export type LiquidHandle = {
     top-left of the hero, which is the coordinate space a 2D canvas uses */
 export type FlaskMouth = [number, number];
 
-const POSTER = "/img/hero-poster.webp";
-/* THE PLATE IS THE CREAM HOTCUPS FLASK NOW, at the client's direction — the
-   same composition as before, flask beside a glass of chai mid-splash, with
-   the client's own branded flask in place of the unbranded steel one. It
-   replaces hero-subject-v2.webp.
+/* THE POSTER AND THE SUBJECT ARE PROPS NOW, not constants. Both are the
+   client's own photographs and both are editable at /admin/hero — see
+   HeroFlaskContent. The long notes that stood on each of them, recording which
+   plate replaced which and how the cut was keyed, travelled to the schema
+   beside the values they are about. */
 
-   IT WAS CUT HERE, NOT SUPPLIED CUT. The source is app/im1.png, a 1230x1278
-   photograph on a wooden counter, fully opaque — no alpha channel at all. The
-   cut is reproducible and committed: scripts/cut-im1.js carries the key, and
-   every threshold in it was measured off this photograph rather than
-   guessed.
-
-   THE KEY HAS THREE ARMS, because no single threshold separates this frame.
-
-     FLASK   sat < 0.30, fenced to u > 0.42. The body is (198,185,169) at sat
-             0.15 and the lid (26,27,27) at sat 0.02 — near-neutral against a
-             backdrop that is warm brown everywhere, sat 0.88-0.90. The fence
-             exists because the PHOTOGRAPH'S OWN STEAM is grey enough in
-             places to slip through this arm, and it drifts to the left.
-
-     BRIGHT  lum > 110, anywhere. Takes the splash crown (152), every droplet
-             (119+) and the lit ginger (164). 110 and not 70: that steam tops
-             out near 90, and keying it in hung brown smears in mid-air beside
-             the glass — visible, and wrong, because the hero draws its own.
-
-     GLASS   lum > 55, fenced to u < 0.45 and 0.52 < v < 0.92. The tumbler's
-             facets and its shaded side fall well under 110; at that threshold
-             they keyed OUT and left transparent stripes down the middle of
-             the chai. Nothing else in that corner survives 55 — the table
-             reads 39-41, the cinnamon 37, the cardamom 38, the leaf 48.
-
-   Then: drop components under 45px, fill interior holes, cut the table at
-   v = 0.92, feather 1.5px. HOLES ARE FILLED BEFORE THE BOTTOM IS CUT, and
-   getting that order wrong is what produced the stripes the first time —
-   cutting first opens a channel from the chai's dark bands down through the
-   glass base to the frame edge, so the flood that finds "outside" reaches
-   them and they are never filled. The handle's opening is the one hole left
-   alone: any hole over 4000px whose centroid is right of u 0.78.
-
-   ASPECT 1.169 -> 1.059, near enough that the geometry below is untouched.
-   The plate is sized by HEIGHT and width follows texAspect — the reason that
-   choice is spelled out at the top of layout() — so a 9% narrower plate just
-   leaves 9% more air in the right margin.
-
-   THE STEAM STILL LEAVES THE CHAI, u = 0.27, v = 0.55, and the old note's
-   reasoning survives the swap intact: "a closed vacuum flask does not steam,
-   and the glass is the thing that is visibly hot." Re-measured on guides over
-   THIS cut-out, the tumbler's rim sits at v = 0.60 and its centre line at
-   u = 0.27. v = 0.55 is a notch above the rim rather than on it — the same
-   0.055 of clearance the old plate used against its own 0.555 rim, and for
-   the same reason: born exactly on the rim, the first half of every puff is
-   spent behind the glass and the splash. */
-const SUBJECT = { src: "/img/hero-hotcups-chai.webp", u: 0.27, v: 0.55 };
 
 function capable() {
   if (typeof window === "undefined") return false;
@@ -110,6 +63,10 @@ const AMBIENT_S = 9;
 export default function LiquidSurface({
   className = "",
   active = true,
+  poster,
+  alt,
+  subject: subjectSrc,
+  steam,
   onReady,
   onMouth,
   onSubject,
@@ -117,11 +74,40 @@ export default function LiquidSurface({
   className?: string;
   /** false while a different carousel slide is showing */
   active?: boolean;
+  /** the whole scene as a still — shown before the canvas starts and instead
+      of it wherever WebGL will not run */
+  poster: string;
+  /** what the scene shows. Empty keeps it hidden from assistive tech, which
+      is the right answer for a picture that is only atmosphere. */
+  alt: string;
+  /** the cut-out composited into the liquid */
+  subject: string;
+  /** where the plume leaves the glass, in fractions of the frame */
+  steam: { u: number; v: number };
   onReady?: (handle: LiquidHandle) => void;
   onMouth?: (m: FlaskMouth) => void;
   /** the subject texture has decoded and is on screen */
   onSubject?: () => void;
 }) {
+  const POSTER = poster;
+
+  /**
+   * Hidden, or named.
+   *
+   * THERE IS NO <img> HERE TO CARRY AN alt — the scene is a background-image
+   * on the fallback and a WebGL canvas on the live path — so a description has
+   * to arrive as role="img" plus aria-label. That pair is what turns a div
+   * into something a screen reader announces as a picture.
+   *
+   * EMPTY MEANS HIDDEN AND THAT IS NOT A DEGRADED STATE. An empty label on a
+   * role="img" is worse than no role at all: it announces "image" and then
+   * says nothing. So with nothing to say it goes back to aria-hidden.
+   */
+  const describe = (text: string) =>
+    text.trim()
+      ? ({ role: "img", "aria-label": text.trim() } as const)
+      : ({ "aria-hidden": "true" } as const);
+  const SUBJECT = { src: subjectSrc, u: steam.u, v: steam.v };
   const host = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState<boolean | null>(null);
 
@@ -543,7 +529,7 @@ export default function LiquidSurface({
     return (
       <div
         className={`${className} hero-poster`}
-        aria-hidden="true"
+        {...describe(alt)}
         style={{
           backgroundImage: `url(${POSTER})`,
           backgroundSize: "cover",
@@ -557,7 +543,7 @@ export default function LiquidSurface({
     <div
       ref={host}
       className={className}
-      aria-hidden="true"
+      {...describe(alt)}
       style={{ backgroundImage: `url(${POSTER})`, backgroundSize: "cover" }}
     />
   );

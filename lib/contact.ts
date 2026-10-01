@@ -16,6 +16,21 @@
      2. the inbox that should receive quote requests
      3. the registered address, and whether it is the one to publish
      4. the legal entity name for the copyright line in the footer
+   ===============================================================
+   FIXING 1 TO 3 NO LONGER NEEDS A DEPLOY. They are editable at
+   /admin/contact, and lib/content/schema holds the same values as
+   its defaults. Item 4 is NOT on that form — the copyright line is
+   still in Footer.tsx, so it remains a code change.
+
+   THIS FILE IS NOW THE FALLBACK, NOT THE SOURCE. Nothing on the
+   site reads the constants below any more; they are here because
+   they are the authored values, because SocialKey is still the type
+   the footer imports, and because deleting a module that four
+   sections used to import is a larger change than the panel needed
+   to make. The values a visitor actually sees come from
+   data/content.json when it exists and from DEFAULT_CONTENT when it
+   does not — and DEFAULT_CONTENT is a copy of what is below, so the
+   two must be edited together or neither.
    =============================================================== */
 
 /**

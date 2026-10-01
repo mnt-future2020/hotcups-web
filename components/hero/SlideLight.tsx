@@ -114,6 +114,9 @@ export type LightSlide = {
   /** portrait plate: centred pair instead of a bleed */
   flip?: boolean;
   image: { src: string; alt: string };
+  /** optional photograph behind everything; the ground is re-painted over it
+      as a scrim so the ink headline keeps its contrast */
+  bg?: string;
 };
 
 export default function SlideLight({
@@ -257,6 +260,43 @@ export default function SlideLight({
       className="absolute inset-0 flex flex-col overflow-hidden md:landscape:block"
       style={{ background: slide.ground }}
     >
+      {/* ── THE BACKGROUND PHOTOGRAPH, WHEN THERE IS ONE ──────────
+          TWO LAYERS AND BOTH ARE LOAD-BEARING. The picture, then the slide's
+          own ground painted again on top of it at 82%. The gradient is what
+          the ink headline's contrast was measured against — it is not
+          decoration that can be swapped for a photograph, it is the reason
+          the text is legible — so the photograph goes UNDER it and reads
+          through, rather than replacing it.
+
+          82% IS NOT A LOOK, IT IS THE BUDGET. The pale end of the warm ground
+          is #fefaf5 and the ink is #1c1210: about 16:1. Let a mid-tone
+          photograph through at full strength and that collapses toward 3:1 in
+          the worst patch. At 82% the picture is plainly there and the worst
+          case stays above the 4.5:1 the headline needs.
+
+          aria-hidden AND NO alt: scenery behind a headline that already says
+          the thing. `image` below is the slide's subject and that one is
+          described.
+
+          A PLAIN <img>, NOT next/image. It is a background at an unknown
+          intrinsic size with no layout to reserve — the one case where the
+          optimiser's sizing machinery buys nothing. */}
+      {slide.bg ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slide.bg}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 size-full object-cover"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.82]"
+            style={{ background: slide.ground }}
+          />
+        </>
+      ) : null}
 
       {/* NOTHING IS RESERVED ANY MORE, WHICH IS THE WHOLE FIX.
           Below md this was a picture band of min(38svh, 100svh - 440px) with

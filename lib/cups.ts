@@ -21,6 +21,14 @@
  * which is a stronger and less defensible thing to say than the ticker ever
  * did.
  *
+ * AND IT IS NO LONGER WHERE THE SITE READS IT. The figure is editable at
+ * /admin/figures; lib/content/schema holds 18,000 as its default and cupsLabel
+ * there is the formatter both badges call. Everything below is still true about
+ * the number and about why it is not a ticker — that reasoning is the reason the
+ * panel offers a field rather than a counter — but the header dock and the hero
+ * badge now take their value from the content context. These two constants are
+ * the authored defaults and nothing imports them.
+ *
  * ONE EXPORT, NOT TWO — AND NOW ONE FEWER AGAIN. subscribeCups went when the
  * ticker did, rather than being left as a no-op. currentCups() has now gone
  * the same way: both call sites read CUPS_LABEL instead, so it was a getter

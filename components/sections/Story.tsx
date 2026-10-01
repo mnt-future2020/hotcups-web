@@ -10,6 +10,12 @@ import {
 } from "motion/react";
 import Image from "next/image";
 import DigitRoll from "@/components/ui/DigitRoll";
+import { useSiteContent } from "@/lib/content/context";
+import {
+  storyRange,
+  storyYears,
+  type MilestoneContent,
+} from "@/lib/content/schema";
 
 /**
  * Section 08 — Seven years of Hotcups.
@@ -119,155 +125,22 @@ const FLAT_740 =
 /* the rail's icon + caption rows, and the same line the picture goes at */
 const HIDE_660 = "[@media(max-height:660px)]:hidden";
 
-type Milestone = {
-  key: string;
-  /** what the numeral shows, and the rail's label */
-  year: string;
-  /** the second line under the numeral, only where a stop covers a period */
-  span?: string;
-  title: string;
-  body?: string;
-  bullets?: string[];
-  /** the line under the rail's icon — it used to be a pill under the copy */
-  caption: string;
-  /** which glyph the rail draws under this stop's dot */
-  icon: keyof typeof GLYPH;
-  /** the photograph for this stop — see the note above MILESTONES */
-  img: string;
-};
+/* THE SEVEN STOPS ARE STORED CONTENT — see MilestoneContent in
+   lib/content/schema, which holds these exact values and every note that used
+   to sit here: the one correction made to the client's anniversary sheet (it
+   lists 2024 twice, which would have run the story backwards), why the captions
+   are the only words not off that sheet, why titles are stored in sentence case
+   and uppercased in CSS, and the art-direction rule the photographs owe — a
+   PERSON or a DRINK in every frame, never a rack of flasks.
 
-/* ---------------------------------------------------------------
-   THE SEVEN STOPS, FROM THE CLIENT'S ANNIVERSARY SHEET.
+   "50+ machines deployed" AND THE RFID CLAIM ARE PUBLIC STATEMENTS about the
+   business the moment they ship. They came from the client, they are not ours
+   to soften and not ours to invent. They are editable at /admin/story, which
+   makes them the client's to revise rather than ours to guess at.
 
-   ONE CORRECTION, AND IT WAS NEEDED. The sheet lists "2022 TO 2024" for the
-   growth stretch and then 2024 AGAIN for Trichy. On a poster the eye forgives
-   a repeated year; here the numeral would have shown 2024, moved on, and come
-   back to it — a story that goes backwards, and a rail carrying the same stop
-   twice. The growth stretch is therefore 2022-2023 and 2024 belongs to Trichy
-   alone. Seven stops, seven distinct periods, no overlap. If the client
-   confirms the growth ran into 2024, change `span` and merge the two.
-
-   THE `caption` LINES ARE THE ONLY WORDS HERE THAT ARE NOT THE CLIENT'S SHEET,
-   and they are the client's all the same: they are the captions off the
-   timeline reference and the background plate they supplied, which is why
-   "It started small." replaced "Where it began." and "We grew." replaced
-   "Steady growth." Each still restates the body directly above it rather than
-   making a new claim, and none asserts a number, a date or a capability the
-   sheet does not.
-
-   They used to be a pill under each stop's copy. They are the rail's captions
-   now — see Rail — because the same words in both places is the same words
-   twice, and under the icon is where the reference puts them.
-
-   EVERYTHING ELSE IS VERBATIM, including "50+ machines deployed" and the RFID
-   claim. Those go live as public statements the moment this ships — they came
-   from the client, they are not ours to soften, and they are not ours to
-   invent either. (This used to say "alongside the hero's 500+
-   organizations"; that row has been removed, so these two are now the only
-   hard numbers the site claims about the business.)
-
-   Titles are stored in sentence case and uppercased in CSS. The sheet sets
-   them in caps, but caps in the markup is what makes a screen reader spell
-   "COVID IMPACT" letter by letter.
-
-   THE SEVEN PHOTOGRAPHS ARE REAL NOW, one per stop, delivered as ~2MB PNGs
-   and converted to 1280px webp on the way in — 14.3MB of source became 580KB
-   across all seven, which matters because a pinned frame mounts ALL of them at
-   once (see Pictures) rather than fetching each as you reach it.
-
-   THE ART DIRECTION HELD, AND IT WAS LEARNED THE EXPENSIVE WAY.
-   The first brief for these described "a row of flasks being filled", "dozens
-   of flasks lined up on trolleys" and "racks of flasks" — and the pictures
-   that came back were of a flask WAREHOUSE. They read as a company that sells
-   vacuum flasks, which is not the business: Hotcups sells the drink, and the
-   flask is only how it travels.
-
-   The rule that replaced it is that the subject of every frame is a PERSON or
-   a DRINK — a pour, a cup being handed over, an office at tea break, a machine
-   filling a cup — and a flask may appear once or twice, in use, never stacked,
-   racked, loaded or displayed. The delivered set keeps it: a pour in a small
-   kitchen, a masked delivery to an empty office, two hands at a bigger urn, a
-   counter at tea break, a production kitchen, a machine in a lobby, a pantry
-   counter. Anything that replaces one of these owes the same rule.
-
-   Sources are 3:2 and 5:4; the boxes crop with object-cover, so a replacement
-   does not have to match a ratio — but it should keep its subject off the
-   edges, because the mobile box crops to 3:2 and the desktop one to whatever
-   the viewport leaves.
-   --------------------------------------------------------------- */
-const MILESTONES: Milestone[] = [
-  {
-    key: "start",
-    img: "/img/story-2019.webp",
-    year: "2019",
-    title: "Started in 200 sq. ft.",
-    body: "Hotcups began from a humble 200 sq. ft. space.",
-    caption: "It started small.",
-    icon: "shop",
-  },
-  {
-    key: "covid",
-    img: "/img/story-2020.webp",
-    year: "2020",
-    title: "Faced COVID",
-    body: "The world stopped. We chose to survive, adapt and keep moving.",
-    caption: "We kept going.",
-    icon: "cup",
-  },
-  {
-    key: "impact",
-    img: "/img/story-2021.webp",
-    year: "2021",
-    title: "COVID impact",
-    body: "COVID continued to impact business, but it strengthened our foundation.",
-    caption: "We adapted.",
-    icon: "people",
-  },
-  {
-    key: "growth",
-    img: "/img/story-2022.webp",
-    year: "2022",
-    span: "through 2023",
-    title: "30%+ growth YoY",
-    body: "Consistent growth, stronger team, happier customers, scalable operations.",
-    caption: "We grew.",
-    icon: "chart",
-  },
-  {
-    key: "trichy",
-    img: "/img/story-2024.webp",
-    year: "2024",
-    title: "Establishment in Trichy & moved to 2,500 sq. ft.",
-    body: "Expanded our footprint and upgraded to serve more, better.",
-    caption: "We expanded.",
-    icon: "building",
-  },
-  {
-    key: "tech",
-    img: "/img/story-2025.webp",
-    year: "2025",
-    title: "Stepped into technology",
-    body: "Making impact for bigger corporates, other cities and states with our vending solutions.",
-    caption: "We got smarter.",
-    icon: "machine",
-  },
-  {
-    key: "ecosystem",
-    img: "/img/story-2026.webp",
-    year: "2026",
-    title: "Building the beverage ecosystem",
-    bullets: [
-      "50+ machines deployed",
-      "RFID technology incorporated for corporate vending machines",
-      "In-house pantry services",
-      "Moved from a traditional delivery business to beverage ecosystem infrastructure provider",
-    ],
-    caption: "Building what's next.",
-    icon: "sprout",
-  },
-];
-
-const N = MILESTONES.length;
+   THE HEADLINE'S COUNT AND THE YEAR RANGE ARE DERIVED FROM THIS LIST NOW.
+   "Seven years." and "2019 – 2026" were typed out by hand a few lines above an
+   array that already said both — see storyYears and storyRange in the schema. */
 
 /** how many of 2026's four bullets a phone shows — see the note on the list */
 const MOBILE_BULLETS = 3;
@@ -280,9 +153,19 @@ const MOBILE_BULLETS = 3;
    scroll per year: a firm flick each, quick enough that seven do not feel like
    a chore and slow enough that a year is legible before it goes. */
 const PER_STOP = 42;
-const TRACK = N * PER_STOP;
+/* A FUNCTION NOW, not a constant: the stop count comes from the store, so the
+   scroll distance has to follow it. Left as a constant computed off a
+   seven-item array, an eighth stop would have had nowhere to scroll to. */
+const trackFor = (n: number) => n * PER_STOP;
 
 export default function Story() {
+  /* The stops, from the store. Read here rather than passed down: every
+     one of these is a client component under the same provider, and a prop
+     threaded through four signatures is four things to keep in step. */
+  const story = useSiteContent().story;
+  const MILESTONES = story.milestones;
+  const N = MILESTONES.length;
+
   const reduced = useReducedMotion();
   const headRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -401,7 +284,7 @@ export default function Story() {
       className="relative overflow-x-clip bg-cream-deep"
       style={{ paddingBottom: "clamp(3.5rem, 6vw, 6rem)" }}
     >
-      <div ref={trackRef} className="relative" style={{ height: `${TRACK}svh` }}>
+      <div ref={trackRef} className="relative" style={{ height: `${trackFor(N)}svh` }}>
         {/* THE CLIENT'S PLATE, AT 9%.
             It is on the STICKY frame, not the section: the section is 294svh
             of track and a `cover` background across that would be stretched to
@@ -466,7 +349,7 @@ export default function Story() {
                   className="h-px w-12 origin-right bg-line md:w-20"
                 />
                 <span className="eyebrow whitespace-nowrap text-ink-soft">
-                  08 — Our story
+                  {story.eyebrow}
                 </span>
                 <motion.span
                   aria-hidden="true"
@@ -527,14 +410,20 @@ export default function Story() {
                   was gone. */}
               <h2 className="mx-auto mt-[clamp(0.5rem,1.4vh,0.875rem)] max-w-[20ch] text-balance font-display text-[clamp(1.7rem,min(4.6vw,7.3vh),3.75rem)] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink">
                 <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                  {/* DERIVED FROM THE STOPS, not typed. It is the count of
+                      the list a few hundred pixels below it, and it sat here as
+                      a literal directly above that list — so adding a stop left
+                      the headline quietly saying seven. See storyYears. */}
                   <motion.span {...clipLine(0.15)} className="block">
-                    Seven years.
+                    {storyYears(MILESTONES)}
                   </motion.span>
                 </span>
                 <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                   <motion.span {...clipLine(0.24)} className="block">
-                    One{" "}
-                    <span className="text-orange-dark">growing journey.</span>
+                    {story.headlineLead}{" "}
+                    <span className="text-orange-dark">
+                      {story.headlineAccent}
+                    </span>
                   </motion.span>
                 </span>
               </h2>
@@ -560,8 +449,13 @@ export default function Story() {
                 {...reveal(0.34, 12)}
                 className={`mt-[clamp(0.5rem,1.4vh,0.875rem)] font-display text-[clamp(1.2rem,min(1.5vw,2.4vh),1.4rem)] font-extrabold tracking-[0.22em] ${HIDE_820}`}
               >
+                {/* Also derived — the first stop's year to the last one's,
+                    with a final span extending the end where it has one. A
+                    braced comment cannot sit among a tag's attributes; it is a
+                    second expression in the same parentheses and does not
+                    parse. */}
                 <DigitRoll
-                  value="2019 – 2026"
+                  value={storyRange(MILESTONES)}
                   play={on}
                   delay={0.4}
                   to="var(--color-orange-dark)"
@@ -673,6 +567,12 @@ export default function Story() {
    tall. It leaves upward, the same direction the stop below it leaves in.
    --------------------------------------------------------------- */
 function Numeral({ active, reduced }: { active: number; reduced: boolean }) {
+  /* The stops, from the store. Read here rather than passed down: every
+     one of these is a client component under the same provider, and a prop
+     threaded through four signatures is four things to keep in step. */
+  const MILESTONES = useSiteContent().story.milestones;
+  const N = MILESTONES.length;
+
   const current = MILESTONES[active];
 
   return (
@@ -764,6 +664,12 @@ function Numeral({ active, reduced }: { active: number; reduced: boolean }) {
    reader read the story twice.
    --------------------------------------------------------------- */
 function Pictures({ active, reduced }: { active: number; reduced: boolean }) {
+  /* The stops, from the store. Read here rather than passed down: every
+     one of these is a client component under the same provider, and a prop
+     threaded through four signatures is four things to keep in step. */
+  const MILESTONES = useSiteContent().story.milestones;
+  const N = MILESTONES.length;
+
   return (
     <div className={`relative min-h-0 h-full w-full overflow-hidden rounded-[var(--radius-media)] bg-orange-soft ${HIDE_660} lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-[clamp(11rem,43vh,25rem)] lg:self-center`}>
       {MILESTONES.map((m, i) => (
@@ -814,7 +720,7 @@ function Stop({
   active,
   reduced,
 }: {
-  m: Milestone;
+  m: MilestoneContent;
   index: number;
   active: number;
   reduced: boolean;
@@ -902,7 +808,7 @@ function Stop({
           This comment sits OUTSIDE the ternary on purpose. A braced JSX comment
           inside the truthy branch is a second expression in the same pair of
           parentheses, and it does not parse. */}
-      {m.bullets ? (
+      {m.bullets.length ? (
         <ul className="mt-2.5 grid max-w-[68ch] gap-1.5 max-lg:gap-1">
           {m.bullets.map((b, i) => (
             <li
@@ -1029,10 +935,18 @@ function Glyph({ name }: { name: keyof typeof GLYPH }) {
    position indicator at the foot of a pinned frame — the same thing a scroll
    bar is — and reads as one.
 
-   THE TRACK IS INSET BY HALF A CELL AT EACH END. Seven dots in a seven-column
-   grid put the first at 1/14 across and the last at 13/14, so a full-width line
-   would stick out past both. 7.143% is that half cell, and it is why the fill's
-   scaleX maps active/(N-1) rather than active/N.
+   THE TRACK IS INSET BY HALF A CELL AT EACH END, AND THE CELL IS NOW WHATEVER
+   THE STOP COUNT MAKES IT. N dots in an N-column grid put the first at 1/2N
+   across and the last at (2N-1)/2N, so a full-width line would stick out past
+   both. The inset is that half cell — 100/(2N) — and it is why the fill's
+   scaleX maps active/(N-1) rather than active/N. It was written as the literal
+   7.143% for seven stops; an eighth turned it into a line that stopped short at
+   one end and overhung at the other.
+
+   THE COLUMN COUNT IS A LOOKUP, NOT AN INTERPOLATION. Tailwind scans source
+   files for complete class names at build time, so `grid-cols-${n}` is not in
+   the output at all and the grid silently falls back to one column. Same
+   reason the menu row has a COLUMNS table.
 
    THE LABELS DROP ON HEIGHT, NOT ON WIDTH, AND orange-deep IS WHY THEY CAN.
    They were lg-only on the theory that the live year has to be orange and
@@ -1043,6 +957,40 @@ function Glyph({ name }: { name: keyof typeof GLYPH }) {
    700px of viewport. A 03 / 07 count used to carry the position once they had;
    it is gone at the client's direction, so below 700 the dots carry it alone.
    --------------------------------------------------------------- */
+/**
+ * The rail's column count, by how many stops there are.
+ *
+ * WRITTEN OUT RATHER THAN BUILT, for the reason in the note above: an
+ * interpolated class name never reaches the stylesheet. Twelve is the ceiling
+ * because the icons and the dots stop being separable below about 90px a
+ * column, and twelve of a 1128px content width is 94.
+ */
+const COLS: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+  6: "grid-cols-6",
+  7: "grid-cols-7",
+  8: "grid-cols-8",
+  9: "grid-cols-9",
+  10: "grid-cols-10",
+  11: "grid-cols-11",
+  12: "grid-cols-12",
+};
+
+/**
+ * HOW MANY STOPS THE CAPTION ROW CAN HOLD.
+ *
+ * Seven columns of a 1128px content width is 161px a column, and "Building
+ * what's next." measures about 144px at this size — it fits, but only just.
+ * Eight columns is 141px and it does not. Past this the captions drop to the
+ * live one alone, centred, which is exactly what every width below lg already
+ * does and what the chip did before them.
+ */
+const CAPTION_LIMIT = 7;
+
 function Rail({
   active,
   reduced,
@@ -1052,6 +1000,20 @@ function Rail({
   reduced: boolean;
   on: boolean;
 }) {
+  /* The stops, from the store. Read here rather than passed down: every
+     one of these is a client component under the same provider, and a prop
+     threaded through four signatures is four things to keep in step. */
+  const MILESTONES = useSiteContent().story.milestones;
+  const N = MILESTONES.length;
+
+  /* The grid and the track, both off the stop count — see the notes above. */
+  const cols = COLS[N] ?? "grid-cols-12";
+  /* Half a cell. `inset-x` takes one value for both ends, which is what makes
+     the line start and finish under the first and last dots. */
+  const inset = `${100 / (2 * N)}%`;
+  const showCaptions = N <= CAPTION_LIMIT;
+
+
   return (
     /* A CARD, FULL WIDTH OF THE FRAME, at the client's direction.
        The rail was seven columns of type floating straight on the plate, which
@@ -1073,7 +1035,7 @@ function Rail({
        1625x812. */
     <div className={`mt-[clamp(0.375rem,1.2vh,1rem)] shrink-0 rounded-[var(--radius-panel)] border border-line/70 bg-cream/70 px-[clamp(0.75rem,2vw,1.75rem)] py-[clamp(0.375rem,1.1vh,0.875rem)] ${FLAT_740}`}>
       {/* ---- the year labels ---- */}
-      <div className={`grid grid-cols-7 ${HIDE_700}`} aria-hidden="true">
+      <div className={`grid ${cols} ${HIDE_700}`} aria-hidden="true">
         {MILESTONES.map((m, i) => (
           <span
             key={m.key}
@@ -1090,17 +1052,23 @@ function Rail({
       <div className="relative mt-[clamp(0.375rem,1vh,0.625rem)] h-4">
         <span
           aria-hidden="true"
-          className="absolute inset-x-[7.143%] top-1/2 h-px -translate-y-1/2 bg-line"
+          className="absolute top-1/2 h-px -translate-y-1/2 bg-line"
+          style={{ left: inset, right: inset }}
         />
         <motion.span
           aria-hidden="true"
-          className="absolute inset-x-[7.143%] top-1/2 h-[2px] -translate-y-1/2 origin-left rounded-full bg-orange-dark"
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 origin-left rounded-full bg-orange-dark"
+          style={{ left: inset, right: inset }}
           initial={false}
-          animate={{ scaleX: active / (N - 1) }}
+          /* N - 1 IS ZERO AT A SINGLE STOP, and scaleX: NaN renders the fill at
+             full width over a rail with one dot on it — a finished progress bar
+             for a timeline with nowhere to go. One stop is always complete, so
+             it is 1. */
+          animate={{ scaleX: N > 1 ? active / (N - 1) : 1 }}
           transition={{ duration: reduced ? 0 : 0.6, ease: EASE }}
         />
 
-        <ol className="relative grid h-full grid-cols-7 items-center">
+        <ol className={`relative grid h-full ${cols} items-center`}>
           {MILESTONES.map((m, i) => {
             const done = i <= active;
             const live = i === active;
@@ -1162,7 +1130,7 @@ function Rail({
           guard here cannot be looser than the chip's was. */}
       <div
         aria-hidden="true"
-        className={`mt-[clamp(0.35rem,1.1vh,0.7rem)] grid grid-cols-7 ${HIDE_660}`}
+        className={`mt-[clamp(0.35rem,1.1vh,0.7rem)] grid ${cols} ${HIDE_660}`}
       >
         {MILESTONES.map((m, i) => (
           <span
@@ -1177,13 +1145,17 @@ function Rail({
       </div>
 
       {/* ---- the captions ----
-          SEVEN OF THEM AT lg, ONE BELOW IT. Seven columns of a 1128px content
-          width is 161px a column, and "Building what's next." is about 144px
-          at this size — it fits, but only just, and at 375px a column is 47px
-          and it cannot fit at all. So the phone gets the live caption alone,
-          centred, which is the same thing the chip used to do. */}
+          ONE PER STOP AT lg, ONE ALTOGETHER BELOW IT — and one altogether at
+          every width once there are more stops than the row can hold. Seven
+          columns of a 1128px content width is 161px a column and "Building
+          what's next." is about 144px at this size; at 375px a column is 47px
+          and it cannot fit at all. So a phone, and a long timeline, both get
+          the live caption alone, centred, which is what the chip used to do.
+          See CAPTION_LIMIT. */}
       <div
-        className={`mt-[clamp(0.2rem,0.7vh,0.4rem)] hidden grid-cols-7 lg:grid ${HIDE_660}`}
+        className={`mt-[clamp(0.2rem,0.7vh,0.4rem)] hidden ${cols} ${
+          showCaptions ? "lg:grid" : ""
+        } ${HIDE_660}`}
         aria-hidden="true"
       >
         {MILESTONES.map((m, i) => (
@@ -1198,7 +1170,9 @@ function Rail({
         ))}
       </div>
       <p
-        className={`mt-[clamp(0.2rem,0.7vh,0.4rem)] text-center font-sans text-[clamp(0.78rem,1.1vh,0.9rem)] font-semibold leading-[1.25] text-orange-deep lg:hidden ${HIDE_660}`}
+        className={`mt-[clamp(0.2rem,0.7vh,0.4rem)] text-center font-sans text-[clamp(0.78rem,1.1vh,0.9rem)] font-semibold leading-[1.25] text-orange-deep ${
+          showCaptions ? "lg:hidden" : ""
+        } ${HIDE_660}`}
       >
         {MILESTONES[active].caption}
       </p>

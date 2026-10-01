@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
-import { EMAIL, mailHref, PHONE_LABEL, TEL_HREF, waHref } from "@/lib/contact";
+import { useContact, useSiteContent } from "@/lib/content/context";
+import { mailHref, telHref, waHref } from "@/lib/content/links";
 import {
   currentWorkplace,
   subscribeWorkplace,
-  WORKPLACE_ASK,
   type WorkplaceKey,
 } from "@/lib/workplace";
 
@@ -45,9 +45,11 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const STEP = 0.09;
 const T0 = 0.25;
 
-/* The number, the inbox and the two hrefs now live in lib/contact — the
-   footer shows the same ones, and one of them being stale would be worse
-   than not repeating them at all. */
+/* The number, the inbox and the two hrefs come from the content context — the
+   footer shows the same ones, and one of them being stale would be worse than
+   not repeating them at all. They used to be constants in lib/contact, which
+   was the same guarantee by a different route; the route changed when they
+   became editable, the guarantee did not. */
 
 function PhoneIcon() {
   return (
@@ -139,12 +141,22 @@ function SpinBadge() {
 }
 
 export default function Pricing() {
+  const contact = useContact();
+  const places = useSiteContent().whoWeServe.places;
+
   /* Section 03's answer, if the visitor gave one. It does not change anything
      you can SEE here — see lib/workplace for why there is no field to fill —
      it changes what the email and the WhatsApp message say when they open. */
   const [place, setPlace] = useState<WorkplaceKey | null>(currentWorkplace);
   useEffect(() => subscribeWorkplace(setPlace), []);
-  const asked = place ? WORKPLACE_ASK[place] : null;
+  /* THE PHRASE TRAVELS ON THE PLACE NOW, rather than being looked up in a
+     Record keyed by a typed union. A selection is a plain string, so a key that
+     matches nothing — a stale one from before a segment was renamed — falls
+     through to null and this section asks the neutral question it asks a
+     visitor who never chose. That is the same behaviour, reached without the
+     union that forced the workplaces to exist in four places at once. */
+  const asked =
+    places.find((p) => p.key === place)?.askPhrase ?? null;
 
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
@@ -279,7 +291,7 @@ export default function Pricing() {
               className="mt-9 flex flex-wrap items-center justify-center gap-3.5"
             >
               <a
-                href={mailHref(asked)}
+                href={mailHref(contact, asked)}
                 className="group relative isolate inline-flex h-[3.6rem] items-center gap-2 overflow-hidden rounded-full bg-orange px-8 font-sans text-[1.05rem] font-semibold text-white"
               >
                 <span
@@ -291,7 +303,7 @@ export default function Pricing() {
               </a>
 
               <a
-                href={waHref(asked)}
+                href={waHref(contact, asked)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hero-btn relative inline-flex h-[3.6rem] items-center gap-2.5 overflow-hidden rounded-full border border-white/45 bg-white/10 px-7 font-sans text-[1.05rem] font-semibold text-white backdrop-blur-sm"
@@ -305,25 +317,25 @@ export default function Pricing() {
               className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 font-sans text-[1rem] text-white"
             >
               <a
-                href={TEL_HREF}
+                href={telHref(contact)}
                 className="inline-flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-75"
               >
                 <PhoneIcon />
-                {PHONE_LABEL}
+                {contact.phoneLabel}
               </a>
               <a
-                href={`mailto:${EMAIL}`}
+                href={`mailto:${contact.email}`}
                 className="inline-flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-75"
               >
                 <MailIcon />
-                {EMAIL}
+                {contact.email}
               </a>
             </motion.div>
           </div>
 
           {/* bottom right, and out of the copy's way on a phone */}
           <div className="mt-8 flex justify-center md:absolute md:bottom-[clamp(1.25rem,3vw,2.5rem)] md:right-[clamp(1.25rem,3vw,2.5rem)] md:mt-0">
-            <a href={mailHref(asked)} aria-label="Get a quote by email">
+            <a href={mailHref(contact, asked)} aria-label="Get a quote by email">
               <SpinBadge />
             </a>
           </div>

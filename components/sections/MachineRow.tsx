@@ -4,6 +4,8 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
+
+import { useSiteContent } from "@/lib/content/context";
 /**
  * Section 06 — The machines.
  *
@@ -38,7 +40,17 @@ import { motion, useInView, useReducedMotion } from "motion/react";
  *
  * IT MOVES LIKE MACHINERY, NOT LIKE LIQUID
  * Hard easing, exact stagger, no overshoot anywhere — machines do not bounce.
- * Only one thing moves at rest: the screens take turns.
+ * Only one thing moves at rest: the screens take turns — a soft warm-up
+ * cycling between the three cards, which is a fixed centred ellipse rather
+ * than anything aimed at a particular part of a photograph.
+ *
+ * THE DISPLAY GLOW IS GONE, at the client's direction. Hovering a card used to
+ * brighten that machine's own screen, positioned by four measurements taken off
+ * each photograph. It was the only thing on the site that needed a picture to
+ * be measured before it could be replaced — swap the plate or crop it and all
+ * four were silently wrong — and it bought one hover effect on three cards that
+ * already lift, shadow and pool light at the base. Removing it took the
+ * measurements out of the admin panel with it.
  *
  * THE BACKDROP IS SCOPED TO THE STAGE, NOT THE SECTION
  * The brief asks for the studio image as the section background with the
@@ -85,46 +97,18 @@ const T_COUNT = 1.5;
  * section was telling to stay on flasks. The new bands fix that on their own:
  * the smallest unit now covers everything from the line up to 100.
  */
-const RIGS = [
-  {
-    /* THE KEYS AND THE FILENAMES STILL CARRY THE BRANDS. They are not
-       rendered, but an image URL is visible to anyone who opens the network
-       tab — /img/machine-cothas.png and /img/machine-chaipoint.png say what
-       the cards no longer do. Renaming the files is the fix if the removal
-       is meant to reach that far; it was left alone because it is a rename
-       across two sections and this one was a copy change. */
-    key: "cothas",
-    src: "/img/machine-cothas.png",
-    from: null,
-    cap: 100,
-    aspect: 900 / 754,
-    /* the display, in fractions of the IMAGE — read off each photograph */
-    screen: { u: 0.505, v: 0.076, w: 0.14, h: 0.085 },
-  },
-  {
-    key: "tata",
-    /* THE MISMATCH THAT USED TO BE HERE IS RESOLVED BY DELETION, NOT BY A
-       CORRECTION. This unit carries a visible CHACONY® mark in two places —
-       beside the touchscreen and on the urn — and it was labelled "Tata's"
-       here, having previously been labelled "Chai Point". Neither was what
-       the photograph shows. With no name on the card there is no longer a
-       claim to be wrong; the file name is the only place the mismatch
-       survives. */
-    src: "/img/machine-chaipoint.png",
-    from: 100,
-    cap: 200,
-    aspect: 1290 / 1219,
-    screen: { u: 0.589, v: 0.237, w: 0.31, h: 0.2 },
-  },
-  {
-    key: "brewmax",
-    src: "/img/machine-brewmax-clean.png",
-    from: 200,
-    cap: 500,
-    aspect: 1278 / 1230,
-    screen: { u: 0.329, v: 0.425, w: 0.19, h: 0.354 },
-  },
-];
+/* THE THREE UNITS ARE STORED CONTENT — see MachineContent in
+   lib/content/schema, which holds these exact values as its defaults along with
+   every note that used to sit here: why the capacities are ranges rather than
+   points, why no name appears on any card, why the middle photograph's CHACONY
+   mark made the label it once carried a false claim, and why the filenames
+   still say what the cards no longer do.
+
+   IT IS ALSO WHERE THE DUPLICATE WENT. This array's own comment asked the next
+   person to "KEEP THESE IN STEP WITH `MACHINES` IN Machines.tsx (section 05)...
+   The two sections must not disagree about what a given office gets" — and
+   there was a third copy in MachinesView.tsx besides. All three read this one
+   list now, so keeping them in step is not a thing anyone has to remember. */
 
 function Count({ to, play, delay }: { to: number; play: boolean; delay: number }) {
   const reduced = useReducedMotion();
@@ -153,6 +137,9 @@ function Count({ to, play, delay }: { to: number; play: boolean; delay: number }
 }
 
 export default function MachineRow() {
+  const { eyebrow, headline, headlineAccent, sub, machines: RIGS } =
+    useSiteContent().machines;
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const inView = useInView(ref, { amount: 0.2, once: true });
@@ -217,7 +204,7 @@ export default function MachineRow() {
           <div className="lg:col-span-7">
             <motion.div {...reveal(0.05, 0)} className="flex items-center gap-4">
               <span className="eyebrow whitespace-nowrap text-ink/72">
-                06 — The machines
+                {eyebrow}
               </span>
               <motion.span
                 initial={reduced ? undefined : { scaleX: 0 }}
@@ -268,8 +255,8 @@ export default function MachineRow() {
                       clears the 3.0 that LARGE text owes; this headline floors
                       at 32px so it is large text at every size. orange-deep
                       would have been safer and duller, and it is not needed. */}
-                  <span className="text-orange-dark">Rent or buy.</span> Find
-                  your right machine.
+                  <span className="text-orange-dark">{headlineAccent}</span>{" "}
+                  {headline}
                 </motion.span>
               </span>
             </h2>
@@ -292,8 +279,7 @@ export default function MachineRow() {
               from hero slide 3, went with the rewrite. */}
           <motion.div {...reveal(0.35)} className="lg:col-span-5 lg:pt-10">
             <p className="max-w-[30ch] font-sans text-[clamp(1.05rem,1.6vw,1.375rem)] leading-[1.55] text-ink-soft">
-              Three sizes, from counter-top to half a desk — each built for a
-              different workplace.
+              {sub}
             </p>
           </motion.div>
         </div>
@@ -410,27 +396,7 @@ export default function MachineRow() {
                           className="relative object-contain"
                         />
 
-                        {/* hover: the machine's own screen lights up. This
-                            changes something already in the photograph rather
-                            than adding an object, which is why it cannot look
-                            broken. The wrapper carries the image's aspect, so
-                            these fractions land on the real display. */}
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-[18%]"
-                          style={{
-                            left: `${r.screen.u * 100}%`,
-                            top: `${r.screen.v * 100}%`,
-                            width: `${r.screen.w * 190}%`,
-                            height: `${r.screen.h * 190}%`,
-                            background:
-                              "radial-gradient(ellipse at 50% 50%, rgba(255,214,166,0.85), rgba(255,180,110,0.35) 42%, rgba(255,150,70,0) 70%)",
-                            mixBlendMode: "screen",
-                            opacity: hot ? 1 : 0,
-                            transition: `opacity ${hot ? 300 : 250}ms linear`,
-                          }}
-                        />
-                      </motion.div>
+                        </motion.div>
                     </div>
 
                     {/* the floor they stand on */}
