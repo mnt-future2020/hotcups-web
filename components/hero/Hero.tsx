@@ -5,6 +5,8 @@ import { motion, useReducedMotion } from "motion/react";
 import SlideFlask from "./SlideFlask";
 import SlideLight, { type LightSlide } from "./SlideLight";
 import { setHeroTone, type HeroTone } from "@/lib/heroTone";
+import { useSiteContent } from "@/lib/content/context";
+import { groundStyle } from "@/lib/content/schema";
 
 /**
  * The hero, as a carousel of three.
@@ -24,9 +26,12 @@ import { setHeroTone, type HeroTone } from "@/lib/heroTone";
  *
  * THE MACHINE MOVED AHEAD OF THE MENU at the client's direction. It used to
  * run delivery -> menu -> machine. Nothing about the slides changed except
- * which comes second: each entry in LIGHT_SLIDES carries its own ground,
- * copy, buttons, `flip` and photograph, so reordering the array moves all of
- * that together and cannot separate a headline from its picture.
+ * which comes second: each entry carries its own ground, copy, buttons, `flip`
+ * and photograph, so reordering them moves all of that together and cannot
+ * separate a headline from its picture. That order now lives in
+ * DEFAULT_CONTENT.hero.slides — parseContent maps over the defaults rather than
+ * over the stored file, so the positions are fixed and a saved document can
+ * only change what is IN each one.
  *
  * Worth knowing if it is ever reordered again: the two are NOT
  * interchangeable objects. The machine slide is the one with `flip: true` —
@@ -87,90 +92,59 @@ const FADE = 0.9;
 
 /* SLIDE 2 FIRST, THEN SLIDE 3 — index 0 is the carousel's SECOND slide,
    because slide one is SlideFlask and is not in this list. */
-const LIGHT_SLIDES: LightSlide[] = [
-  {
-    /* the mockup's cool studio greige, with the light off the upper left */
-    ground:
-      "radial-gradient(125% 125% at 30% 20%, #fbf9f5 0%, #f1ece4 48%, #e6e0d7 100%)",
-    lines: ["Smart beverage", "machines,"],
-    accent: ["built for busy", "workplaces."],
-    sub: "Serve hot tea, coffee and more at the touch of a button — quick, convenient and ready whenever your team needs it.",
-    primary: { label: "Get pricing", href: "#pricing" },
-    secondary: { label: "Explore machines", href: "#machines" },
-    /* mirrored: the machine faces right, so it reads into the copy rather
-       than off the edge of the page. */
-    flip: true,
-    image: {
-      src: "/img/hero-slide-machine.webp",
-      alt: "A Hotcups vending machine dispensing coffee into a paper cup",
-    },
-    /* Portrait plate, and object-contain sizes it by whichever axis binds
-       first — at 46% of 1834px the box is 843x900, so HEIGHT bound and the
-       machine filled the viewport top to bottom however narrow the box got.
-       Insetting it 9% each way is what actually makes it smaller. */
-  },
-  {
-    /* The mockup's warm peach: light at the upper left, deepening across to
-       the drinks. Outer stop capped at #f5dec6 — the reference runs to about
-       #efd2b4, where the orange-dark accent line drops to 2.85:1. */
-    ground:
-      "radial-gradient(125% 125% at 26% 12%, #fefaf5 0%, #faeadb 45%, #f5dec6 100%)",
-    /* THE CLIENT'S "SHORT & PREMIUM" WORDING, and short is why it is this one
-       rather than the longer draft that came with it.
+/* THE TWO LIGHT SLIDES ARE BUILT FROM STORED COPY, not written here. The array
+   that stood in this place held the ground, the headline, the sub, both buttons,
+   `flip` and the photograph for each — all of which except the ground are now
+   editable at /admin/hero, and the ground is chosen there by name from the two
+   measured options in lib/content/schema.
 
-       A slide holds for DWELL — seven seconds — and then crossfades whether
-       or not it has been read. The long version ran a headline, a
-       sub-headline and a ~50-word body; at that length a reader gets through
-       maybe half of it before the machine slide replaces it, so the back half
-       is words nobody sees. It also needed a fourth field on LightSlide for
-       the sub-headline, which no other slide would use.
+   WHAT HAS NOT CHANGED is the thing the old comment above was warning about:
+   each entry still carries its own ground, copy, buttons, flip and photograph
+   TOGETHER, so the pairing cannot come apart. Swapping only a photograph and
+   leaving a slide's ground and flip alone is still how you get the machine
+   under the drinks' peach — the panel says so on the form.
 
-       This version says the same thing in one paragraph and fits the shape
-       the type already has. The long draft is kept in the client's message if
-       it is ever wanted for the /menu page, where nothing is on a timer. */
-    lines: ["One Machine."],
-    accent: ["Every Favourite."],
-    /* THE FOUR NAMES HERE HAD TO MOVE WITH THE MENU. This read "Badam Milk,
-       and Hot Chocolate" — the hot chocolate had been wrong since section 02
-       stopped pouring it, two swaps of the fourth card ago, and badam milk
-       went when the client cut Milk to plain milk. Both are now drinks the
-       menu does not have, which is worse in a hero than anywhere else on the
-       site. These four are the menu, and the fifth, Nannari Sarbath, is left
-       out only because the sentence needs to scan.
+   The ORDER is still the argument's order — delivery, machine, menu — and it is
+   still fixed in code, because it is a claim about what the site argues rather
+   than a content edit. See the note at the top of this file. */
 
-       "Buttermilk", not "Masala Buttermilk", at the client's direction — the
-       drink is plain. The same correction is in Ticker, Industries, section
-       02 and /menu; all five read from their own copy of the name, so they
-       had to be changed together or not at all. */
-    sub: "Enjoy freshly prepared Tea, Filter Coffee, Milk, and Buttermilk, all conveniently served from our beverage machine — giving everyone something they love, right at the workplace.",
-    primary: { label: "See the menu", href: "#menu" },
-    secondary: { label: "Get pricing", href: "#pricing" },
-    /* THE DRINKS PLATE STAYS, UNDER A HEADLINE THAT SAYS "MACHINE".
-       That pairing is deliberate and was chosen over the machine plate. The
-       sentence is about what comes OUT of the machine, so a photograph of
-       drinks is the one that carries it. The machine plate would also have
-       put the same picture on two consecutive slides, and the hero set has
-       only one of them.
+/* THE TONES ARE DERIVED, WHICH IS WHAT LETS A SLIDE BE ADDED.
+   This was the literal ["dark", "light", "light"], and it was the only thing
+   actually pinning the carousel to three — a fourth slide would have read
+   TONES[3] as undefined and told the header to light itself for `undefined`,
+   which is neither of the two things it knows how to be.
 
-       THE PLATE DOES NOT SHOW THE FOUR DRINKS THE SENTENCE NAMES, and the
-       alt used to claim it did. What is actually in frame: masala chai, a
-       filter coffee davara set, badam milk and a mug of hot chocolate. There
-       is no buttermilk in it at all and no plain milk — two of the four are
-       drinks /menu does not pour, which is the exact fault the note above
-       records being fixed in the COPY and which was left standing in the
-       PICTURE. The alt describes what is there instead of naming drinks, so
-       it is at least true; the photograph itself still needs replacing. */
-    image: {
-      src: "/img/hero-slide-drinks.webp",
-      alt: "A group of hot drinks with whole spices, nuts and coffee beans",
-    },
-  },
+   It is not a judgement call. Slide one is SlideFlask, a near-black WebGL
+   scene, and it is always index 0; every slide that can be ADDED is a
+   SlideLight on a cream ground. So the array is one dark followed by one light
+   per stored slide, and there is nothing to keep in step. */
+const tonesFor = (lightCount: number): HeroTone[] => [
+  "dark",
+  ...Array.from({ length: lightCount }, () => "light" as const),
 ];
 
-const TONES: HeroTone[] = ["dark", "light", "light"];
-const COUNT = TONES.length;
-
 export default function Hero() {
+  const { hero } = useSiteContent();
+
+  /* The stored slides, with the named ground resolved into the gradient the
+     component actually needs. Built inline rather than memoised: it is two
+     object literals, and a useMemo whose dependency is `hero` would re-run on
+     exactly the renders this does. */
+  const lightSlides: LightSlide[] = hero.slides.map((slide) => ({
+    ground: groundStyle(slide),
+    lines: slide.lines,
+    accent: slide.accent,
+    sub: slide.sub,
+    primary: slide.primary,
+    secondary: slide.secondary,
+    flip: slide.flip,
+    image: slide.image,
+    bg: slide.bg,
+  }));
+
+  const TONES = tonesFor(lightSlides.length);
+  const COUNT = TONES.length;
+
   const reduced = useReducedMotion();
   const [i, setI] = useState(0);
   /** something inside has keyboard focus — see the note above */
@@ -185,7 +159,14 @@ export default function Hero() {
     return () => window.clearTimeout(t);
   }, [i, reduced]);
 
-  const go = useCallback((n: number) => setI(((n % COUNT) + COUNT) % COUNT), []);
+  /* COUNT IS A DEPENDENCY NOW. It used to be a module constant, so an empty
+     dep list was correct; with the count coming from the store, a `go` frozen
+     at the first render would wrap against a stale number the moment a slide
+     was added. */
+  const go = useCallback(
+    (n: number) => setI(((n % COUNT) + COUNT) % COUNT),
+    [COUNT],
+  );
 
   useEffect(() => {
     if (reduced || held) return;
@@ -253,7 +234,7 @@ export default function Hero() {
           {n === 0 ? (
             <SlideFlask active={n === i} />
           ) : (
-            <SlideLight slide={LIGHT_SLIDES[n - 1]} active={n === i} />
+            <SlideLight slide={lightSlides[n - 1]} active={n === i} />
           )}
         </motion.div>
       ))}

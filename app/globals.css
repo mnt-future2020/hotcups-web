@@ -163,6 +163,63 @@ body {
   border-radius: 3px;
 }
 
+/* ── THE HAND POINTER, EVERYWHERE SOMETHING IS CLICKABLE ──────────────────
+
+   ONE RULE INSTEAD OF SEVENTY CLASS NAMES. Links get the hand for free; every
+   other interactive element does not. A <button> is cursor:default in every
+   browser — an inheritance from the OS dialogs HTML buttons were modelled on
+   — and this site and its panel have about seventy of them: every tab, every
+   swatch, every remove, every pager arrow, the whole admin rail. Adding
+   cursor-pointer to each would be seventy chances to forget on the next one.
+   Declared here, a new button is right the day it is written.
+
+   WHAT IS COVERED, and each is here because it is clicked rather than typed:
+   buttons, anything wearing role="button" or role="tab", <select> and the
+   native colour and file inputs, <summary>, and a <label> wrapping a checkbox
+   or radio — the label IS the hit target in every tick-box on this site, so a
+   text cursor over it reads as a paragraph rather than a control.
+
+   DISABLED IS EXCLUDED, and that is the point of the :not() clauses. A
+   disabled control that still shows the hand is promising something it will
+   not do; the ones that matter here already say not-allowed, and this rule
+   must not overrule them. aria-disabled is checked alongside :disabled
+   because a <div> wrapper is how a couple of the panel's submit buttons are
+   held off, and :disabled does not reach those.
+
+   TEXT INPUTS AND TEXTAREAS ARE NOT HERE. The I-beam over them is correct —
+   it says "you can type here", which is a different promise from "this does
+   something when clicked", and overriding it would lose real information.
+
+   ── IT IS IN @layer base, AND THAT IS THE LOAD-BEARING PART ──────────────
+
+   Unlayered CSS beats layered CSS whatever the specificity, so written plainly
+   — the way the rules above it are — this would have OVERRULED every
+   cursor-* utility in the codebase. Three real places would have broken:
+   `disabled:cursor-not-allowed`, which nineteen controls use; `cursor-move`
+   and the resize cursors on the image cropper's handles; and the full-screen
+   scrim behind the post and case-study editors, which is a <button> wearing
+   cursor-default on purpose — it closes the sheet, but a hand over the entire
+   darkened page would read as "this whole thing is one link".
+
+   In @layer base, utilities win, which is the right order: this is the
+   default for a kind of element, and a class on one element is a decision
+   about that element. */
+@layer base {
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary,
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="color"]:not(:disabled),
+  input[type="file"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* ...EXCEPT the number field inside a stepper, which would draw a second box.
 
    That pill already announces focus as a whole: focus-within turns its border
@@ -289,6 +346,30 @@ body {
 /* ---------------------------------------------------------------
    Layout rhythm
    --------------------------------------------------------------- */
+
+/* ── A SCROLLER WITH NO VISIBLE BAR ───────────────────────────────────────
+
+   IT HIDES THE TRACK AND NOTHING ELSE. overflow stays `auto`, so the wheel,
+   the trackpad, touch, the arrow keys and Page Up/Down all behave exactly as
+   before — this is a change to what is drawn, not to what works. `overflow:
+   hidden` would have been the wrong tool and the usual mistake: it would have
+   made the content below the fold unreachable on a short window.
+
+   TWO DECLARATIONS BECAUSE TWO ENGINES. Firefox takes scrollbar-width; Chrome,
+   Edge and Safari take the ::-webkit-scrollbar pseudo-element. Neither alone
+   covers the browsers this panel is opened in.
+
+   USE IT SPARINGLY. A scrollbar is the only thing on screen that says "there
+   is more below", and taking it off a long list of unfamiliar content costs a
+   reader something real. It is right on the admin rail because that rail is a
+   dozen named links a person learns in a day — not because it looks tidier. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 
 .shell {
   width: 100%;
@@ -1012,4 +1093,83 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* The admin account menu opening. Scale from its own top-right corner so it
+   reads as coming OUT of the button rather than appearing over it — the
+   origin is set on the element, not here, because only the element knows
+   which corner it is pinned to. Short: this is a disclosure, not an entrance,
+   and anything past ~150ms is felt as lag on a control you clicked. */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The blog post body.
+   STYLED HERE RATHER THAN WITH UTILITY CLASSES, because the markup comes out
+   of the editor as bare tags — there is nowhere to hang a className on a <p>
+   the author typed. A descendant selector is the only way to reach it.
+
+   THE TAG LIST MIRRORS THE SANITISER'S ALLOWLIST. Anything lib/content/html
+   permits is styled here; anything styled here that it strips is dead CSS. If
+   a tag is added there, add it here. */
+.post-body > * + * {
+  margin-top: 1.1em;
+}
+.post-body h2 {
+  margin-top: 2em;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+.post-body h3 {
+  margin-top: 1.6em;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.post-body strong,
+.post-body b {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.post-body a {
+  color: var(--color-orange-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+.post-body a:hover {
+  color: var(--color-espresso);
+}
+.post-body ul,
+.post-body ol {
+  padding-left: 1.4em;
+}
+.post-body ul {
+  list-style: disc;
+}
+.post-body ol {
+  list-style: decimal;
+}
+.post-body li + li {
+  margin-top: 0.4em;
+}
+.post-body li::marker {
+  color: var(--color-orange-dark);
+}
+.post-body blockquote {
+  border-left: 2px solid color-mix(in srgb, var(--color-orange) 45%, transparent);
+  padding-left: 1.1em;
+  font-style: italic;
+  color: var(--color-ink);
 }

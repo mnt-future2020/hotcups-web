@@ -1,8 +1,8 @@
 /**
- * The kind of workplace the visitor picked in section 03.
+ * The kind of workplace the visitor picked in section 04.
  *
  * Same publish/subscribe shape as lib/office — one module owns the value, the
- * sections that care subscribe. Section 03 is the only writer.
+ * sections that care subscribe. Section 04 and /who-we-serve are the writers.
  *
  * WHAT IT ACTUALLY FEEDS, AND WHAT IT DOES NOT
  * The brief says the selection should "pre-fill the workplace" in section 07's
@@ -12,57 +12,39 @@
  * promise and three ways to make contact.
  *
  * So the selection goes where a workplace type is actually useful: into the
- * TEXT of those three. Pick Manufacturing and the quote email arrives saying
- * it is for a factory, and the WhatsApp message opens the same way. The intent
- * of the brief — the ask arrives already knowing what kind of place is asking
- * — is met without rebuilding a form that was deliberately deleted.
+ * TEXT of those three. Pick Manufacturing and the quote email arrives saying it
+ * is for a factory, and the WhatsApp message opens the same way. The intent of
+ * the brief — the ask arrives already knowing what kind of place is asking — is
+ * met without rebuilding a form that was deliberately deleted.
  *
- * Null until someone chooses. Most visitors never will (section 03 is built to
+ * Null until someone chooses. Most visitors never will (section 04 is built to
  * read completely with nothing selected), and in that case section 07 asks the
- * neutral question it asked before — which is also what happens for a visitor
- * whose workplace is not one of the seven. The list was six real segments
- * rather than five and an "other"; Events & functions is the seventh, and the
- * invitation to everyone else lives in the copy under the button instead of
- * as a chip.
+ * neutral question it asked before.
+ *
+ * ── WHAT THIS MODULE USED TO HOLD, AND WHY IT NO LONGER DOES ──────────────
+ *
+ * It carried a seven-member `WorkplaceKey` union and two Records keyed by it:
+ * WORKPLACE_FOR ("an office") and WORKPLACE_ASK ("a college campus"). The union
+ * made those Records exhaustive, which was the point — and it also meant the
+ * workplaces existed in FOUR places at once: here, in section 04's own PLACES
+ * array, in /who-we-serve's, and as a hardcoded "Six" in a headline that was
+ * already wrong by one because Events & functions had been added to the list
+ * and the number counting it had not.
+ *
+ * The list lives in lib/content/schema now, as WorkplaceContent, and each entry
+ * carries its own two phrases. A selection is therefore just a KEY — a plain
+ * string — and whoever needs the phrase looks up the place that owns it rather
+ * than indexing a parallel Record.
+ *
+ * WHAT THAT COSTS, stated rather than glossed: a mistyped key no longer fails
+ * to compile. What makes it safe enough is that keys are generated from names
+ * rather than typed, that parseContent de-duplicates them, and that a key which
+ * matches nothing produces the same neutral ask as no selection at all — which
+ * is the behaviour this module already had for a visitor who never chose.
  */
 
-export type WorkplaceKey =
-  | "office"
-  | "factory"
-  | "hospital"
-  | "college"
-  | "retail"
-  | "showroom"
-  /* SEVENTH, AND THE ONLY ONE THAT IS NOT A WORKPLACE. Added with the event
-     photograph the client supplied. Everything above is somewhere people go
-     to work and the round runs to them twice a day; a wedding is a single
-     day with a counter in it. The list is still called workplace because
-     every other consumer of it is, and renaming the module to carry one
-     exception would cost more than it explains. */
-  | "event";
-
-/** "Get pricing for ___" — the article travels with the noun, because "for a
-    office" is the kind of thing that only shows up once it is on screen. */
-export const WORKPLACE_FOR: Record<WorkplaceKey, string> = {
-  office: "an office",
-  factory: "a factory",
-  hospital: "a hospital",
-  college: "a campus",
-  retail: "a shop",
-  showroom: "a showroom",
-  event: "an event",
-};
-
-/** how the same choice reads inside a sentence to a human at the other end */
-export const WORKPLACE_ASK: Record<WorkplaceKey, string> = {
-  office: "an office",
-  factory: "a factory",
-  hospital: "a hospital",
-  college: "a college campus",
-  retail: "a retail shop",
-  showroom: "a showroom or bank branch",
-  event: "a wedding or function",
-};
+/** A workplace's key. Was a union of seven; see the note above. */
+export type WorkplaceKey = string;
 
 let selected: WorkplaceKey | null = null;
 

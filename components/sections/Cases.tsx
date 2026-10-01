@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
+import { useSiteContent } from "@/lib/content/context";
+
 /**
  * Section 07 — Case studies.
  *
@@ -64,30 +66,35 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const HREF = "/case-studies";
 
 /**
+ * Where a card goes.
+ *
+ * A STORY WITH NO BODY IS NOT A LINK. Every card used to go to /case-studies
+ * whatever was behind it; now that studies have their own pages the right
+ * answer changed, because /case-studies/[slug] answers 404 for a headline with
+ * nothing written under it. An unwritten story keeps its place in the row and
+ * simply does not take a click — the three are one shape and a gap would read
+ * as a bug.
+ */
+function caseHref(study: { id: string; body: string }): string | null {
+  return study.body ? `${HREF}/${study.id}` : null;
+}
+
+/**
  * Three stories. Deliberately no category, no headcount, no cups-a-day, no
  * price and no company name — a headline is a claim about what the product
  * does, which needs no customer's permission. The moment a name or a number
  * goes on one of these, it needs written sign-off first.
  */
-const STORIES = [
-  {
-    key: "id",
-    src: "/img/case-story-1.webp",
-    title: "No QR. Just tap your ID and drink.",
-  },
-  {
-    key: "menu",
-    src: "/img/case-story-2.webp",
-    title: "One machine. Your office’s favourite drinks.",
-  },
-  {
-    key: "rush",
-    src: "/img/case-story-3.webp",
-    title: "When the whole office wants chai at once.",
-  },
-];
+/* The three stories are editable at /admin/stories, so the array that used to
+   sit here is gone and the defaults it held live in lib/content/schema. The note
+   above stands and is now a note to whoever opens that form: a headline is a
+   claim about what the product does, which needs nobody's permission, and a
+   customer name or a cups-a-day figure needs written sign-off first. The panel
+   says so on the page. */
 
 export default function Cases() {
+  const { cases } = useSiteContent();
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const inView = useInView(ref, { amount: 0.2, once: true });
@@ -240,7 +247,7 @@ export default function Cases() {
           ref={trackRef}
           onScroll={onScroll}
           className="mt-[clamp(2rem,4vw,3.25rem)] flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:snap-none sm:grid-cols-2 sm:overflow-visible sm:py-0 lg:grid-cols-3 lg:gap-6">
-          {STORIES.map((story, i) => {
+          {cases.map((story, i) => {
             /* four beats per card, cards 0.12s apart */
             const at = 0.35 + i * 0.12;
 
@@ -249,13 +256,10 @@ export default function Cases() {
                  tells a thumb there is more to the right. w-auto at sm hands
                  the sizing back to the grid. */
               <article
-                key={story.key}
+                key={story.id}
                 className="w-[85%] shrink-0 snap-start sm:w-auto sm:shrink"
               >
-                <Link
-                  href={HREF}
-                  className="group block rounded-[var(--radius-card)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange"
-                >
+                <CaseCard href={caseHref(story)}>
                   {/* the curtain: the card clips open from its own base */}
                   <motion.div
                     className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-card)] bg-espresso-deep"
@@ -377,7 +381,7 @@ export default function Cases() {
                       </motion.span>
                     </div>
                   </motion.div>
-                </Link>
+                </CaseCard>
               </article>
             );
           })}
@@ -391,12 +395,12 @@ export default function Cases() {
             dot is what you see, the button is what you hit. aria-current
             carries the state rather than colour alone. */}
         <div className="mt-5 flex items-center justify-center gap-2 sm:hidden">
-          {STORIES.map((story, i) => (
+          {cases.map((story, i) => (
             <button
-              key={story.key}
+              key={story.id}
               type="button"
               onClick={() => go(i)}
-              aria-label={`Show story ${i + 1} of ${STORIES.length}`}
+              aria-label={`Show story ${i + 1} of ${cases.length}`}
               aria-current={i === active ? "true" : undefined}
               className="group grid h-6 w-6 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange"
             >
@@ -413,5 +417,36 @@ export default function Cases() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The card shell — a link when the study has somewhere to go, a plain box when
+ * it does not.
+ *
+ * THE FOCUS RING IS ONLY ON THE LINK, and so is the pointer. A box that takes
+ * focus and then does nothing on Enter is worse than one that is simply not in
+ * the tab order.
+ */
+function CaseCard({
+  href,
+  children,
+}: {
+  href: string | null;
+  children: React.ReactNode;
+}) {
+  if (!href) {
+    return (
+      <div className="group block rounded-[var(--radius-card)]">{children}</div>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="group block rounded-[var(--radius-card)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange"
+    >
+      {children}
+    </Link>
   );
 }

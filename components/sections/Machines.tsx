@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import RollValue from "@/components/ui/RollValue";
 import { setOffice } from "@/lib/office";
+import { useSiteContent } from "@/lib/content/context";
 
 /**
  * Section 05 — Which one you need.
@@ -219,35 +220,22 @@ const int0 = (n: number) =>
  * Infinity it once carried, so machineFor's -1 fallback is what selects it
  * above that.
  */
-const MACHINES = [
-  /* NO `name` ON ANY OF THE THREE, at the client's direction — the brands
-     came off section 06's cards and this section named the same three units,
-     so they had to come off here too or the page would identify a machine in
-     one place and refuse to in another. What is left identifies each unit by
-     the only thing the client has confirmed about it: how many cups a day it
-     is for. See the docblock in MachineRow.tsx. */
-  { key: "cothas", src: "/img/machine-cothas.png", upTo: 100 },
-  {
-    key: "tata",
-    /* the photograph is a CHACONY-branded unit. It was labelled "Tata's"
-       here and "Chai Point" before that, and was neither; with no label left
-       there is no longer a wrong claim, only a filename that still carries
-       one. See the note in MachineRow.tsx. */
-    src: "/img/machine-chaipoint.png",
-    upTo: 200,
-  },
-  {
-    key: "brewmax",
-    /* the brief asks for machine-brewmax.png; that file was renamed to
-       -clean when its retouched replacement landed, and this is it */
-    src: "/img/machine-brewmax-clean.png",
-    upTo: 500,
-  },
-];
+/* THE THREE UNITS COME FROM THE STORE — see MachineContent in
+   lib/content/schema, which carries these values and the notes that explained
+   them. This array and section 06's `RIGS` were two hand-kept copies of the
+   same capacities with a comment on each asking the next person to keep them
+   together; there was a third in MachinesView.tsx. They are one list now.
 
-const machineFor = (cups: number) => {
-  const i = MACHINES.findIndex((m) => cups <= m.upTo);
-  return i === -1 ? MACHINES.length - 1 : i;
+   THE FIELD THIS SECTION READS IS `cap`, where this copy called it `upTo`. Same
+   number, same meaning — the top of each unit's band — and section 06 prints it
+   on the card, so they were never allowed to differ in the first place. */
+
+/** The index of the smallest unit that covers this many cups, or the largest
+    there is. Takes the list rather than closing over one, because the list is
+    now per-request content rather than a module constant. */
+const machineFor = (machines: { cap: number }[], cups: number) => {
+  const i = machines.findIndex((m) => cups <= m.cap);
+  return i === -1 ? machines.length - 1 : i;
 };
 
 const FLASK_SRC = "/img/rig-flasks.webp";
@@ -686,6 +674,10 @@ function Sum({
 }
 
 export default function Machines() {
+  /* The same three units section 06 prints, from the same list — see the note
+     where MACHINES used to be. */
+  const MACHINES = useSiteContent().machines.machines;
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const inView = useInView(ref, { amount: 0.25, once: true });
@@ -791,7 +783,7 @@ export default function Machines() {
     setPeople((v) => clampPeople(v + dir * stepSize(v)));
   const stepRate = (dir: number) =>
     setRate((v) => Math.min(MAX_RATE, Math.max(MIN_RATE, v + dir)));
-  const rig = machineFor(cups);
+  const rig = machineFor(MACHINES, cups);
 
   const reveal = (delay: number, y = 16) =>
     reduced
@@ -1179,7 +1171,7 @@ export default function Machines() {
                   >
                     <Image
                       src={m.src}
-                      alt={`A beverage machine for up to ${m.upTo} cups a day`}
+                      alt={`A beverage machine for up to ${m.cap} cups a day`}
                       fill
                       sizes="(max-width: 768px) 90vw, 420px"
                       className="object-contain"

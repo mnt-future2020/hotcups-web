@@ -3,11 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import {
-  setWorkplace,
-  WORKPLACE_FOR,
-  type WorkplaceKey,
-} from "@/lib/workplace";
+import { setWorkplace } from "@/lib/workplace";
+import { useSiteContent } from "@/lib/content/context";
 
 /**
  * Section 04 — Which one are you?
@@ -200,110 +197,28 @@ const MENU = ["Tea", "Filter coffee", "Milk", "Buttermilk"];
      the same five.
    =============================================================== */
 
-type Place = {
-  key: WorkplaceKey;
-  /** the chip */
-  name: string;
-  src: string;
-  /** under the photograph, with the name */
-  caption: string;
-  /** revealed on click */
-  fact: string;
-  /** false only where the client supplied the number */
-  placeholder: boolean;
-};
+/* THE SEVEN SEGMENTS ARE STORED CONTENT — see WorkplaceContent in
+   lib/content/schema, which holds these exact values and every note that used
+   to sit here: which photograph was swapped and why the branding left the frame
+   with it, why the showroom plate is still a stand-in, why Retail and Showrooms
+   do not share a caption, and why the events entry has a day rather than a
+   cadence.
 
-const PLACES: Place[] = [
-  {
-    key: "office",
-    name: "IT & offices",
-    /* SWAPPED FROM wp-office.webp at the client's direction, for a
-       photograph they supplied. THE BRANDING LEFT THE FRAME WITH IT: the old
-       plate had HOTCUPS cups on every desk, this one is a bean-to-cup
-       machine and plain white cups. The client was asked and chose the
-       better photograph over the branded one. wp-office.webp is unreferenced
-       from here now and left on disk. */
-    src: "/img/wp-office-pantry.webp",
-    caption: "desk-side, twice a day",
-    fact: "Desk-side delivery, morning and evening.",
-    placeholder: true,
-  },
-  {
-    key: "factory",
-    name: "Manufacturing",
-    src: "/img/wp-factory.webp",
-    caption: "three shifts, 2,000 cups a day",
-    /* the one line on this list that came from the client */
-    fact: "Three-shift factories, including 2,000 cups a day in Coimbatore.",
-    placeholder: false,
-  },
-  {
-    key: "hospital",
-    name: "Hospitals",
-    src: "/img/wp-hospital.webp",
-    caption: "round the clock",
-    fact: "Round the clock, including night shifts.",
-    placeholder: true,
-  },
-  {
-    key: "college",
-    name: "Colleges & schools",
-    src: "/img/wp-college.webp",
-    caption: "between classes",
-    fact: "Campuses served between classes.",
-    placeholder: true,
-  },
-  {
-    key: "retail",
-    name: "Retail shops",
-    src: "/img/wp-retail.webp",
-    caption: "through peak hours",
-    fact: "Peak hours covered, without leaving the counter.",
-    placeholder: true,
-  },
-  {
-    key: "showroom",
-    name: "Showrooms & banks",
-    /* STILL A STAND-IN, JUST A BETTER ONE. This was wp-other.webp, the
-       generic stock office that used to sit under "Something else" — no
-       branded cups, cooler grade than the other five. wp-branch.webp is the
-       client's own photograph and is lit and staged far better, but it is
-       AN OPEN-PLAN OFFICE, not a showroom floor or a bank branch: the slot
-       still does not have a picture of the thing it names. The showroom
-       photograph is being shot. */
-    src: "/img/wp-branch.webp",
-    /* deliberately NOT "through peak hours" — that is Retail's line, and the
-       two segments would read as the same thing. A shop serves its own staff
-       across a busy day; a showroom or a branch serves the customer sitting
-       in front of a desk waiting. That difference is the reason both are on
-       the list. */
-    caption: "for the customers waiting",
-    fact: "Showroom floors and bank branches, where customers are served while they wait.",
-    placeholder: true,
-  },
-  {
-    key: "event",
-    name: "Events & functions",
-    src: "/img/wp-event.webp",
-    /* EVERY OTHER CAPTION HERE IS A CADENCE — twice a day, three shifts,
-       round the clock, between classes, through peak hours, for the
-       customers waiting. An event has no cadence; it has a day. So this one
-       describes the same thing the others do — when the flasks are there —
-       in the only unit that applies to it. */
-    caption: "for as long as the hall is full",
-    /* WRITTEN FROM THE PHOTOGRAPH, NOT FROM ANYTHING ANYONE SAID. It shows a
-       server pouring chai from a brass pot into davara sets at a decorated
-       counter, with a function going on behind him. The sentence claims
-       nothing the picture does not already show — no volumes, no service
-       model, no pricing. See the banner above. */
-    fact: "Weddings and functions, poured at the counter through the day.",
-    placeholder: true,
-  },
-];
+   THE SAME LIST FEEDS /who-we-serve, and lib/workplace used to carry a third
+   copy of it as a typed union plus two Records. A fourth copy was the word
+   "Six" in that page's headline, which had been wrong since Events & functions
+   was added — see workplaceCount.
 
-const COUNT = PLACES.length;
+   `placeholder` STILL MARKS THE INVENTED LINES. /who-we-serve's page note opens
+   with a banner saying five of the six fact lines were written here rather than
+   confirmed, and only Manufacturing's came from the client. */
 
 export default function Industries() {
+  /* The segments, from the store. /who-we-serve reads the same list — see the
+     note where this file's own copy of them used to be. */
+  const PLACES = useSiteContent().whoWeServe.places;
+  const COUNT = PLACES.length;
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const inView = useInView(ref, { amount: 0.25, once: true });
@@ -620,99 +535,40 @@ export default function Industries() {
               ))}
             </motion.div>
 
-            {/* ── the fact line, UNDER THE PHOTOGRAPH ────────────
-                It sat at the foot of the ledger, and that is most of why this
-                section overflowed the window. The two columns were badly out
-                of balance: the ledger carried six names, the fact line AND the
-                button, while this one carried a caption and a picture — so the
-                grid took the ledger's height and left 130px of dead air beside
-                the photograph. Moving one block across balances them to within
-                ten pixels and costs the reader nothing, because their eye is
-                already on this side: the picture and the caption both changed
-                when they clicked.
+                        {/* ── THE FACT LINE WAS HERE AND HAS BEEN REMOVED ─────────
+                This slot alternated: the four drinks while nothing was
+                picked, and the picked workplace's own sentence — a tick, then
+                the words arriving 40ms apart — once a name was tapped. The
+                sentence has been dropped from the site at the client's
+                direction, so the slot now only ever holds the menu.
 
-                Height is reserved at lg and DELIBERATELY NOT ON MOBILE.
-                One line is enough here at lg — this column is 592px, not the
-                ledger's 486, and the longest fact is 77 characters. Reserving
-                it costs 33px of a desktop column that has the room.
+                WHICH MEANS NO AnimatePresence AND NO RESERVE. Both existed
+                for the swap: `mode="wait"` crossfaded one line out before the
+                other came in, and `lg:min-h-[2.1em]` held the height so the
+                list below did not jump when a fact appeared. With one
+                permanent line there is nothing to swap and nothing to reserve
+                — the paragraph is its own height.
 
-                On a phone the same reservation cost 3.4em, and the phone is
-                where it was least affordable: the column is 335px so the fact
-                needs two lines, and the block sits BETWEEN the photograph and
-                the six names. That put ~72px of permanent white space in the
-                middle of the section for every visitor who never taps a name
-                — which is most of them, since the section is built to read
-                completely without one. Reserving height for something that is
-                usually absent is a bad trade at that price.
-
-                So mobile collapses to nothing and the fact pushes the list
-                down when it appears. That shift is acceptable HERE and would
-                not be everywhere: it only ever happens right after a tap, so
-                it is a response the reader asked for rather than the page
-                moving under them. */}
-            <div className="mt-[clamp(0.75rem,2.2svh,1.25rem)] lg:min-h-[2.1em]">
-              <AnimatePresence mode="wait">
-                {picked === null ? (
-                  /* THE MENU, WHERE THE RESERVED SPACE ALREADY WAS.
-                     This slot is held open for the fact line, which only
-                     exists once someone picks — so for most visitors it was
-                     reserved emptiness. The four drinks fill it at no cost in
-                     height: one line inside a 2.1em reserve.
-
-                     It is the SAME four for every workplace on purpose. A
-                     per-segment drink would assert what offices drink and
-                     what factories drink, which is the same invented claim
-                     the banner at the top of this file is about. The menu is
-                     the menu; it is true for all six. */
-                  <motion.p
-                    key="menu"
-                    initial={reduced ? false : { opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: reduced ? 0 : 0.2 }}
-                    className="font-sans text-[1.02rem] leading-[1.55] text-ink-soft"
-                  >
-                    {MENU.map((d, i) => (
-                      <span key={d}>
-                        {i > 0 && (
-                          <span aria-hidden="true" className="px-[0.45em] text-orange-dark">
-                            &middot;
-                          </span>
-                        )}
-                        {d}
-                      </span>
-                    ))}
-                  </motion.p>
-                ) : (
-                  <motion.p
-                    key={PLACES[picked].key}
-                    exit={reduced ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-wrap items-baseline gap-x-[0.32em] font-sans text-[1.02rem] leading-[1.55] text-ink-soft"
-                  >
-                    <span aria-hidden="true" className="text-orange-dark">
-                      &#10003;
-                    </span>
-                    {/* word by word, 40ms apart. One span per word rather than
-                        a typewriter on a single string: a screen reader gets
-                        the whole sentence, and no character is ever mid-glyph. */}
-                    {PLACES[picked].fact.split(" ").map((word, w) => (
-                      <motion.span
-                        key={`${w}-${word}`}
-                        initial={reduced ? false : { opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: reduced ? 0 : 0.3,
-                          delay: reduced ? 0 : w * 0.04,
-                          ease: EASE,
-                        }}
+                THE LONG NOTE ABOUT MOBILE RESERVATION WENT WITH IT. It
+                weighed 33px of desktop column against ~72px of permanent
+                white space on a phone, for a line that only appeared after a
+                tap. That trade no longer exists to make. */}
+            <div className="mt-[clamp(0.75rem,2.2svh,1.25rem)]">
+              <p className="font-sans text-[1.02rem] leading-[1.55] text-ink-soft">
+                {MENU.map((d, i) => (
+                  <span key={d}>
+                    {i > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="px-[0.45em] text-orange-dark"
                       >
-                        {word}
-                      </motion.span>
-                    ))}
-                  </motion.p>
-                )}
-              </AnimatePresence>
+                        &middot;
+                      </span>
+                    )}
+                    {d}
+                  </span>
+                ))}
+              </p>
             </div>
 
           </motion.div>
@@ -951,7 +807,7 @@ export default function Industries() {
                         transition={{ duration: reduced ? 0 : 0.22, ease: EASE }}
                         className="whitespace-nowrap"
                       >
-                        for {WORKPLACE_FOR[PLACES[picked].key]}
+                        for {PLACES[picked].forPhrase}
                       </motion.span>
                     )}
                   </AnimatePresence>

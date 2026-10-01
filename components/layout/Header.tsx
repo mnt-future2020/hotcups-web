@@ -6,7 +6,8 @@ import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
 import { NAV, NAV_FOR, NAV_HREF, SECTIONS } from "@/lib/sections";
 import { currentHeroTone, subscribeHeroTone, type HeroTone } from "@/lib/heroTone";
-import { CUPS_LABEL } from "@/lib/cups";
+import { useStats } from "@/lib/content/context";
+import { cupsLabel } from "@/lib/content/schema";
 
 /* THE COUNTER DOCK, at the client's direction — the badge moves out of the
    hero and up here. lib/cups.ts has described this since it was written
@@ -51,11 +52,18 @@ import { CUPS_LABEL } from "@/lib/cups";
    breakpoint would have turned the same number from a month's work into a
    day's. Both strings change together or neither does. */
 function CupsDock({ onDark }: { onDark: boolean }) {
-  /* NO STATE, NO SUBSCRIPTION AND NO FORMATTING. The figure is a constant
-     and so is its string — see lib/cups for why the ticker went and why the
-     abbreviation lives there rather than here. It also means this dock
-     renders the same number on the server as in the browser, which the
-     ticking version did not. */
+  /* NO STATE AND NO SUBSCRIPTION — see lib/cups for why the ticker went. The
+     figure is no longer a module constant, though: it is editable in the admin
+     panel, so it arrives through the content context the root site layout
+     provides. That is still not state in the ticking sense — it is one value
+     per request, identical on the server and in the browser, which is the
+     property the ticking version did not have.
+
+     THE FORMATTING IS STILL NOT DONE HERE. cupsLabel is the one place a stored
+     number becomes a string on screen, and the hero badge calls the same
+     function — which is what keeps the dock and the badge from ever disagreeing
+     while one docks into the other on scroll. */
+  const { cups } = useStats();
 
   return (
     <p
@@ -104,7 +112,7 @@ function CupsDock({ onDark }: { onDark: boolean }) {
       </span>
       <span className="tabular-nums">
         <strong className={`font-semibold ${onDark ? "text-cream" : "text-ink"}`}>
-          {CUPS_LABEL}
+          {cupsLabel(cups)}
         </strong>{" "}
         cups per day
       </span>

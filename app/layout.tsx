@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { getContent } from "@/lib/content/store";
+import { metadataFor } from "@/lib/content/schema";
 import { Caveat, Manrope } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 
 /**
  * ONE FAMILY, BOTH ROLES
@@ -51,12 +51,38 @@ const caveat = Caveat({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Hotcups — Recharges you. Twice a day.",
-  description:
-    "Flasks of hot tea and coffee delivered to workplaces across Tamil Nadu. Past 40 cups a day, a machine costs less — including one built to your spec.",
-};
+/**
+ * THE HOME PAGE'S METADATA LIVES HERE, and always has — app/(site)/page.tsx
+ * declares none of its own and inherits this. So this is the row the SEO panel
+ * labels "/" rather than a separate site-wide default.
+ *
+ * `generateMetadata` rather than a constant: a constant is evaluated once when
+ * the module loads and cannot read content that arrives per request.
+ *
+ * IT IS ALSO THE FALLBACK FOR ANYTHING WITHOUT ITS OWN — the 404, and /admin
+ * before its own layout overrides it. Both are better off inheriting a real
+ * title than a placeholder.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getContent();
+  return metadataFor(seo, "/");
+}
 
+/**
+ * THE ROOT LAYOUT IS NOW ONLY THE DOCUMENT.
+ *
+ * It used to render the skip link, the Header, <main> and the Footer, which was
+ * right while every route under app/ was a page of the public site. /admin is
+ * not: a panel wearing the site's sticky scroll-spy header and its 630-line
+ * footer would be absurd, and there is no way for a Server Component layout to
+ * ask which route is below it.
+ *
+ * So the chrome moved down one level into app/(site)/layout.tsx and this keeps
+ * what genuinely belongs to every route in the application — <html>, <body>,
+ * the two font variables and globals.css. A route group's parentheses are not
+ * part of the URL, so /menu is still /menu and nothing about the public site's
+ * addresses changed when its files moved.
+ */
 export default function RootLayout({
   children,
 }: {
@@ -64,17 +90,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${manrope.variable} ${caveat.variable}`}>
-      <body>
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[999] focus:rounded-full focus:bg-espresso focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white"
-        >
-          Skip to content
-        </a>
-        <Header />
-        <main id="main">{children}</main>
-        <Footer />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

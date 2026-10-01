@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
+import { useSiteContent } from "@/lib/content/context";
+
 /**
  * Section 10 — Reading.
  *
@@ -40,37 +42,40 @@ const DWELL = 5000;
    their own URLs in phase 2, once the CMS is settled. */
 const HREF = "/blog";
 
-const POSTS = [
-  {
-    tag: "Guide",
-    read: "4 min",
-    title: "How to plan beverage supply for your workplace",
-    src: "/img/need-bulk.jpg",
-    alt: "Flasks and cups laid out for a bulk workplace order",
-  },
-  {
-    tag: "Trends",
-    read: "5 min",
-    title: "Tea vs Coffee: what works best for your team?",
-    src: "/img/chai-classroom-wide.jpg",
-    alt: "A tray of chai glasses being shared around a room",
-  },
-  {
-    tag: "Business",
-    read: "4 min",
-    title: "Why recurring supply improves productivity",
-    src: "/img/need-recurring.jpg",
-    alt: "A standing weekly delivery of Hotcups flasks",
-  },
-];
+/**
+ * Where a card goes.
+ *
+ * A POST WITH NO BODY IS NOT A LINK. It used to be — every card went to /blog
+ * whatever was behind it — and now that posts have their own pages the right
+ * answer changed: sending a reader to an article that has not been written is
+ * a wasted click, and /blog/[slug] answers 404 for exactly that case. So an
+ * unwritten post still shows its headline and its picture on the strip, and
+ * simply does not take a click.
+ *
+ * THE CARD STAYS THE SAME SIZE AND SHAPE EITHER WAY. A post that loses its
+ * link should not also lose its place in the row — the strip is three across
+ * and a gap would read as a bug.
+ */
+function postHref(post: { id: string; body: string }): string | null {
+  return post.body ? `${HREF}/${post.id}` : null;
+}
+
+/* The three posts are editable now, so the array that used to sit here is gone
+   and the defaults it held live in lib/content/schema. The note above about
+   phase 2 and the CMS is what this is: there is a panel at /admin/posts, and the
+   tag, the read time, the headline, the image and its alt text all come from it.
+   The only part still outstanding is the per-post URL — every card still goes to
+   /blog, because a post has no page of its own to go to yet. */
 
 export default function Blog() {
+  const { posts } = useSiteContent();
+
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const on = useInView(ref, { amount: 0.2, once: true }) || Boolean(reduced);
 
   const [index, setIndex] = useState(0);
-  const count = POSTS.length;
+  const count = posts.length;
 
   const go = (n: number) => setIndex(((n % count) + count) % count);
 
@@ -216,12 +221,9 @@ export default function Blog() {
               transition={{ duration: reduced ? 0 : 0.5, ease: EASE }}
               className="flex"
             >
-              {POSTS.map((post) => (
-                <div key={post.title} className="w-full shrink-0">
-                  <Link
-                    href={HREF}
-                    className="group block overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
-                  >
+              {posts.map((post) => (
+                <div key={post.id} className="w-full shrink-0">
+                  <Card href={postHref(post)}>
                     <div className="relative aspect-[5/4] overflow-hidden bg-cream-deep">
                       <Image
                         src={post.src}
@@ -247,14 +249,14 @@ export default function Blog() {
                         {post.title}
                       </h3>
                     </div>
-                  </Link>
+                  </Card>
                 </div>
               ))}
             </motion.div>
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-2">
-            {POSTS.map((_, i) => (
+            {posts.map((_, i) => (
               <button
                 key={i}
                 type="button"
@@ -280,12 +282,9 @@ export default function Blog() {
             set to sm:hidden, that left the section with no cards at all on
             desktop and tablet — only the heading. */}
         <div className="mt-[clamp(1.75rem,4vw,3rem)] hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
-          {POSTS.map((post, i) => (
-            <motion.div key={post.title} {...fade(0.2 + i * STEP)}>
-              <Link
-                href={HREF}
-                className="group block overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]"
-              >
+          {posts.map((post, i) => (
+            <motion.div key={post.id} {...fade(0.2 + i * STEP)}>
+              <Card href={postHref(post)}>
                 {/* the frame is what clips the scale — the card itself must not
                     hide overflow or it would clip its own focus ring */}
                 <div className="relative aspect-[5/4] overflow-hidden bg-cream-deep">
@@ -315,12 +314,12 @@ export default function Blog() {
                     {post.title}
                   </h3>
                 </div>
-              </Link>
+              </Card>
             </motion.div>
           ))}
         </div>
 
-        <motion.div {...fade(0.2 + POSTS.length * STEP)} className="mt-8 text-right">
+        <motion.div {...fade(0.2 + posts.length * STEP)} className="mt-8 text-right">
           <Link
             href={HREF}
             /* espresso text, so when the amber wipes up it reads 6.02:1 —
@@ -338,5 +337,42 @@ export default function Blog() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The card shell — a link when the post has somewhere to go, a plain box when
+ * it does not.
+ *
+ * ONE COMPONENT SO THE TWO LAYOUTS CANNOT DIVERGE. This markup appears twice,
+ * once for the phone carousel and once for the desktop grid, and the hover and
+ * focus treatment has to match in both. Writing the conditional inline would
+ * have been the same four classes in four places.
+ *
+ * THE HOVER LIFT IS ONLY ON THE LINK. A box that rises under the pointer and
+ * then does nothing when clicked is a worse promise than a box that sits
+ * still.
+ */
+function Card({
+  href,
+  children,
+}: {
+  href: string | null;
+  children: React.ReactNode;
+}) {
+  const base =
+    "group block overflow-hidden rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-1)]";
+
+  if (!href) {
+    return <div className={base}>{children}</div>;
+  }
+
+  return (
+    <Link
+      href={href}
+      className={`${base} transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-2)] focus-visible:-translate-y-1.5 focus-visible:shadow-[var(--shadow-2)]`}
+    >
+      {children}
+    </Link>
   );
 }

@@ -6,17 +6,15 @@ import { motion, useInView, useReducedMotion } from "motion/react";
 
 import Logo from "@/components/layout/Logo";
 import { NAV_HREF } from "@/lib/sections";
-import {
-  ADDRESS_LINES,
-  EMAIL,
-  MAIL_HREF,
-  MAPS_HREF,
-  PHONE_LABEL,
-  SOCIALS,
-  TEL_HREF,
-  WA_HREF,
-  type SocialKey,
-} from "@/lib/contact";
+import { type SocialKey } from "@/lib/contact";
+/* THE VALUES MOVED, THE TYPE DID NOT. lib/contact still owns SocialKey and
+   still holds the defaults; what it can no longer own is the four assembled
+   hrefs, because a tel:, a mailto:, a wa.me and a maps query built at module
+   scope cannot reflect details an editor changed this morning. So the strings
+   come from the content context and the assembly from lib/content/links, which
+   is the same arithmetic as a pure function of it. */
+import { useContact } from "@/lib/content/context";
+import { mailHref, mapsHref, telHref, waHref } from "@/lib/content/links";
 
 /**
  * The footer.
@@ -237,7 +235,10 @@ const SOCIAL_MARKS: Record<SocialKey, React.ReactNode> = {
    so the ring has room to read as a ring; the same two numbers were what the
    render was checked at. */
 function Social() {
-  const shown = SOCIALS.filter((s) => s.href);
+  /* A null OR EMPTY href renders nothing, which is how an account comes off the
+     site — one cleared field in the panel, no markup change anywhere. That
+     mechanism predates the panel; it is just reachable now. */
+  const shown = useContact().socials.filter((s) => s.href);
   if (shown.length === 0) return null;
   return (
     <ul className="mt-8 flex flex-wrap items-center gap-3">
@@ -306,6 +307,12 @@ export default function Footer() {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const on = useInView(ref, { amount: 0.15, once: true }) || Boolean(reduced);
+
+  /* The contact block, and the four links built from it. Read once at the top
+     rather than per row: these are the same four values the "Get in touch"
+     column renders, and computing a wa.me URL inside a map would rebuild it on
+     every re-render this animated footer performs. */
+  const contact = useContact();
 
   /* WHERE THE READER IS STANDING, which is what decides whether a section
      link may stay a bare hash. Same test the header runs, off the same hook,
@@ -501,20 +508,20 @@ export default function Footer() {
 
             <ul className="mt-6 space-y-4">
               <li>
-                <a href={TEL_HREF} className={ROW}>
+                <a href={telHref(contact)} className={ROW}>
                   <PhoneIcon />
-                  <Wipe label={PHONE_LABEL} />
+                  <Wipe label={contact.phoneLabel} />
                 </a>
               </li>
               <li>
-                <a href={MAIL_HREF} className={ROW}>
+                <a href={mailHref(contact)} className={ROW}>
                   <MailIcon />
-                  <Wipe label={EMAIL} />
+                  <Wipe label={contact.email} />
                 </a>
               </li>
               <li>
                 <a
-                  href={WA_HREF}
+                  href={waHref(contact)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={ROW}
@@ -525,7 +532,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={MAPS_HREF}
+                  href={mapsHref(contact)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`${ROW_BASE} items-start`}
@@ -534,7 +541,7 @@ export default function Footer() {
                     <PinIcon />
                   </span>
                   <address className="not-italic leading-[1.5]">
-                    {ADDRESS_LINES.map((line) => (
+                    {contact.addressLines.map((line) => (
                       <span key={line} className="block">
                         {line}
                       </span>
