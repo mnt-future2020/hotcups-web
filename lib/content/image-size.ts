@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { readUpload } from "@/lib/admin/uploads";
 
 /**
  * The shape of a picture, read from the file itself.
@@ -51,7 +52,10 @@ export async function imageRatio(src: string): Promise<number | null> {
   if (hit !== undefined) return hit;
 
   const ratio = await read(src);
-  cache.set(src, ratio);
+  /* A miss is not cached: an upload can be read from MongoDB, and one failed
+     round trip should not pin "unknown shape" on that picture for the life
+     of the process. */
+  if (ratio !== null) cache.set(src, ratio);
   return ratio;
 }
 
@@ -59,6 +63,14 @@ async function read(src: string): Promise<number | null> {
   /* The query string an uploaded file may carry, and the leading slash, both
      come off before this becomes a filesystem path. */
   const clean = src.split(/[?#]/)[0];
+
+  /* UPLOADS MAY NOT BE ON DISK AT ALL — with MONGODB_URI set they live in the
+     database. readUpload knows both places and validates the name itself. */
+  if (clean.startsWith("/uploads/")) {
+    const found = await readUpload(clean.slice("/uploads/".length));
+    return found ? measure(found.bytes.subarray(0, 65536)) : null;
+  }
+
   const file = path.join(process.cwd(), "public", clean);
 
   /* CONTAINMENT CHECK. src comes from the content store, which an operator
@@ -79,6 +91,10 @@ async function read(src: string): Promise<number | null> {
     return null;
   }
 
+  return measure(head);
+}
+
+function measure(head: Buffer): number | null {
   const size = png(head) ?? gif(head) ?? webp(head) ?? jpeg(head);
   if (!size || size.h === 0) return null;
   return size.w / size.h;

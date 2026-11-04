@@ -5,21 +5,30 @@
  * it. The browser side talks to it through the Server Action in
  * app/admin/upload-actions.ts.
  *
- * INTO public/uploads, WHICH IS WHY THE PATHS COME BACK AS /uploads/…
- * Next serves everything under public/ from disk at request time, so a file
- * written here is reachable the moment the write finishes — no build step, no
- * restart, no route handler standing in front of it. The stored content already
- * holds paths like /img/menu-tea.webp, so an uploaded plate is the same kind of
- * string from every reader's point of view and nothing downstream had to change
- * to accept one.
+ * INTO MONGODB WHEN MONGODB_URI IS SET, public/uploads OTHERWISE. Either way
+ * the URL is /uploads/<hash>.<ext>, served by app/uploads/[name]/route.ts.
  *
- * !! THE SAME FILESYSTEM CAVEAT AS THE CONTENT STORE. On Vercel, Netlify and
- * !! every other serverless host, public/ is read-only at runtime and this will
- * !! throw EROFS — and where a write does succeed, it is lost on the next cold
- * !! start and invisible to the instance serving the other half of the traffic.
- * !! Correct for `next start` on a VPS or a container with a persistent volume.
- * !! Moving to object storage later is a change to THIS FILE only: saveUpload is
- * !! the entire interface and it already returns a URL rather than a path.
+ * WHY NOT JUST public/uploads — WHICH IS WHAT THIS USED TO DO. Two failures,
+ * both seen on the live Hostinger site:
+ *
+ *   1. `next start` lists public/ ONCE, at boot (setupFsCheck in
+ *      next/dist/server/lib/router-utils/filesystem.js, the !opts.dev branch),
+ *      and only serves files that were in that list. A file written after
+ *      boot is invisible to Next. The browser could still fetch the raw file
+ *      — Hostinger's front server reads the disk directly — but next/image
+ *      goes through /_next/image, which fetches the source INSIDE Next, got a
+ *      404 page back, and answered 400 "The requested resource isn't a valid
+ *      image". Every freshly uploaded picture rendered as a broken image until
+ *      the Node process restarted.
+ *
+ *   2. Hostinger builds each release into a fresh checkout, so anything
+ *      written to public/ at runtime is gone after the next push — the same
+ *      problem lib/content/store.ts already solved for text.
+ *
+ * The route fixes (1) for both backends, because a route is resolved per
+ * request rather than from a list taken at boot. MongoDB fixes (2). The disk
+ * stays as the backend for local development with no MONGODB_URI, and as a
+ * read-only fallback in production for files uploaded before this change.
  *
  * THE FILENAME IS A CONTENT HASH, AND THAT IS NOT ONLY ABOUT COLLISIONS.
  * Menu.tsx carries a long note about the time a plate was written straight over
@@ -33,11 +42,37 @@
  */
 
 import { createHash } from "node:crypto";
-import { mkdir, writeFile, access } from "node:fs/promises";
+import { mkdir, writeFile, access, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
+import { Binary } from "mongodb";
+import { getDb, mongoUri } from "@/lib/content/mongo";
 
 const DIR = path.join(process.cwd(), "public", "uploads");
+
+/** One document per picture: _id is the filename, `data` the bytes. 8MB is
+    well inside MongoDB's 16MB document limit, so GridFS would be machinery
+    for a problem this does not have. */
+const COLLECTION = "uploads";
+
+type UploadDoc = {
+  _id: string;
+  type: string;
+  data: Binary;
+  bytes: number;
+  createdAt: Date;
+};
+
+/** Exactly what saveUpload produces: 16 hex characters and a known extension.
+    Anything else is refused before it touches the database or the disk, which
+    is also what keeps "../" out of the path join below. */
+const NAME = /^[0-9a-f]{16}\.(webp|png|jpg)$/;
+
+const MIME: Record<string, string> = {
+  webp: "image/webp",
+  png: "image/png",
+  jpg: "image/jpeg",
+};
 
 /** 8MB. Well past any sensibly exported plate — the largest in public/img is
     under 200KB — and small enough that a mis-selected raw photograph is
@@ -104,6 +139,33 @@ export async function saveUpload(file: File): Promise<UploadResult> {
   const dest = path.join(DIR, name);
   const url = `/uploads/${name}`;
 
+  if (mongoUri()) {
+    try {
+      const db = await getDb();
+      /* $setOnInsert, so re-uploading identical bytes is a no-op — the same
+         rule as the access() check on the disk path below. */
+      await db.collection<UploadDoc>(COLLECTION).updateOne(
+        { _id: name },
+        {
+          $setOnInsert: {
+            type: MIME[ext],
+            data: new Binary(bytes),
+            bytes: bytes.length,
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
+      return { ok: true, url, bytes: bytes.length };
+    } catch (err) {
+      console.error("[upload] MongoDB write failed:", err);
+      return {
+        ok: false,
+        message: "Could not save the picture to the database. The server log has details.",
+      };
+    }
+  }
+
   /* ALREADY THERE MEANS ALREADY DONE. Identical bytes hash to the same name, so
      re-uploading a file someone uploaded last month is a no-op rather than a
      second copy of it. */
@@ -127,7 +189,7 @@ export async function saveUpload(file: File): Promise<UploadResult> {
       return {
         ok: false,
         message:
-          "Could not write to public/uploads — this deployment's filesystem is read-only. Uploads need a host with a persistent disk, or object storage behind lib/admin/uploads.ts.",
+          "Could not write to public/uploads — this deployment's filesystem is read-only. Set MONGODB_URI and uploads are stored in the database instead.",
       };
     }
     console.error("[upload] failed:", err);
@@ -162,9 +224,49 @@ function looksLikeImage(b: Buffer, ext: string): boolean {
   return false;
 }
 
+/**
+ * The bytes behind /uploads/<name>, or null. Used by the route that serves
+ * them and by lib/content/image-size.ts.
+ *
+ * MONGODB FIRST, THEN THE DISK. The disk read is what keeps pictures uploaded
+ * before uploads moved to MongoDB working for as long as the file survives on
+ * this release — and it is a read at request time, so unlike Next's own
+ * public/ handling it sees files written after boot.
+ */
+export async function readUpload(
+  name: string,
+): Promise<{ bytes: Buffer; type: string } | null> {
+  const match = NAME.exec(name);
+  if (!match) return null;
+  const type = MIME[match[1]];
+
+  if (mongoUri()) {
+    try {
+      const db = await getDb();
+      const doc = await db.collection<UploadDoc>(COLLECTION).findOne({ _id: name });
+      /* value(), not .buffer: a Binary's buffer can have capacity past its
+         `position`, and the bytes after it are not the picture. */
+      if (doc) return { bytes: Buffer.from(doc.data.value()), type: doc.type || type };
+    } catch (err) {
+      /* An unreachable cluster is not a reason to skip the disk. */
+      console.error("[upload] MongoDB read failed:", err);
+    }
+  }
+
+  try {
+    return { bytes: await readFile(path.join(DIR, name)), type };
+  } catch {
+    return null;
+  }
+}
+
 /** Whether uploads can be written at all — the panel says so up front rather
     than letting an operator find out after choosing a file. */
 export async function canUpload(): Promise<boolean> {
+  /* With MongoDB configured the disk is not where uploads go, so whether
+     public/ is writable says nothing. A cluster that is down shows up as a
+     failed save with a message, the same as it does for text. */
+  if (mongoUri()) return true;
   try {
     await access(DIR, constants.W_OK);
     return true;
