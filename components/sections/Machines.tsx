@@ -238,7 +238,7 @@ const machineFor = (machines: { cap: number }[], cups: number) => {
   return i === -1 ? machines.length - 1 : i;
 };
 
-const FLASK_SRC = "/img/rig-flasks.webp";
+const FLASK_SRC = "/img/7.jpg";
 
 /* ---------------------------------------------------------------
    One row of choices.

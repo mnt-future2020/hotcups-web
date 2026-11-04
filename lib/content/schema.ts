@@ -1011,7 +1011,7 @@ export const DEFAULT_CONTENT: SiteContent = {
         ground: "cool",
         flip: true,
         image: {
-          src: "/img/hero-slide-machine.webp",
+          src: "/img/1 (1).webp",
           alt: "A Hotcups vending machine dispensing coffee into a paper cup",
         },
         /* NO BACKGROUND PICTURE, which is how both of these shipped and stays
@@ -1255,21 +1255,21 @@ export const DEFAULT_CONTENT: SiteContent = {
     machines: [
       {
         key: "small",
-        src: "/img/machine-cothas.png",
+        src: "/img/2.png",
         /* The set before this capped the smallest at 50, which is exactly the
            line section 05 starts recommending a machine at — so it could only
            ever have served an office that section was telling to stay on
            flasks. At 100 it covers the commonest office that crosses the line
            at all. */
-        from: null,
-        cap: 100,
+        from: 100,
+        cap: 150,
         aspect: 900 / 754,
       },
       {
         key: "medium",
-        src: "/img/machine-chaipoint.png",
-        from: 100,
-        cap: 200,
+        src: "/img/1 (1).webp",
+        from: 150,
+        cap: 250,
         aspect: 1290 / 1219,
       },
       {
@@ -1277,7 +1277,7 @@ export const DEFAULT_CONTENT: SiteContent = {
         /* the brief asks for machine-brewmax.png; that file was renamed to
            -clean when its retouched replacement landed, and this is it */
         src: "/img/machine-brewmax-clean.png",
-        from: 200,
+        from: 250,
         /* 500 rather than the Infinity it once carried, so section 05's
            fallback is what selects this unit above that rather than the band
            claiming to cover everything. */
